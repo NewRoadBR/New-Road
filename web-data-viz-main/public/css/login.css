@@ -150,6 +150,11 @@ a {
     padding: 40px 30px;
   }
 
+  #container-right h1 {
+    font-size: 24px;
+    margin-bottom: 5px;
+  }
+
   #titulo {
     margin-top: 0;
     width: 100%;
