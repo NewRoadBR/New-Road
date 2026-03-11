@@ -1,18 +1,10 @@
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Poppins", sans-serif;
-}
-
-#container {
-  width: 1300px;
-  height: 820px;
-  display: flex;
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+  font-family: "Inter", sans-serif;
+  font-size: 1.0625rem;
 }
 
 body {
@@ -23,24 +15,62 @@ body {
   background: #f4f4f4;
 }
 
+#container {
+  width: 1300px;
+  height: 820px;
+  display: flex;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+}
+
+
 #container-left {
   width: 50%;
   background: linear-gradient(135deg, #1e3caa, #2a4fd7);
   color: white;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  align-items: flex-start;
   padding: 80px;
 }
 
+.left-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+}
+
 #container-left h1 {
-  font-size: 32px;
+  font-size: 2.75rem;
   margin-bottom: 15px;
+  line-height: 1.2;
 }
 
 #container-left p {
-  font-size: 16px;
+  font-size: 1.25rem;
   opacity: 0.9;
+  line-height: 1.6;
+}
+
+.btn-voltar {
+  color: #ffffff;
+  font-size: 0.875rem;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.8;
+  transition: 0.3s;
+  margin-bottom: 0;
+}
+
+.btn-voltar::before {
+  content: "←";
+  font-size: 1.4rem;
 }
 
 #container-right {
@@ -52,6 +82,7 @@ body {
 }
 
 #container-right p {
+  font-size: 1.0625rem;
   color: #777;
   margin-bottom: 30px;
 }
@@ -60,12 +91,20 @@ body {
   margin-bottom: 30px;
 }
 
+#titulo h1,
+#container-right h1 {
+  font-size: 2.75rem;
+  line-height: 1.2;
+  margin-bottom: 8px;
+}
+
+
 .inputs {
   margin-bottom: 25px;
 }
 
 .inputs label {
-  font-size: 14px;
+  font-size: 0.875rem;
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
@@ -84,14 +123,14 @@ body {
 .icone-input i {
   margin-right: 10px;
   color: #999;
-  font-size: 16px;
+  font-size: 1.0625rem;
 }
 
 .icone-input input {
   border: none;
   outline: none;
   width: 100%;
-  font-size: 15px;
+  font-size: 1.0625rem; 
   background: transparent;
 }
 
@@ -101,6 +140,8 @@ body {
   background: white;
 }
 
+
+
 button {
   width: 100%;
   padding: 16px;
@@ -108,7 +149,7 @@ button {
   border-radius: 8px;
   background: linear-gradient(135deg, #2a5df5, #1d4ed8);
   color: white;
-  font-size: 16px;
+  font-size: 1rem; 
   font-weight: 500;
   cursor: pointer;
   transition: 0.3s;
@@ -121,11 +162,14 @@ button:hover {
   box-shadow: 0 8px 20px rgba(42, 93, 245, 0.35);
 }
 
+
 a {
   color: #2a5df5;
   text-decoration: none;
   font-weight: bold;
+  font-size: 1.0625rem;
 }
+
 
 @media (max-width: 768px) {
 
@@ -150,9 +194,19 @@ a {
     padding: 40px 30px;
   }
 
-  #container-right h1 {
-    font-size: 24px;
+  #container-left h1,
+  #container-right h1,
+  #titulo h1 {
+    font-size: 2rem;
     margin-bottom: 5px;
+  }
+
+  #container-left p {
+    font-size: 1rem;
+  }
+
+  #container-right p {
+    font-size: 1rem;
   }
 
   #titulo {
@@ -166,14 +220,24 @@ a {
 
   button {
     padding: 14px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+
+  #container-left h1,
+  #container-right h1,
+  #titulo h1 {
+    font-size: 1.625rem;
   }
 
-  #container-left h1 {
-    font-size: 24px;
+  #container-left p,
+  #container-right p {
+    font-size: 0.9375rem;
   }
 
-  #container-left p {
-    font-size: 14px;
+  .inputs label {
+    font-size: 0.8125rem;
   }
-  
 }
