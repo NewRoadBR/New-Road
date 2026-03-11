@@ -13,7 +13,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #f4f4f4;
+  background: #0A111A;
   padding: 30px;
 }
 
@@ -151,6 +151,10 @@ a {
 
 #ja-tem-uma-conta {
   text-align: center;
+}
+
+#menu-mobile{
+  display: none;
 }
 
 
