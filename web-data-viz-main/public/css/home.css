@@ -1,3 +1,4 @@
+
 * {
     margin: 0;
     padding: 0;
@@ -5,7 +6,8 @@
 }
 
 body {
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
+    font-size: 1.0625rem; 
     background: #0A111A;
     color: #CFD8E3;
     line-height: 1.6;
@@ -51,12 +53,9 @@ body {
 }
 
 .logo-box {
-    background: #3B82F6;
-    color: #fff;
-    padding: 6px 12px;
-    border-radius: 4px;
-    font-weight: 800;
-    font-size: 1.1rem;
+  height: 40px;
+  width: auto;
+  display: block;
 }
 
 .logo-text-group {
@@ -67,13 +66,13 @@ body {
 .logo-main {
     color: #fff;
     font-weight: 700;
-    font-size: 1rem;
+    font-size: 1.0625rem;
     letter-spacing: 1px;
 }
 
 .logo-sub {
     color: #64748B;
-    font-size: 0.6rem;
+    font-size: 0.8125rem;
     font-weight: 700;
     text-transform: uppercase;
 }
@@ -87,7 +86,7 @@ body {
 .nav-links a {
     color: #94A3B8;
     text-decoration: none;
-    font-size: 0.85rem;
+    font-size: 1rem;
     font-weight: 500;
     transition: 0.3s;
 }
@@ -105,7 +104,7 @@ body {
 .btn-login {
     color: #fff;
     text-decoration: none;
-    font-size: 0.85rem;
+    font-size: 1rem;
     border: 1px solid rgba(255,255,255,0.1);
     padding: 8px 16px;
     border-radius: 6px;
@@ -118,7 +117,7 @@ body {
     border-radius: 6px;
     text-decoration: none;
     font-weight: 700;
-    font-size: 0.85rem;
+    font-size: 1rem;
     transition: 0.3s;
 }
 
@@ -147,14 +146,14 @@ body {
 .badge {
     color: #3B82F6;
     font-weight: 800;
-    font-size: 0.75rem;
+    font-size: 0.875rem; 
     letter-spacing: 2px;
     margin-bottom: 20px;
 }
 
 h1 {
     font-family: 'DM Serif Display', serif;
-    font-size: 3.8rem;
+    font-size: 3.875rem;
     color: #fff;
     line-height: 1.1;
     margin-bottom: 25px;
@@ -166,7 +165,7 @@ h1 em {
 }
 
 .hero-desc {
-    font-size: 1.1rem;
+    font-size: 1.125rem;
     color: #94A3B8;
     margin-bottom: 35px;
     max-width: 550px;
@@ -180,7 +179,7 @@ h1 em {
     text-decoration: none;
     font-weight: 700;
     margin-left: 10px;
-    font-size: 0.85rem;
+    font-size: 1rem;
 }
 
 .hero-stats-row {
@@ -193,32 +192,43 @@ h1 em {
 
 .mini-stat strong {
     display: block;
-    font-size: 1.5rem;
+    font-size: 1.625rem;
     color: #fff;
     font-family: 'DM Serif Display', serif;
 }
 
 .mini-stat span {
-    font-size: 0.75rem;
+    font-size: 0.875rem; 
     color: #64748B;
     text-transform: uppercase;
 }
 
 
+
 .section-label {
     color: #3B82F6;
     font-weight: 800;
-    font-size: 0.75rem;
+    font-size: 0.875rem; 
     letter-spacing: 3px;
     margin-bottom: 15px;
     display: block;
+    text-transform: uppercase;
 }
 
 h2 {
     font-family: 'DM Serif Display', serif;
-    font-size: 2.8rem;
+    font-size: 2.5rem;
     color: #fff;
     margin-bottom: 40px;
+    line-height: 1.2;
+}
+
+h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.625rem;
+    color: #fff;
+    margin-bottom: 12px;
+    line-height: 1.3;
 }
 
 .grid-2 {
@@ -240,9 +250,10 @@ h2 {
 }
 
 .lead {
-    font-size: 1.2rem;
+    font-size: 1.125rem;
     margin-bottom: 25px;
     color: #fff;
+    line-height: 1.5;
 }
 
 
@@ -258,7 +269,7 @@ h2 {
     border: 1px solid rgba(239, 68, 68, 0.1);
     padding: 15px;
     border-radius: 8px;
-    font-size: 0.9rem;
+    font-size: 1.0625rem; 
 }
 
 .problem-item span {
@@ -269,7 +280,7 @@ h2 {
 
 
 .impact-card {
-    padding: 30px;
+    padding: 32px;
     border-radius: 12px;
     border: 1px solid rgba(255,255,255,0.05);
     background: #151F2C;
@@ -277,7 +288,7 @@ h2 {
 
 .impact-card .val {
     font-family: 'DM Serif Display', serif;
-    font-size: 2.5rem;
+    font-size: 2.5rem; 
     display: block;
     margin-bottom: 10px;
 }
@@ -332,12 +343,12 @@ h2 {
 
 .res-item strong {
     display: block;
-    font-size: 2.2rem;
+    font-size: 2.5rem; 
     font-family: 'DM Serif Display', serif;
 }
 
 .res-item span {
-    font-size: 0.8rem;
+    font-size: 0.875rem; 
     text-transform: uppercase;
     font-weight: 700;
     opacity: 0.9;
@@ -351,6 +362,7 @@ h2 {
     margin-bottom: 15px;
     border-left: 4px solid #3B82F6;
 }
+
 
 
 .footer {
@@ -369,10 +381,11 @@ h2 {
 .footer-copyright {
     text-align: center;
     color: #475569;
-    font-size: 0.75rem;
+    font-size: 0.875rem; 
     border-top: 1px solid rgba(255,255,255,0.05);
     padding-top: 20px;
 }
+
 
 
 .floating-data-card {
@@ -391,100 +404,111 @@ h2 {
 }
 
 .fdc-label {
-    font-size: 0.65rem;
+    font-size: 0.875rem;
     font-weight: 800;
     color: #64748B;
 }
 
 .fdc-value {
     display: block;
-    font-size: 3rem;
+    font-size: 2.5rem;
     font-family: 'DM Serif Display', serif;
     color: #3B82F6;
 }
 
 
 
+@media (max-width: 768px) {
 
-@media (max-width:768px){
+    .section {
+        padding: 70px 0;
+    }
 
-.section{
-padding:70px 0;
+    .container {
+        padding: 0 20px;
+    }
+
+    .nav-links {
+        display: none;
+    }
+
+    .hero-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+        text-align: center;
+    }
+
+    h1 {
+        font-size: 2.5rem;
+    }
+
+    h2 {
+        font-size: 2.25rem;
+    }
+
+    h3 {
+        font-size: 1.375rem;
+    }
+
+    .hero-desc,
+    .lead {
+        font-size: 1.125rem;
+    }
+
+    .hero-stats-row {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .grid-2,
+    .grid-3,
+    .grid-4 {
+        grid-template-columns: 1fr;
+    }
+
+    .results-strip {
+        flex-direction: column;
+        gap: 25px;
+        padding: 30px;
+    }
+
+    .footer-grid {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
+    }
 }
 
-.container{
-padding:0 20px;
-}
 
-.nav-links{
-display:none;
-}
+@media (max-width: 480px) {
 
-.hero-grid{
-grid-template-columns:1fr;
-gap:40px;
-text-align:center;
-}
+    h1 {
+        font-size: 2.25rem;
+    }
 
-h1{
-font-size:2.3rem;
-}
+    h2 {
+        font-size: 2rem;
+    }
 
-.hero-desc{
-font-size:1rem;
-}
+    h3 {
+        font-size: 1.125rem;
+    }
 
-.hero-stats-row{
-flex-direction:column;
-align-items:center;
-gap:20px;
-}
+    .hero-desc,
+    .lead {
+        font-size: 1.0625rem;
+    }
 
-.grid-2,
-.grid-3,
-.grid-4{
-grid-template-columns:1fr;
-}
+    .btn-primary,
+    .btn-outline {
+        display: block;
+        width: 100%;
+        text-align: center;
+        margin: 10px 0;
+    }
 
-.results-strip{
-flex-direction:column;
-gap:25px;
-padding:30px;
-}
-
-.footer-grid{
-flex-direction:column;
-gap:20px;
-text-align:center;
-}
-
-}
-
-
-@media (max-width:480px){
-
-h1{
-font-size:1.9rem;
-}
-
-h2{
-font-size:1.6rem;
-}
-
-.hero-desc{
-font-size:0.95rem;
-}
-
-.btn-primary,
-.btn-outline{
-display:block;
-width:100%;
-text-align:center;
-margin:10px 0;
-}
-
-.hero-stats-row{
-margin-top:30px;
-}
-
+    .hero-stats-row {
+        margin-top: 30px;
+    }
 }
