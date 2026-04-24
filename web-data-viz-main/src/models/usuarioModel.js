@@ -1,17 +1,13 @@
 var database = require("../database/config")
 
 function autenticar(email, senha) {
-    console.log("Autenticando:", email);
-
     var instrucaoSql = `
         SELECT id, nome, email, fk_empresa as empresaId
         FROM usuario
-        WHERE email = ? AND senha = ?;
+        WHERE email = '${email}' AND senha = '${senha}';
     `;
 
-    console.log("Executando SQL com parâmetros");
-
-    return database.executar(instrucaoSql, [email, senha]);
+    return database.executar(instrucaoSql);
 }
 
 // Coloque os mesmos parâmetros aqui. Vá para a var instrucaoSql
