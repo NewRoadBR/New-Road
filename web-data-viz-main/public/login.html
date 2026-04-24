@@ -47,7 +47,7 @@
             </div>
 
 
-            <button onclick="logar()">Entrar</button>
+            <button onclick="entrar()">Entrar</button>
 
             <p>Ainda não tem uma conta? <a href="cadastro.html">Entre em contato Conosco</a></p>
 
@@ -67,8 +67,8 @@
     function entrar() {
         aguardar();
 
-        var emailVar = email_input.value;
-        var senhaVar = senha_input.value;
+        var emailVar = document.getElementById("input_email").value;
+        var senhaVar = document.getElementById("input_senha").value
 
         if (emailVar == "" || senhaVar == "") {
             cardErro.style.display = "block"
