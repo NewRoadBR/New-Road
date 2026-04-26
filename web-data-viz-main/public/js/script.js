@@ -2171,10 +2171,10 @@ window.handleExitToLanding = function() {
           style="padding:10px 20px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:13px;font-weight:600;cursor:pointer;">
           Cancelar
         </button>
-        <button onclick="window.location.reload()"
-          style="padding:10px 20px;border-radius:8px;border:none;background:#2563eb;color:#fff;font-size:13px;font-weight:600;cursor:pointer;">
-          <i class="fa-solid fa-arrow-left" style="margin-right:6px;"></i>Confirmar saída
-        </button>
+       <button onclick="window.location.href = '../index.html';"
+      style="padding:10px 20px;border-radius:8px;border:none;background:#2563eb;color:#fff;font-size:13px;font-weight:600;cursor:pointer;">
+      <i class="fa-solid fa-arrow-left" style="margin-right:6px;"></i>Confirmar saída
+    </button>
       </div>
     </div>`;
   document.body.appendChild(overlay);
