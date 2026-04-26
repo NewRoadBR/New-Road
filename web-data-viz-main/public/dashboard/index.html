@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NewRoad — Plataforma de Obras Viárias</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+  <link rel="stylesheet" href="../css/style.css"/>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon" style="background:none; padding:0; overflow:hidden;">
+      <img src="../assets/imgs/Logov2.png" alt="">
+    </div>
+    <span class="logo-text">New<strong>Road</strong></span>
+  </div>
+
+  <nav class="sidebar-nav">
+    <p class="nav-label">PRINCIPAL</p>
+    <a href="#" class="nav-item active" data-page="dashboard">
+      <i class="fa-solid fa-chart-pie"></i>
+      <span>Dashboard</span>
+    </a>
+    <a href="#" class="nav-item" data-page="traffic">
+      <i class="fa-solid fa-car-side"></i>
+      <span>Análise de Tráfego</span>
+    </a>
+    <a href="#" class="nav-item" data-page="obras">
+      <i class="fa-solid fa-helmet-safety"></i>
+      <span>Planejamento de Obras</span>
+    </a>
+    <a href="#" class="nav-item" data-page="sim">
+      <i class="fa-solid fa-flask"></i>
+      <span>Simulações</span>
+    </a>
+
+    <p class="nav-label">GESTÃO</p>
+
+    <a href="#" class="nav-item" data-page="usuarios">
+      <i class="fa-solid fa-users"></i>
+      <span>Usuários</span>
+    </a>
+
+    <a href="#" class="nav-item" data-page="settings">
+      <i class="fa-solid fa-gear"></i>
+      <span>Configurações</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="system-status">
+      <span class="status-dot pulse"></span>
+      <span>Sistema online</span>
+    </div>
+    <p class="version-tag">SP Region</p>
+    <button class="sidebar-exit-btn" onclick="handleExitToLanding()">
+      <i class="fa-solid fa-arrow-left"></i>
+      <span>Voltar à página inicial</span>
+    </button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main-wrapper" id="mainWrapper">
+
+  <!-- HEADER -->
+  <header class="top-header">
+    <div class="header-left">
+      <button class="burger-btn" id="burgerBtn">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" placeholder="Buscar via, região ou obra…" id="searchInput"/>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <div class="filter-group">
+        <select class="filter-select" id="filterRegion">
+          <option value="all">Todas as regiões</option>
+          <option value="centro">Centro</option>
+          <option value="paulista">Av. Paulista</option>
+          <option value="norte">Zona Norte</option>
+          <option value="sul">Zona Sul</option>
+          <option value="leste">Zona Leste</option>
+          <option value="oeste">Zona Oeste</option>
+        </select>
+        <select class="filter-select" id="filterDay">
+          <option value="all">Todos os dias</option>
+          <option value="weekday">Dias úteis</option>
+          <option value="weekend">Fim de semana</option>
+        </select>
+      </div>
+
+      <button class="icon-btn notif-btn" id="notifBtn">
+        <i class="fa-solid fa-bell"></i>
+        <span class="badge">3</span>
+      </button>
+
+      <div class="user-menu">
+        <div class="user-avatar">EM</div>
+        <div class="user-info">
+          <span class="user-name">Eng. Mateus</span>
+          <span class="user-role">Gestor SP</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <main class="content" id="mainContent"></main>
+</div>
+
+<!-- NOTIFICATION PANEL -->
+<div class="notif-panel" id="notifPanel">
+  <div class="notif-header">
+    <h4>Notificações</h4>
+    <button id="closeNotif"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="notif-list" id="notifList"></div>
+</div>
+<div class="overlay" id="overlay"></div>
+
+<script src="../js/script.js"></script>
+</body>
+</html>
