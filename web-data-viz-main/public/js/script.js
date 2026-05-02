@@ -92,11 +92,12 @@ function initTimestamp() {
 // ── KPIs ───────────────────────────────────────────────────
 
 function initKPIs() {
-  // Calcula redução % do domingo vs média dias úteis (dados históricos)
-  const weekdayAvg = Math.round((MOCK_DATA.dailyFlow.values.slice(0,5).reduce((a,b)=>a+b,0)) / 5);
-  const sundayVal  = MOCK_DATA.dailyFlow.values[6]; // Domingo
-  const reduction  = Math.round((1 - sundayVal / weekdayAvg) * 100);
-  animateCount('kpiFlow', 0, reduction, 900, v => v + '%');
+  // Razão pico / madrugada — baseado em dados históricos (média horária)
+  const hourly = MOCK_DATA.hourlyFlow.today;
+  const peakAvg = Math.round((hourly[7] + hourly[8] + hourly[17] + hourly[18]) / 4);
+  const offPeakAvg = Math.round((hourly[1] + hourly[2] + hourly[3]) / 3);
+  const ratio = (peakAvg / offPeakAvg).toFixed(1);
+  animateCount('kpiFlow', 10, parseFloat(ratio) * 10, 900, v => (v / 10).toFixed(1) + '×');
   document.getElementById('kpiPeak').textContent   = MOCK_DATA.kpis.peak;
   document.getElementById('kpiWindow').textContent = MOCK_DATA.kpis.window;
   renderKpiCong();
@@ -289,7 +290,7 @@ function buildDonutChart() {
       datasets: [{
         label: 'Veículos/dia',
         data: values,
-        backgroundColor: values.map(v => v === minVal ? '#10b981' : v > 50000 ? '#ef4444CC' : '#93c5fdCC'),
+        backgroundColor: values.map(v => v === minVal ? '#10b981' : v > 50000 ? '#ef4444CC' : '#fbbf24CC'),
         borderRadius: 5,
         borderSkipped: false
       }]
@@ -711,13 +712,13 @@ function renderDashboardPage(content) {
 
     <section class="kpi-grid">
       <div class="kpi-card" data-kpi="flow">
-        <div class="kpi-icon flow"><i class="fa-solid fa-chart-line"></i></div>
+        <div class="kpi-icon flow"><i class="fa-solid fa-arrow-right-arrow-left"></i></div>
         <div class="kpi-info">
-          <span class="kpi-label">Redução no fim de semana</span>
+          <span class="kpi-label">Pico vs. Madrugada</span>
           <span class="kpi-value" id="kpiFlow">—</span>
-          <span class="kpi-unit">vs. dias úteis (média histórica)</span>
+          <span class="kpi-unit">Volume hora pico ÷ madrugada</span>
         </div>
-        <div class="kpi-trend up"><i class="fa-solid fa-circle-check"></i> Melhor para obras</div>
+        <div class="kpi-trend down"><i class="fa-solid fa-triangle-exclamation"></i> Evitar obras no pico</div>
       </div>
       <div class="kpi-card" data-kpi="peak">
         <div class="kpi-icon peak"><i class="fa-solid fa-clock"></i></div>
@@ -1846,44 +1847,36 @@ function renderRegionalDashboard(regionKey, content) {
       <div class="chart-card slim">
         <div class="chart-header">
           <div>
-            <h3 style="display:flex;align-items:center;gap:6px;">
-              Janela Ideal para Obras
-            </h3>
-            <p>Impacto ao tráfego por período do dia</p>
+            <h3>Janela Ideal para Obras</h3>
+            <p>Impacto ao tráfego por período · Verde = recomendado</p>
           </div>
         </div>
-        <div class="chart-body" style="padding:0 14px 8px;">
-          <!-- Score badge -->
-          <div style="display:flex;align-items:center;gap:12px;padding:10px 0 14px;">
-            <div style="width:56px;height:56px;border-radius:50%;background:conic-gradient(#10b981 ${r.windowData.score * 3.6}deg, #f1f5f9 0deg);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <div style="width:42px;height:42px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-                <span style="font-size:14px;font-weight:800;color:#10b981;line-height:1;">${r.windowData.score}</span>
-                <span style="font-size:9px;color:#94a3b8;line-height:1;">score</span>
+        <div class="chart-body" style="min-height:0;flex:1;display:flex;flex-direction:column;gap:6px;padding:0 2px;">
+          <!-- Score row -->
+          <div style="display:flex;align-items:center;gap:10px;padding:4px 0 8px;border-bottom:1px solid #f1f5f9;flex-shrink:0;">
+            <div style="width:46px;height:46px;border-radius:50%;background:conic-gradient(#10b981 ${r.windowData.score * 3.6}deg, #f1f5f9 0deg);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <div style="width:34px;height:34px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                <span style="font-size:12px;font-weight:800;color:#10b981;line-height:1;">${r.windowData.score}</span>
+                <span style="font-size:8px;color:#94a3b8;line-height:1;">score</span>
               </div>
             </div>
-            <div>
-              <div style="font-size:13px;font-weight:700;color:#0f172a;">✓ ${r.windowData.label.replace('Janela Ideal — ','')}</div>
-              <div style="font-size:11px;color:#64748b;margin-top:2px;line-height:1.4;">${r.windowData.motivo}</div>
+            <div style="min-width:0;">
+              <div style="font-size:12px;font-weight:700;color:#059669;">✓ ${r.kpis.janelaIdeal}</div>
+              <div style="font-size:10px;color:#64748b;margin-top:1px;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${r.windowData.motivo}</div>
             </div>
           </div>
           <!-- Períodos visuais -->
-          <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;flex-direction:column;gap:4px;flex:1;justify-content:space-around;">
             ${r.impactSimulation.map(p => {
-              const barW = p.impacto;
               const textColor = p.recomendado ? '#059669' : (p.impacto >= 70 ? '#dc2626' : '#d97706');
-              const bgColor  = p.recomendado ? '#dcfce7' : (p.impacto >= 70 ? '#fee2e2' : '#fef3c7');
-              return `<div style="display:flex;align-items:center;gap:8px;">
-                <div style="width:${p.recomendado ? '110px' : '100px'};font-size:10px;font-weight:${p.recomendado ? '700' : '500'};color:${textColor};white-space:nowrap;flex-shrink:0;">${p.recomendado ? '★ ' : ''}${p.cenario.replace(' (','<br><span style="font-weight:400;opacity:.8;">(').replace(')',')') + (p.recomendado ? '' : '</span>')}</div>
-                <div style="flex:1;background:#f1f5f9;border-radius:4px;height:18px;position:relative;overflow:hidden;">
-                  <div style="width:${barW}%;height:100%;background:${p.cor};border-radius:4px;opacity:${p.recomendado ? '1' : '0.7'};transition:width .6s;"></div>
-                  <span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;font-weight:700;color:${p.impacto > 40 ? '#fff' : '#64748b'};mix-blend-mode:${p.impacto > 60 ? 'normal' : 'multiply'}">${barW}%</span>
+              return `<div style="display:flex;align-items:center;gap:6px;">
+                <div style="width:95px;font-size:9px;font-weight:${p.recomendado ? '700' : '500'};color:${textColor};flex-shrink:0;line-height:1.2;">${p.recomendado ? '★ ' : ''}${p.cenario}</div>
+                <div style="flex:1;background:#f1f5f9;border-radius:3px;height:14px;position:relative;overflow:hidden;">
+                  <div style="width:${p.impacto}%;height:100%;background:${p.cor};opacity:${p.recomendado ? '1' : '0.7'};"></div>
+                  <span style="position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:9px;font-weight:700;color:${p.impacto > 50 ? '#fff' : '#64748b'};">${p.impacto}%</span>
                 </div>
-                ${p.recomendado ? `<span style="font-size:9px;font-weight:700;color:#059669;background:#dcfce7;padding:2px 6px;border-radius:99px;white-space:nowrap;">OK</span>` : ''}
               </div>`;
             }).join('')}
-          </div>
-          <div style="margin-top:10px;padding:8px 10px;background:#f0fdf4;border-radius:8px;border:1px solid #bbf7d0;font-size:11px;color:#059669;font-weight:600;">
-            <i class="fa-solid fa-circle-check" style="margin-right:5px;"></i>Recomendação: iniciar obras entre ${r.kpis.janelaIdeal}
           </div>
         </div>
       </div>
@@ -1895,22 +1888,22 @@ function renderRegionalDashboard(regionKey, content) {
     <section class="table-section">
       <div class="section-header">
         <div>
-          <h2>Grau de Urgência — Ranking de Obras</h2>
-          <p>Obras ordenadas por prioridade de execução na ${r.nome}</p>
+          <h2>Ranking de Urgência — Obras</h2>
+          <p>Obras ordenadas por prioridade de execução · ${r.nome}</p>
         </div>
       </div>
       <div class="table-wrapper">
-        <table class="data-table">
+        <table class="data-table" style="min-width:600px;">
           <thead>
             <tr>
-              <th>Prioridade</th>
+              <th style="width:60px;">Prio.</th>
               <th>Localização</th>
-              <th>Tipo de Obra</th>
-              <th>Data de Início</th>
-              <th>Impacto Estimado</th>
-              <th>Urgência</th>
-              <th>Melhor Horário</th>
-              <th>Ações</th>
+              <th>Tipo</th>
+              <th style="width:100px;">Início</th>
+              <th style="width:120px;">Impacto</th>
+              <th style="width:90px;">Urgência</th>
+              <th style="width:110px;">Melhor Hora</th>
+              <th style="width:80px;">Ação</th>
             </tr>
           </thead>
           <tbody>
@@ -1923,35 +1916,37 @@ function renderRegionalDashboard(regionKey, content) {
               const ul = urgLabels[obra.urgencia - 1];
               const ub = urgBgs[obra.urgencia - 1];
               const dataStr = obra.dataInicio ? formatDate(obra.dataInicio) : '—';
+              const janela = r.kpis.janelaIdeal.replace(' (madrugada)','').replace(' (tarde)','').replace(' (noite)','');
               return `
               <tr>
                 <td>
-                  <div style="display:flex;align-items:center;gap:8px;">
-                    <div style="width:32px;height:32px;border-radius:50%;background:${ub};color:${uc};font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;">${obra.urgencia}°</div>
-                  </div>
-                </td>
-                <td><div class="table-location">${obra.local}<small>${r.nome}</small></div></td>
-                <td style="font-size:12px;">${obra.tipo}</td>
-                <td style="font-size:12px;color:var(--text-secondary);">
-                  <i class="fa-regular fa-calendar" style="margin-right:4px;color:var(--text-muted);"></i>${dataStr}
+                  <div style="width:32px;height:32px;border-radius:8px;background:${ub};color:${uc};font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;">${obra.urgencia}°</div>
                 </td>
                 <td>
-                  <div class="impact-bar">
-                    <div class="impact-bar-bg">
-                      <div class="impact-bar-fill" style="width:${obra.impacto}%;background:${ic};"></div>
+                  <div style="font-weight:600;font-size:13px;color:var(--text-primary);">${obra.local}</div>
+                  <div style="font-size:11px;color:var(--text-muted);margin-top:1px;">${obra.tipo}</div>
+                </td>
+                <td style="font-size:12px;color:var(--text-secondary);display:none;">${obra.tipo}</td>
+                <td style="font-size:12px;color:var(--text-secondary);white-space:nowrap;">${dataStr}</td>
+                <td>
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <div style="flex:1;height:5px;background:#f1f5f9;border-radius:99px;overflow:hidden;min-width:50px;">
+                      <div style="width:${obra.impacto}%;height:100%;background:${ic};border-radius:99px;"></div>
                     </div>
-                    <span class="impact-pct" style="color:${ic};">${obra.impacto}%</span>
+                    <span style="font-size:12px;font-weight:600;color:${ic};min-width:28px;">${obra.impacto}%</span>
                   </div>
                 </td>
                 <td>
-                  <span style="display:inline-block;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;background:${ub};color:${uc};">${ul}</span>
-                </td>
-                <td style="color:#10b981;font-weight:600;font-size:13px;">
-                  <i class="fa-solid fa-check" style="margin-right:4px;"></i>${r.kpis.janelaIdeal.split(' ')[0]}
+                  <span style="display:inline-block;padding:3px 8px;border-radius:99px;font-size:10px;font-weight:700;background:${ub};color:${uc};white-space:nowrap;">${ul}</span>
                 </td>
                 <td>
-                  <button class="action-btn ver-obra-btn" title="Ver cadastro da obra em Planejamento de Obras" onclick="goToObraPlanning('${obra.local.replace(/'/g, "\\'")}')" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#2563eb;background:#dbeafe;padding:5px 10px;border-radius:6px;border:none;cursor:pointer;font-weight:600;white-space:nowrap;">
-                    <i class="fa-solid fa-helmet-safety"></i> Ver obra
+                  <span style="display:inline-flex;align-items:center;gap:4px;color:#059669;font-weight:600;font-size:12px;white-space:nowrap;">
+                    <i class="fa-solid fa-moon" style="font-size:10px;"></i>${janela}
+                  </span>
+                </td>
+                <td>
+                  <button class="ver-obra-btn" onclick="goToObraPlanning('${obra.local.replace(/'/g, "\\'")}')">
+                    <i class="fa-solid fa-helmet-safety"></i> Ver
                   </button>
                 </td>
               </tr>`
