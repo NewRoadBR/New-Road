@@ -92,22 +92,25 @@ function initTimestamp() {
 // ── KPIs ───────────────────────────────────────────────────
 
 function initKPIs() {
-  animateCount('kpiFlow', 0, MOCK_DATA.kpis.flow, 900, v => v.toLocaleString('pt-BR'));
+  // Calcula redução % do domingo vs média dias úteis (dados históricos)
+  const weekdayAvg = Math.round((MOCK_DATA.dailyFlow.values.slice(0,5).reduce((a,b)=>a+b,0)) / 5);
+  const sundayVal  = MOCK_DATA.dailyFlow.values[6]; // Domingo
+  const reduction  = Math.round((1 - sundayVal / weekdayAvg) * 100);
+  animateCount('kpiFlow', 0, reduction, 900, v => v + '%');
   document.getElementById('kpiPeak').textContent   = MOCK_DATA.kpis.peak;
   document.getElementById('kpiWindow').textContent = MOCK_DATA.kpis.window;
   renderKpiCong();
 }
 
 function renderKpiCong() {
-  const criticas = REGIOES.filter(r => r.nivel === 'Crítico');
+  const labels = MOCK_DATA.dailyFlow.labels;
+  const values = MOCK_DATA.dailyFlow.values;
+  const minIdx = values.indexOf(Math.min(...values));
   const el = document.getElementById('kpiCong');
   if (!el) return;
   el.innerHTML =
-    `<span style="display:block;font-size:28px;font-weight:800;line-height:1;color:#ef4444;">${criticas.length}</span>` +
-    (criticas.length === 0
-      ? `<span style="display:block;font-size:12px;font-weight:500;color:var(--text-muted);line-height:1.4;">Nenhuma região crítica</span>`
-      : criticas.map(r => `<span style="display:block;font-size:12px;font-weight:500;color:var(--text-muted);line-height:1.4;">${r.nome}</span>`).join('')
-    );
+    `<span style="display:block;font-size:28px;font-weight:800;line-height:1;color:#10b981;">${labels[minIdx]}</span>` +
+    `<span style="display:block;font-size:12px;font-weight:500;color:var(--text-muted);line-height:1.4;">${values[minIdx].toLocaleString('pt-BR')} veículos/dia</span>`;
 }
 
 
@@ -275,93 +278,42 @@ function updateDonutCenter(filter, dados) {
 
 function buildDonutChart() {
   const ctx = document.getElementById('chartDonut').getContext('2d');
-
-  const categorias = ['Crítico', 'Atenção', 'Estável'];
-
-  const dados = categorias.map(cat =>
-    REGIOES.filter(r => r.nivel === cat).length
-  );
+  const labels = MOCK_DATA.dailyFlow.labels;
+  const values = MOCK_DATA.dailyFlow.values;
+  const minVal = Math.min(...values);
 
   chartDonut = new Chart(ctx, {
-    type: 'doughnut',
+    type: 'bar',
     data: {
-      labels: categorias,
+      labels,
       datasets: [{
-        data: dados,
-        backgroundColor: ['#ef4444', '#f59e0b', '#10b981'],
-        borderWidth: 0,
-        hoverOffset: 6
+        label: 'Veículos/dia',
+        data: values,
+        backgroundColor: values.map(v => v === minVal ? '#10b981' : v > 50000 ? '#ef4444CC' : '#93c5fdCC'),
+        borderRadius: 5,
+        borderSkipped: false
       }]
     },
     options: {
+      indexAxis: 'y',
       responsive: true,
       maintainAspectRatio: false,
-      cutout: '72%',
-
-      onClick: (evt, elements) => {
-        if (!elements.length) {
-          currentCriticalityFilter = null;
-          updateDonutCenter(null, dados);
-          updateDashboard();
-          return;
-        }
-
-        const index = elements[0].index;
-        const label = chartDonut.data.labels[index];
-
-        // toggle filtro
-        currentCriticalityFilter =
-          currentCriticalityFilter === label ? null : label;
-
-        updateDonutCenter(currentCriticalityFilter, dados);
-        updateDashboard();
-      },
-
-      onHover: (event, elements) => {
-        event.native.target.style.cursor =
-          elements.length ? 'pointer' : 'default';
-      },
-
       plugins: {
-        legend: {
-          position: 'bottom',
-          labels: {
-            padding: 14,
-            boxWidth: 10,
-            boxHeight: 10,
-            usePointStyle: true,
-            font: { size: 11 }
-          }
-        },
-
+        legend: { display: false },
         tooltip: {
           backgroundColor: '#0f172a',
           callbacks: {
-            label: function(ctx) {
-              const categoria = ctx.label;
-
-              const regioes = REGIOES
-                .filter(r => r.nivel === categoria)
-                .map(r => r.nome);
-
-              const MAX = 4;
-              const lista = regioes.slice(0, MAX);
-              const restante = regioes.length - MAX;
-
-              return [
-                ` ${regioes.length} regiões`,
-                ...lista.map(r => `• ${r}`),
-                restante > 0 ? `+ ${restante} mais...` : ''
-              ];
-            }
+            label: ctx => ` ${ctx.parsed.x.toLocaleString('pt-BR')} veículos`,
+            afterLabel: ctx => ctx.parsed.x === minVal ? '✓ Melhor dia para obras' : ''
           }
         }
+      },
+      scales: {
+        x: { grid: { color: '#f1f5f9' }, border: { display: false }, ticks: { callback: v => (v/1000).toFixed(0)+'k' } },
+        y: { grid: { display: false }, border: { display: false } }
       }
     }
   });
-
-  // Init center label
-  updateDonutCenter(null, dados);
 }
 function updateFlowChart(filter) {
   currentFilter = filter;
@@ -759,13 +711,13 @@ function renderDashboardPage(content) {
 
     <section class="kpi-grid">
       <div class="kpi-card" data-kpi="flow">
-        <div class="kpi-icon flow"><i class="fa-solid fa-car"></i></div>
+        <div class="kpi-icon flow"><i class="fa-solid fa-chart-line"></i></div>
         <div class="kpi-info">
-          <span class="kpi-label">Fluxo médio</span>
+          <span class="kpi-label">Redução no fim de semana</span>
           <span class="kpi-value" id="kpiFlow">—</span>
-          <span class="kpi-unit">Veículos/h</span>
+          <span class="kpi-unit">vs. dias úteis (média histórica)</span>
         </div>
-        <div class="kpi-trend up"><i class="fa-solid fa-arrow-trend-up"></i> +4.2%</div>
+        <div class="kpi-trend up"><i class="fa-solid fa-circle-check"></i> Melhor para obras</div>
       </div>
       <div class="kpi-card" data-kpi="peak">
         <div class="kpi-icon peak"><i class="fa-solid fa-clock"></i></div>
@@ -786,20 +738,20 @@ function renderDashboardPage(content) {
         <div class="kpi-trend up"><i class="fa-solid fa-check"></i> Recomendado</div>
       </div>
       <div class="kpi-card" data-kpi="cong">
-        <div class="kpi-icon cong"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <div class="kpi-icon window"><i class="fa-solid fa-calendar-check"></i></div>
         <div class="kpi-info">
-          <span class="kpi-label">Região crítica</span>
+          <span class="kpi-label">Melhor dia para obras</span>
           <span class="kpi-value" id="kpiCong">—</span>
-          <span class="kpi-unit">Maior impacto atual</span>
+          <span class="kpi-unit">Menor volume histórico semanal</span>
         </div>
-        <div class="kpi-trend down"><i class="fa-solid fa-arrow-trend-down"></i> -1.8%</div>
+        <div class="kpi-trend up"><i class="fa-solid fa-check"></i> Recomendado</div>
       </div>
     </section>
 
     <section class="charts-grid">
       <div class="chart-card wide">
         <div class="chart-header">
-          <div><h3>Fluxo de Veículos por Horário</h3><p>Volume médio nas últimas 24h</p></div>
+          <div><h3>Fluxo de Veículos por Horário</h3><p>Volume médio histórico</p></div>
           <div class="chart-actions">
             <button class="chart-btn active" data-chart-filter="today">Hoje</button>
             <button class="chart-btn" data-chart-filter="week">Semana</button>
@@ -816,15 +768,9 @@ function renderDashboardPage(content) {
       </div>
       <div class="chart-card slim">
         <div class="chart-header">
-          <div><h3>Criticidade por Região</h3><p>Distribuição atual</p></div>
+          <div><h3>Volume por Dia da Semana</h3><p>Média histórica · Verde = melhor para obras</p></div>
         </div>
-        <div class="chart-body donut-wrap">
-          <canvas id="chartDonut"></canvas>
-          <div class="donut-center">
-            <span id="donutLabel">2/5</span>
-            <small>Críticas</small>
-          </div>
-        </div>
+        <div class="chart-body"><canvas id="chartDonut"></canvas></div>
       </div>
     </section>
 
@@ -1430,7 +1376,7 @@ function renderSettingsPage(content) {
         <div class="settings-lean-header">
           <div class="settings-lean-avatar">EM</div>
           <div>
-            <p class="settings-lean-name">Eng. Mateus Silva</p>
+            <p class="settings-lean-name"> Eng. Samara</p>
             <p class="settings-lean-role">Gestor SP · mateus.silva@newroad.sp</p>
           </div>
           <span class="status-pill status-completed" style="margin-left:auto;font-size:11px;">
@@ -1831,10 +1777,10 @@ function renderRegionalDashboard(regionKey, content) {
         <div class="kpi-info">
           <span class="kpi-label">Fluxo Médio</span>
           <span class="kpi-value" id="kpiFluxoRegional">—</span>
-          <span class="kpi-unit">Veículos/h · Hoje</span>
+          <span class="kpi-unit">Veículos/h · Média histórica</span>
         </div>
         <div class="kpi-trend ${r.kpis.trend.startsWith('+') ? 'up' : 'down'}">
-          <i class="fa-solid fa-arrow-trend-${r.kpis.trend.startsWith('+') ? 'up' : 'down'}"></i> ${r.kpis.trend}
+          <i class="fa-solid fa-arrow-trend-${r.kpis.trend.startsWith('+') ? 'up' : 'down'}"></i> ${r.kpis.trend} vs. mês anterior
         </div>
       </div>
       <div class="kpi-card" style="border-top:3px solid #f59e0b;">
@@ -1842,7 +1788,7 @@ function renderRegionalDashboard(regionKey, content) {
         <div class="kpi-info">
           <span class="kpi-label">Grau de Urgência</span>
           <span class="kpi-value" style="font-size:16px;">${urgLabel}</span>
-          <span class="kpi-unit">Prioridade ${r.kpis.urgencia}ª na cidade</span>
+          <span class="kpi-unit">${r.kpis.urgencia}ª prioridade de intervenção em SP</span>
         </div>
         <div class="kpi-trend neutral kpi-urgency-tooltip-trigger" style="cursor:help;position:relative;">
           <i class="fa-solid fa-list-ol"></i> Ranking
@@ -1874,7 +1820,7 @@ function renderRegionalDashboard(regionKey, content) {
         <div class="chart-header">
           <div>
             <h3>Fluxo de Veículos por Horário — ${r.nome}</h3>
-            <p>Volume médio nas últimas 24h · Áreas vermelhas = horário crítico</p>
+            <p>Volume médio histórico · Áreas vermelhas = horário crítico</p>
           </div>
           <div style="display:flex;align-items:center;gap:8px;">
             <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--text-muted);">
@@ -1901,32 +1847,45 @@ function renderRegionalDashboard(regionKey, content) {
         <div class="chart-header">
           <div>
             <h3 style="display:flex;align-items:center;gap:6px;">
-              Janela Ideal
-              <span class="window-score-info-icon" title="">
-                <i class="fa-solid fa-circle-question" style="font-size:13px;color:var(--text-muted);cursor:help;"></i>
-                <div class="window-score-tooltip">
-                  <div style="font-weight:700;font-size:12px;margin-bottom:6px;color:#10b981;"><i class="fa-solid fa-circle-check"></i> O que é o Score de Viabilidade?</div>
-                  <p style="font-size:11px;line-height:1.5;margin-bottom:6px;">Indica o <strong>quão favorável</strong> é a janela horária recomendada para execução de obras nesta região.</p>
-                  <p style="font-size:11px;line-height:1.5;">O score considera: volume de tráfego, fluxo de pedestres, histórico de congestionamento e eventos externos. <strong>Quanto maior, melhor a janela.</strong></p>
-                  <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.1);font-size:10px;color:#94a3b8;">
-                    <span style="background:#10b98120;color:#10b981;padding:2px 6px;border-radius:4px;margin-right:4px;">≥ 80</span>Ótimo ·
-                    <span style="background:#f59e0b20;color:#f59e0b;padding:2px 6px;border-radius:4px;margin:0 4px;">60–79</span>Bom ·
-                    <span style="background:#ef444420;color:#ef4444;padding:2px 6px;border-radius:4px;margin-left:4px;">< 60</span>Restrito
-                  </div>
-                </div>
-              </span>
+              Janela Ideal para Obras
             </h3>
-            <p>${r.windowData.label}</p>
+            <p>Impacto ao tráfego por período do dia</p>
           </div>
         </div>
-        <div class="chart-body donut-wrap">
-          <canvas id="chartWindow"></canvas>
-          <div class="donut-center">
-            <span id="windowScore">${r.windowData.score}</span>
-            <small>Score</small>
+        <div class="chart-body" style="padding:0 14px 8px;">
+          <!-- Score badge -->
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 0 14px;">
+            <div style="width:56px;height:56px;border-radius:50%;background:conic-gradient(#10b981 ${r.windowData.score * 3.6}deg, #f1f5f9 0deg);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <div style="width:42px;height:42px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                <span style="font-size:14px;font-weight:800;color:#10b981;line-height:1;">${r.windowData.score}</span>
+                <span style="font-size:9px;color:#94a3b8;line-height:1;">score</span>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#0f172a;">✓ ${r.windowData.label.replace('Janela Ideal — ','')}</div>
+              <div style="font-size:11px;color:#64748b;margin-top:2px;line-height:1.4;">${r.windowData.motivo}</div>
+            </div>
+          </div>
+          <!-- Períodos visuais -->
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            ${r.impactSimulation.map(p => {
+              const barW = p.impacto;
+              const textColor = p.recomendado ? '#059669' : (p.impacto >= 70 ? '#dc2626' : '#d97706');
+              const bgColor  = p.recomendado ? '#dcfce7' : (p.impacto >= 70 ? '#fee2e2' : '#fef3c7');
+              return `<div style="display:flex;align-items:center;gap:8px;">
+                <div style="width:${p.recomendado ? '110px' : '100px'};font-size:10px;font-weight:${p.recomendado ? '700' : '500'};color:${textColor};white-space:nowrap;flex-shrink:0;">${p.recomendado ? '★ ' : ''}${p.cenario.replace(' (','<br><span style="font-weight:400;opacity:.8;">(').replace(')',')') + (p.recomendado ? '' : '</span>')}</div>
+                <div style="flex:1;background:#f1f5f9;border-radius:4px;height:18px;position:relative;overflow:hidden;">
+                  <div style="width:${barW}%;height:100%;background:${p.cor};border-radius:4px;opacity:${p.recomendado ? '1' : '0.7'};transition:width .6s;"></div>
+                  <span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;font-weight:700;color:${p.impacto > 40 ? '#fff' : '#64748b'};mix-blend-mode:${p.impacto > 60 ? 'normal' : 'multiply'}">${barW}%</span>
+                </div>
+                ${p.recomendado ? `<span style="font-size:9px;font-weight:700;color:#059669;background:#dcfce7;padding:2px 6px;border-radius:99px;white-space:nowrap;">OK</span>` : ''}
+              </div>`;
+            }).join('')}
+          </div>
+          <div style="margin-top:10px;padding:8px 10px;background:#f0fdf4;border-radius:8px;border:1px solid #bbf7d0;font-size:11px;color:#059669;font-weight:600;">
+            <i class="fa-solid fa-circle-check" style="margin-right:5px;"></i>Recomendação: iniciar obras entre ${r.kpis.janelaIdeal}
           </div>
         </div>
-        <p style="font-size:11px;color:var(--text-muted);padding:8px 14px 12px;font-style:italic;line-height:1.4;">"${r.windowData.motivo}"</p>
       </div>
     </section>
 
@@ -2091,22 +2050,7 @@ function initRegionalCharts(r) {
     });
   }
 
-  // ── Janela score donut ──
-  const windowCtx = document.getElementById('chartWindow')?.getContext('2d');
-  if (windowCtx) {
-    const score = r.windowData.score;
-    new Chart(windowCtx, {
-      type: 'doughnut',
-      data: {
-        labels: ['Score', 'Restante'],
-        datasets: [{ data: [score, 100 - score], backgroundColor: ['#10b981', '#f1f5f9'], borderWidth: 0, hoverOffset: 0 }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false, cutout: '72%',
-        plugins: { legend: { display: false }, tooltip: { enabled: false } }
-      }
-    });
-  }
+  // ── (Janela score now rendered as inline HTML, no canvas needed) ──
 
   // ── Impacto por período horizontal bar ──
   const impactCtx = document.getElementById('chartImpact')?.getContext('2d');
