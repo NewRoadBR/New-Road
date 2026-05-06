@@ -46,11 +46,9 @@ const MOCK_DATA = {
   ],
 
   notifications: [
-    { id:1, color:"#ef4444", icon:"fa-triangle-exclamation", title:"Cadastro de obra realizado", desc:"A obra 'Viaduto do Chá' foi cadastrada com sucesso no sistema.", time:"Há 5 min"   },
+    { id:1, color:"#ef4444", icon:"fa-triangle-exclamation", title:"Obra crítica — Viaduto do Chá", desc:"Impacto estimado de 91%. Sugerimos horário noturno (01h–05h) para início das obras.", time:"Há 5 min"   },
     { id:2, color:"#f59e0b", icon:"fa-chart-bar", title:"Pico detectado — Av. Paulista",  desc:"Volume 18% acima da média histórica para esta hora. Verifique câmeras.",               time:"Há 23 min"  },
-    { id:3, color:"#3b82f6", icon:"fa-file-chart-column", title:"Atualização de perfil concluída",    desc:"Seus dados cadastrais foram atualizados com sucesso.",                time:"Há 2 horas" },
-    { id:4, color:"#ef4444",  icon:"fa-triangle-exclamation", title:"Alteração em obra existente",    desc:"Modificações relevantes foram realizadas na obra 'Av. Paulista'. Recomenda-se auditoria das alterações.",                time:"Há 25 minutos" },
-
+    { id:3, color:"#3b82f6", icon:"fa-file-chart-column", title:"Relatório semanal disponível",    desc:"O relatório de tráfego de 01/07 a 07/07 está pronto para visualização.",                time:"Há 2 horas" },
   ]
 };
 
@@ -139,7 +137,7 @@ function initKPIs() {
       insightEl.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i>Impacto`;
       insightEl.className = 'kpi-trend down';
     } else {
-      insightEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i>Impacto`;
+      insightEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Evitar intervenções entre 07h–09h e 17h–19h (impacto 82%)`;
       insightEl.className = 'kpi-trend down';
     }
   }
@@ -206,6 +204,7 @@ function initCharts() {
   Chart.defaults.color = '#94a3b8';
 
   buildFlowChart();
+  buildDayChart();
   buildDonutChart();
 }
 
@@ -361,41 +360,6 @@ function buildDonutChart() {
     }
   });
 }
-
-// ── CONGESTIONAMENTO POR VELOCIDADE ───────────────────────
-const CONG_SPEED_DATA = [
-  { via: 'Av. Paulista',        velocidade: 12 },
-  { via: 'Marginal Tietê',      velocidade: 28 },
-  { via: 'Av. Rebouças',        velocidade: 48 },
-  { via: 'Radial Leste',        velocidade: 9  },
-  { via: 'Av. Faria Lima',      velocidade: 62 },
-  { via: 'Av. Brigadeiro',      velocidade: 75 },
-];
-
-function getCongLevelFromSpeed(speed) {
-  if (speed <= 20) return { label: 'Alto',  cor: '#ef4444', bg: '#fee2e2' };
-  if (speed <= 50) return { label: 'Médio', cor: '#f59e0b', bg: '#fef3c7' };
-  return               { label: 'Baixo', cor: '#10b981', bg: '#d1fae5' };
-}
-
-function initCongSpeedChart() {
-  const container = document.getElementById('congSpeedChart');
-  if (!container) return;
-  container.innerHTML = CONG_SPEED_DATA.map(item => {
-    const nivel = getCongLevelFromSpeed(item.velocidade);
-    const pct = Math.min(100, Math.round((item.velocidade / 120) * 100));
-    return `
-      <div style="display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:9px;background:#f8fafc;">
-        <div style="min-width:110px;font-size:11px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item.via}</div>
-        <div style="flex:1;height:8px;background:#e2e8f0;border-radius:99px;overflow:hidden;min-width:40px;">
-          <div style="width:${pct}%;height:100%;background:${nivel.cor};border-radius:99px;"></div>
-        </div>
-        <div style="font-size:11px;font-weight:700;color:${nivel.cor};min-width:40px;text-align:right;">${item.velocidade}km/h</div>
-        <div style="padding:2px 8px;border-radius:99px;background:${nivel.bg};color:${nivel.cor};font-size:10px;font-weight:700;min-width:44px;text-align:center;">${nivel.label}</div>
-      </div>`;
-  }).join('');
-}
-
 function updateFlowChart(filter) {
   currentFilter = filter;
 
@@ -799,7 +763,7 @@ function renderDashboardPage(content) {
           <span class="kpi-value" id="kpiFlow">—</span>
           <span class="kpi-unit">Evitar intervenções entre 07h–09h e 17h–19h</span>
         </div>
-        <div class="kpi-trend down" id="kpiFlowInsight"><i class="fa-solid fa-triangle-exclamation"></i> Impacto 82%</div>
+        <div class="kpi-trend down" id="kpiFlowInsight"><i class="fa-solid fa-triangle-exclamation"></i> Evitar intervenções entre 07h–09h e 17h–19h (impacto 82%)</div>
       </div>
       <div class="kpi-card" data-kpi="peak">
         <div class="kpi-icon peak"><i class="fa-solid fa-clock"></i></div>
@@ -834,16 +798,19 @@ function renderDashboardPage(content) {
       <div class="chart-card wide">
         <div class="chart-header">
           <div><h3>Fluxo de Veículos por Horário</h3><p>Volume médio histórico</p></div>
+          <div class="chart-actions">
+            <button class="chart-btn active" data-chart-filter="today">Hoje</button>
+            <button class="chart-btn" data-chart-filter="week">Semana</button>
+            <button class="chart-btn" data-chart-filter="month">Mês</button>
+          </div>
         </div>
         <div class="chart-body"><canvas id="chartFlow"></canvas></div>
       </div>
       <div class="chart-card">
         <div class="chart-header">
-          <div><h3>Média de Congestionamento</h3><p>Nível por velocidade média registrada</p></div>
+          <div><h3>Fluxo por Dia</h3><p>Média semanal histórica</p></div>
         </div>
-        <div class="chart-body" id="congSpeedChart" style="display:flex;flex-direction:column;gap:10px;justify-content:center;padding:12px 4px;">
-          <!-- Rendered by JS -->
-        </div>
+        <div class="chart-body"><canvas id="chartDay"></canvas></div>
       </div>
       <div class="chart-card slim">
         <div class="chart-header">
@@ -853,12 +820,24 @@ function renderDashboardPage(content) {
       </div>
     </section>
 
+    <section class="map-section">
+      <div class="section-header">
+        <div><h2>Mapa de Obras e Pontos Críticos</h2><p>São Paulo · Dados em tempo real simulado</p></div>
+        <div class="map-legend">
+          <span class="legend-item"><span class="dot green"></span>Baixo impacto</span>
+          <span class="legend-item"><span class="dot yellow"></span>Médio impacto</span>
+          <span class="legend-item"><span class="dot red"></span>Alto impacto</span>
+        </div>
+      </div>
+      <div class="map-container" id="map"></div>
+    </section>
 
     <section class="table-section">
       <div class="section-header">
         <div><h2>Obras Planejadas e em Andamento</h2><p>Lista de intervenções viárias</p></div>
         <div class="table-controls">
           <input class="table-search" type="text" placeholder="Filtrar obras…" id="tableSearch"/>
+          <button class="btn-outline"><i class="fa-solid fa-download"></i> Exportar</button>
         </div>
       </div>
       <div class="table-wrapper">
@@ -880,7 +859,7 @@ function renderDashboardPage(content) {
   initTimestamp();
   initKPIs();
   initCharts();
-  initCongSpeedChart();
+  initMap();
   initTable();
   initDashboardInteractions();
 }
@@ -951,6 +930,22 @@ function initDashboardInteractions() {
         loadPage(val);
         filterRegion.value = val;
       }
+    });
+  }
+
+  // Day filter
+  const filterDay = document.getElementById('filterDay');
+  if (filterDay) {
+    filterDay.addEventListener('change', e => {
+      const val = e.target.value;
+      if (val === 'weekend') {
+        chartDay.data.datasets[0].backgroundColor = ['#dbeafe','#dbeafe','#dbeafe','#dbeafe','#dbeafe','#2563eb','#2563eb'];
+      } else if (val === 'weekday') {
+        chartDay.data.datasets[0].backgroundColor = ['#2563eb','#2563eb','#2563eb','#2563eb','#2563eb','#dbeafe','#dbeafe'];
+      } else {
+        chartDay.data.datasets[0].backgroundColor = MOCK_DATA.dailyFlow.values.map((v, i) => i === 4 ? '#2563eb' : '#dbeafe');
+      }
+      chartDay.update();
     });
   }
 
@@ -1869,7 +1864,7 @@ function renderRegionalDashboard(regionKey, content) {
       <!-- Congestionamento por faixa horária -->
       <div class="chart-card">
         <div class="chart-header">
-          <div><h3>Média de Congestionamento</h3><p>Nível por velocidade média registrada</p></div>
+          <div><h3>Congestionamento Atual</h3><p>Índice por faixa horária (%) histórico</p></div>
         </div>
         <div class="chart-body"><canvas id="chartCong"></canvas></div>
       </div>
@@ -2315,32 +2310,14 @@ function getBestDayForRegion() {
   const regionEl = document.getElementById('filterRegion');
   const region = regionEl ? regionEl.value : 'all';
 
-  const monthNames = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-  const monthLabel = monthNames[obrasCalendarMonth - 1];
-
-  // Find green Sundays in the calendar month — Sundays = col 0 in the grid (Dom)
-  const greenSundays = Object.entries(CALENDAR_DATA)
-    .filter(([d, data]) => {
-      if (data.quality !== 'green') return false;
-      const dayNum = parseInt(d);
-      const date = new Date(obrasCalendarYear, obrasCalendarMonth - 1, dayNum);
-      return date.getDay() === 0; // 0 = Sunday
-    })
-    .map(([d]) => parseInt(d));
-
-  // Fallback: any green day if no green Sunday found
+  // Find greenest days in CALENDAR_DATA
   const greenDays = Object.entries(CALENDAR_DATA)
     .filter(([d, data]) => data.quality === 'green')
     .map(([d]) => parseInt(d));
 
-  let bestDay;
-  if (greenSundays.length) {
-    bestDay = Math.min(...greenSundays);
-  } else if (greenDays.length) {
-    bestDay = Math.min(...greenDays);
-  } else {
-    bestDay = '—';
-  }
+  const bestDay = greenDays.length ? Math.min(...greenDays) : '—';
+  const monthNames = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const monthLabel = monthNames[obrasCalendarMonth - 1];
 
   const regionLabels = {
     all: 'Todas as regiões', centro: 'Centro', paulista: 'Av. Paulista',
@@ -2348,7 +2325,7 @@ function getBestDayForRegion() {
   };
 
   return {
-    day: bestDay !== '—' ? `Dom, ${bestDay}/${monthLabel}` : '—',
+    day: bestDay !== '—' ? `Dia ${bestDay}/${monthLabel}` : '—',
     region: regionLabels[region] || 'Todas as regiões',
     window: '01h–05h'
   };
@@ -2581,7 +2558,39 @@ function renderObrasPage(content) {
           </div>
         </div>
 
+        <!-- FIXED MINI MAP -->
+        <div class="obras-minimap-fixed-card">
+          <div class="register-header" style="padding:12px 16px;">
+            <h3 style="font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;">
+              <i class="fa-solid fa-map-location-dot" style="color:var(--brand-blue);"></i>
+              Mapa de Obras
+            </h3>
+            <span style="font-size:11px;color:var(--text-muted);" id="mapObraCount">${OBRAS_CADASTRADAS.length} obras</span>
+          </div>
+          <div id="obrasFixedMap" style="height:220px;width:100%;"></div>
+        </div>
 
+        <!-- EXTERNAL FACTORS -->
+        <div class="factors-card">
+          <div class="factors-header">
+            <i class="fa-solid fa-globe" style="font-size:16px;color:var(--brand-blue);"></i>
+            <div>
+              <h3>Fatores Externos</h3>
+              <p style="font-size:11px;color:var(--text-muted);">Clima e eventos que impactam o tráfego</p>
+            </div>
+          </div>
+          <div class="factors-list">
+            ${EXTERNAL_FACTORS.map(f => `
+              <div class="factor-item">
+                <div class="factor-icon" style="background:${f.iconBg};font-size:13px;"><i class="${f.faIcon || 'fa-solid fa-circle-info'}" style="color:${f.iconColor || '#64748b'};"></i></div>
+                <div class="factor-info">
+                  <div class="factor-name">${f.name}</div>
+                  <div class="factor-desc">${f.desc}</div>
+                </div>
+                <span class="factor-badge ${f.impactCls}">${f.impact}</span>
+              </div>
+            `).join('')}
+          </div>
         </div>
 
       </div><!-- end obras-side -->
@@ -2607,9 +2616,37 @@ function renderObrasPage(content) {
   // Init table
   renderObrasTable(OBRAS_CADASTRADAS);
   // Init fixed obras map
-
+  setTimeout(() => initObrasFixedMap(), 200);
 }
 
+let obrasFixedMap = null;
+function initObrasFixedMap() {
+  const container = document.getElementById('obrasFixedMap');
+  if (!container) return;
+  if (obrasFixedMap) { obrasFixedMap.remove(); obrasFixedMap = null; }
+
+  obrasFixedMap = L.map('obrasFixedMap', {
+    center: [-23.5505, -46.6333],
+    zoom: 11,
+    zoomControl: false,
+    attributionControl: false,
+    dragging: true,
+    scrollWheelZoom: false
+  });
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(obrasFixedMap);
+
+  OBRAS_CADASTRADAS.forEach(o => {
+    const col = o.marcador === 'red' ? '#ef4444' : o.marcador === 'yellow' ? '#f59e0b' : '#10b981';
+    L.circleMarker([o.lat, o.lng], {
+      radius: 7, color: col, fillColor: col, fillOpacity: 0.85, weight: 2
+    }).addTo(obrasFixedMap).bindTooltip(`<b>${o.local}</b><br>${o.tipo} · ${o.impacto}% impacto`);
+  });
+
+  // Update count
+  const countEl = document.getElementById('mapObraCount');
+  if (countEl) countEl.textContent = OBRAS_CADASTRADAS.length + ' obras';
+}
 
 function renderObrasCalendar() {
   const monthNames = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
@@ -2639,23 +2676,15 @@ function renderObrasCalendar() {
 
   // Day cells
   for (let d = 1; d <= daysInMonth; d++) {
-    const date = new Date(obrasCalendarYear, obrasCalendarMonth - 1, d);
-    const isSunday = date.getDay() === 0;
-    const data = CALENDAR_DATA[d] || { quality: isSunday ? 'green' : 'neutral', clima: '—', eventos: [], obs: isSunday ? 'Domingo — Baixo volume histórico' : '' };
-    // Sundays default to green if not explicitly set to worse
-    const effectiveData = { ...data };
-    if (isSunday && (!CALENDAR_DATA[d] || CALENDAR_DATA[d].quality === 'neutral')) {
-      effectiveData.quality = 'green';
-      if (!effectiveData.obs) effectiveData.obs = 'Domingo — Baixo volume histórico';
-    }
-    const hasEvents = effectiveData.eventos && effectiveData.eventos.length > 0;
+    const data = CALENDAR_DATA[d] || { quality: 'neutral', clima: '—', eventos: [], obs: '' };
+    const hasEvents = data.eventos && data.eventos.length > 0;
     const div = document.createElement('div');
-    div.className = `cal-day day-${effectiveData.quality}${(isCurrentMonth && d === today.getDate()) ? ' today' : ''}${hasEvents ? ' has-events' : ''}${isSunday ? ' cal-sunday' : ''}`;
+    div.className = `cal-day day-${data.quality}${(isCurrentMonth && d === today.getDate()) ? ' today' : ''}${hasEvents ? ' has-events' : ''}`;
     div.innerHTML = `${d}${hasEvents ? '<span class="cal-event-dot"></span>' : ''}`;
-    div.addEventListener('mouseenter', (e) => showCalTooltip(e, d, effectiveData));
+    div.addEventListener('mouseenter', (e) => showCalTooltip(e, d, data));
     div.addEventListener('mouseleave', hideCalTooltip);
     div.addEventListener('mousemove', (e) => moveCalTooltip(e));
-    div.addEventListener('click', (e) => { hideCalTooltip(); openEventModal(d, effectiveData); });
+    div.addEventListener('click', (e) => { hideCalTooltip(); openEventModal(d, data); });
     grid.appendChild(div);
   }
 }
@@ -2860,6 +2889,7 @@ window.saveNewObra = function() {
 
   closeNewObraForm();
   filterObrasTable();
+  setTimeout(() => initObrasFixedMap(), 100);
 
   // Flash success
   const btn = document.querySelector('#obraFormCard .btn-primary');
@@ -2956,6 +2986,7 @@ window.deleteObra = function(id) {
   const midx = MOCK_DATA.obras.findIndex(o => o.id === id);
   if (midx > -1) MOCK_DATA.obras.splice(midx, 1);
   filterObrasTable();
+  setTimeout(() => initObrasFixedMap(), 100);
 };
 
 window.editObra = function(id) {
@@ -3048,9 +3079,17 @@ window.saveEditObra = function(id) {
   filterObrasTable();
 
   // Refresh fixed map
+  setTimeout(() => initObrasFixedMap(), 100);
 };
 
-
+window.focusObraOnMap = function(lat, lng) {
+  if (obrasFixedMap) {
+    obrasFixedMap.flyTo([lat, lng], 15, { duration: 1 });
+    // Scroll map into view
+    const mapEl = document.getElementById('obrasFixedMap');
+    if (mapEl) mapEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+};
 
 
 // ══════════════════════════════════════════════════════════════
@@ -3441,6 +3480,15 @@ function renderMuralPage(content) {
           </div>
         </div>
 
+        <!-- ONLINE USERS -->
+        <div class="mural-active-card">
+          <div class="mural-active-title">
+            <i class="fa-solid fa-users" style="color:var(--green);"></i>
+            Online agora
+          </div>
+          <div id="muralActiveUsers"></div>
+        </div>
+
         <!-- QUICK AVISO -->
         <div class="mural-quick-card">
           <div class="mural-quick-title">
@@ -3607,12 +3655,6 @@ function muralRenderCard(a) {
         <button class="mural-action" onclick="muralShare(${a.id})">
           <i class="fa-solid fa-share-nodes"></i> Compartilhar
         </button>
-        <button class="mural-action mural-edit-btn" onclick="muralOpenEdit(${a.id})" title="Editar aviso">
-          <i class="fa-solid fa-pen"></i> Editar
-        </button>
-        <button class="mural-action mural-delete-btn" onclick="muralDeleteAviso(${a.id})" title="Apagar aviso">
-          <i class="fa-solid fa-trash"></i>
-        </button>
         <button class="mural-pin-btn ${a.pinned?'pinned':''}" onclick="muralTogglePin(${a.id})" title="${a.pinned?'Desafixar':'Fixar aviso'}">
           <i class="fa-solid fa-thumbtack"></i>
         </button>
@@ -3690,93 +3732,6 @@ function muralShare(id) {
   const a = muralAvisos.find(x => x.id === id);
   showToast(`Link do aviso "${(a?.title||'').substring(0,30)}…" copiado!`, 'success');
 }
-
-window.muralDeleteAviso = function(id) {
-  const a = muralAvisos.find(x => x.id === id);
-  if (!a) return;
-  if (!confirm(`Deseja realmente apagar o aviso "${a.title.substring(0,50)}"?`)) return;
-  muralAvisos = muralAvisos.filter(x => x.id !== id);
-  muralUpdateStats();
-  muralRenderAvisos();
-  showToast('Aviso apagado.', 'info');
-};
-
-window.muralOpenEdit = function(id) {
-  const a = muralAvisos.find(x => x.id === id);
-  if (!a) return;
-  document.getElementById('muralEditModal')?.remove();
-  const modal = document.createElement('div');
-  modal.id = 'muralEditModal';
-  modal.className = 'mural-edit-modal-overlay';
-  const regioes = ['Centro','Av. Paulista','Zona Norte','Zona Sul','Zona Leste','Zona Oeste'];
-  modal.innerHTML = `
-    <div class="mural-edit-modal-card">
-      <div class="mural-modal-header" style="margin-bottom:16px;">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div style="width:36px;height:36px;border-radius:10px;background:#dbeafe;display:flex;align-items:center;justify-content:center;">
-            <i class="fa-solid fa-pen" style="color:#2563eb;font-size:14px;"></i>
-          </div>
-          <div>
-            <div style="font-weight:700;font-size:15px;color:var(--text-primary);">Editar Aviso</div>
-            <div style="font-size:11px;color:var(--text-muted);">Atualize as informações do aviso</div>
-          </div>
-        </div>
-        <button onclick="document.getElementById('muralEditModal').remove()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:18px;padding:4px;"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div class="mural-form-group" style="margin-bottom:12px;">
-        <label class="mural-form-label">TITULO *</label>
-        <input class="mural-form-input" id="mEditTitle" maxlength="80" style="font-size:13px;padding:10px 12px;"/>
-      </div>
-      <div class="mural-form-group" style="margin-bottom:12px;">
-        <label class="mural-form-label">DESCRICAO</label>
-        <textarea class="mural-form-input" id="mEditDesc" rows="3" style="font-size:13px;padding:10px 12px;resize:vertical;"></textarea>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
-        <div class="mural-form-group">
-          <label class="mural-form-label">TIPO</label>
-          <select class="mural-form-select" id="mEditTipo">
-            <option value="urgente">Urgente</option>
-            <option value="atencao">Atencao</option>
-            <option value="info">Informativo</option>
-            <option value="concluido">Concluido</option>
-            <option value="planejado">Planejado</option>
-          </select>
-        </div>
-        <div class="mural-form-group">
-          <label class="mural-form-label">REGIAO</label>
-          <select class="mural-form-select" id="mEditRegiao">
-            ${regioes.map(r => `<option>${r}</option>`).join('')}
-          </select>
-        </div>
-      </div>
-      <div class="mural-modal-footer">
-        <button class="mural-btn-secondary" onclick="document.getElementById('muralEditModal').remove()">Cancelar</button>
-        <button class="btn-primary" onclick="muralSaveEdit(${id})"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
-      </div>
-    </div>`;
-  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
-  document.body.appendChild(modal);
-  // Set values after DOM insertion
-  document.getElementById('mEditTitle').value = a.title;
-  document.getElementById('mEditDesc').value  = a.desc;
-  document.getElementById('mEditTipo').value  = a.tipo;
-  document.getElementById('mEditRegiao').value= a.regiao;
-};
-
-window.muralSaveEdit = function(id) {
-  const a = muralAvisos.find(x => x.id === id);
-  if (!a) return;
-  const title = document.getElementById('mEditTitle')?.value.trim();
-  if (!title) { showToast('Informe o titulo do aviso.', 'info'); return; }
-  a.title  = title;
-  a.desc   = document.getElementById('mEditDesc')?.value.trim() || a.desc;
-  a.tipo   = document.getElementById('mEditTipo')?.value   || a.tipo;
-  a.regiao = document.getElementById('mEditRegiao')?.value || a.regiao;
-  document.getElementById('muralEditModal')?.remove();
-  muralUpdateStats();
-  muralRenderAvisos();
-  showToast('Aviso atualizado!', 'success');
-};
 
 // ── POST ──
 function muralOpenModal() {

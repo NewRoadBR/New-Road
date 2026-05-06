@@ -37,12 +37,18 @@
       <i class="fa-solid fa-chart-pie"></i>
       <span>Dashboard</span>
     </a>
-   
+    <a href="#" class="nav-item" data-page="traffic">
+      <i class="fa-solid fa-car-side"></i>
+      <span>Análise de Tráfego</span>
+    </a>
     <a href="#" class="nav-item" data-page="obras">
       <i class="fa-solid fa-helmet-safety"></i>
       <span>Planejamento de Obras</span>
     </a>
-
+    <a href="#" class="nav-item" data-page="sim">
+      <i class="fa-solid fa-flask"></i>
+      <span>Simulações</span>
+    </a>
 
     <p class="nav-label">GESTÃO</p>
 
@@ -100,6 +106,11 @@
           <option value="sul">Zona Sul</option>
           <option value="leste">Zona Leste</option>
           <option value="oeste">Zona Oeste</option>
+        </select>
+        <select class="filter-select" id="filterDay">
+          <option value="all">Todos os dias</option>
+          <option value="weekday">Dias úteis</option>
+          <option value="weekend">Fim de semana</option>
         </select>
       </div>
 
