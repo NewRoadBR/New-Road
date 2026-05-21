@@ -12,3 +12,8 @@ target/
 .idea/
 dependency-reduced-pom.xml
 ~$*
+
+# Dados ETL
+csv/
+xlsx_input/
+*.jar
