@@ -25,28 +25,41 @@ cd $PROJECT_DIR
 # ------------------------------------------------------------
 echo -e "${YELLOW}[0/4] Verificando dependências...${NC}"
 
-# Atualizar pacotes do sistema
-echo -e "${YELLOW}  → Atualizando pacotes do sistema...${NC}"
-sudo apt-get update -qq && sudo apt-get upgrade -y -qq
-echo -e "${GREEN}  [OK] Sistema atualizado!${NC}"
-
-# Verificar Docker
+# Docker
 if ! command -v docker &> /dev/null; then
     echo -e "${RED}  [ERRO] Docker não encontrado. Instale o Docker e tente novamente.${NC}"
     exit 1
 fi
 echo -e "${GREEN}  [OK] Docker: $(docker --version)${NC}"
 
-# Verificar Docker Compose V2
+# Docker Compose V2
 if ! docker compose version &> /dev/null; then
-    echo -e "${YELLOW}  → Docker Compose não encontrado. Instalando...${NC}"
-    sudo apt-get install docker-compose-plugin -y -qq
-    if ! docker compose version &> /dev/null; then
-        echo -e "${RED}  [ERRO] Falha ao instalar Docker Compose.${NC}"
+    echo -e "${YELLOW}  → Docker Compose não encontrado.${NC}"
+    echo -e "${BLUE}  Deseja instalar agora? (s/n):${NC} \c"
+    read INSTALAR
+    if [[ "$INSTALAR" == "s" || "$INSTALAR" == "S" ]]; then
+        sudo apt-get update -qq
+        sudo apt-get install docker-compose-plugin -y -qq
+        echo -e "${GREEN}  [OK] Docker Compose instalado: $(docker compose version)${NC}"
+    else
+        echo -e "${RED}  [ERRO] Docker Compose é necessário. Abortando.${NC}"
         exit 1
     fi
+else
+    echo -e "${GREEN}  [OK] Docker Compose: $(docker compose version)${NC}"
 fi
-echo -e "${GREEN}  [OK] Docker Compose: $(docker compose version)${NC}"
+
+# Atualizar sistema
+echo ""
+echo -e "${BLUE}  Deseja atualizar o ambiente do sistema? (s/n):${NC} \c"
+read ATUALIZAR
+if [[ "$ATUALIZAR" == "s" || "$ATUALIZAR" == "S" ]]; then
+    echo -e "${YELLOW}  → Atualizando sistema...${NC}"
+    sudo apt-get update -qq && sudo apt-get upgrade -y -qq
+    echo -e "${GREEN}  [OK] Sistema atualizado!${NC}"
+else
+    echo -e "${YELLOW}  [SKIP] Atualização do sistema ignorada.${NC}"
+fi
 
 echo ""
 
