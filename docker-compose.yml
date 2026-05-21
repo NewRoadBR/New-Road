@@ -1,68 +1,96 @@
+version: "3.9"
+
 services:
 
   mysql:
     image: mysql:8.0
     container_name: mysql-container
     restart: always
+
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
+
     ports:
       - "3306:3306"
+
+    command:
+      --default-authentication-plugin=mysql_native_password
+
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+
     networks:
       - newroad-net
+
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 10s
-      retries: 5
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
   web:
     build:
       context: ./web-data-viz-main
+
     container_name: newroad
+
     restart: always
+
     ports:
       - "3333:3333"
+
     env_file:
       - ./web-data-viz-main/.env
+
     environment:
       DB_HOST: mysql-container
       DB_PORT: 3306
       DB_USER: root
       DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      DB_DATABASE: ${MYSQL_DATABASE}
-    networks:
-      - newroad-net
+      DB_DATABASE: newroad_db
+
     depends_on:
       mysql:
         condition: service_healthy
 
+    networks:
+      - newroad-net
+
   etl:
     build:
       context: ./etl-v3
+
     container_name: etl-newroad
+
     restart: on-failure
+
     environment:
       DB_HOST: mysql-container
       DB_PORT: 3306
-      DB_NAME: ${MYSQL_DATABASE}
+      DB_NAME: transito_sp
       DB_USER: root
       DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+
       S3_BUCKET: ${S3_BUCKET}
       S3_PREFIXO: ${S3_PREFIXO}
       S3_REGIAO: ${S3_REGIAO:-us-east-1}
+
       ETL_FONTE: ${ETL_FONTE:-s3}
       ETL_MIN_MEDICOES: ${ETL_MIN_MEDICOES:-5}
+
     volumes:
       - ./etl-v3/csv:/app/temp_csv
       - ./etl-v3/xlsx_input:/app/xlsx_input
-    networks:
-      - newroad-net
+
     depends_on:
       mysql:
         condition: service_healthy
+
+    networks:
+      - newroad-net
 
 networks:
   newroad-net:
