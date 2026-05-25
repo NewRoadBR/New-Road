@@ -146,6 +146,64 @@ function buscarCongestionamento(req, res) {
 
 /*
     ============================================================
+    KPI — IMPACTO OPERACIONAL
+    ============================================================
+*/
+
+function buscarImpactoOperacional(req, res) {
+    // função removida
+}
+
+/*
+    ============================================================
+    KPI — PERFIL DA RODOVIA
+    ============================================================
+*/
+
+function buscarPerfilRodovia(req, res) {
+
+    var rodovia = req.query.rodovia;
+
+    dashboardModel.buscarPerfilRodovia(rodovia)
+        .then(function(resultado) {
+
+            res.json(resultado);
+
+        }).catch(function(erro) {
+
+            console.log(erro);
+
+            res.status(500).json(erro.sqlMessage);
+
+        });
+}
+
+/*
+    ============================================================
+    KPI — PRESSÃO OPERACIONAL
+    ============================================================
+*/
+
+function buscarPressaoOperacional(req, res) {
+
+    var rodovia = req.query.rodovia;
+
+    dashboardModel.buscarPressaoOperacional(rodovia)
+        .then(function(resultado) {
+
+            res.json(resultado);
+
+        }).catch(function(erro) {
+
+            console.log(erro);
+
+            res.status(500).json(erro.sqlMessage);
+
+        });
+}
+
+/*
+    ============================================================
     EXPORTS
     ============================================================
 */
@@ -157,6 +215,8 @@ module.exports = {
     buscarJanelaIdeal,
     buscarMelhorDia,
     buscarFluxoHorario,
-    buscarCongestionamento
+    buscarCongestionamento,
+    buscarPerfilRodovia,
+    buscarPressaoOperacional
 
 };

@@ -1,5 +1,6 @@
 const state = {
-  rodoviaAtual: 'Rodovia Anhanguera'
+  rodoviaAtual: 'Rodovia Anhanguera',
+  isUpdating: false
 };
 
 // ============================================================
@@ -25,15 +26,20 @@ const elements = {
 
   melhorDia:
     document.getElementById('melhorDia'),
+  pressaoOperacional:
+    document.getElementById('pressaoOperacional'),
 
-  chartFlow:
-    document.getElementById('chartFlow'),
+  perfilLeves:
+    document.getElementById('perfilLeves'),
 
-  chartDay:
-    document.getElementById('chartDay'),
+  perfilPesados:
+    document.getElementById('perfilPesados'),
 
-  chartCongestionamento:
-    document.getElementById('chartCongestionamento')
+  perfilMotos:
+    document.getElementById('perfilMotos'),
+
+  perfilEspeciais:
+    document.getElementById('perfilEspeciais')
 
 };
 
@@ -42,7 +48,6 @@ const elements = {
 // ============================================================
 
 let chartFlowInstance = null;
-let chartDayInstance = null;
 let chartCongestionamentoInstance = null;
 
 // ============================================================
@@ -65,6 +70,7 @@ function formatarHora(hora) {
 function traduzirDiaSemana(numero) {
 
   const dias = {
+
     1: 'Domingo',
     2: 'Segunda',
     3: 'Terça',
@@ -72,6 +78,7 @@ function traduzirDiaSemana(numero) {
     5: 'Quinta',
     6: 'Sexta',
     7: 'Sábado'
+
   };
 
   return dias[numero] || 'N/A';
@@ -80,10 +87,15 @@ function traduzirDiaSemana(numero) {
 
 async function request(endpoint) {
 
-  const response = await fetch(endpoint);
+  const response =
+    await fetch(endpoint);
 
   if (!response.ok) {
-    throw new Error(`Erro HTTP: ${response.status}`);
+
+    throw new Error(
+      `Erro HTTP: ${response.status}`
+    );
+
   }
 
   return response.json();
@@ -107,6 +119,26 @@ elements.selectRodovia.addEventListener(
 );
 
 // ============================================================
+// BOTÃO ATUALIZAR
+// ============================================================
+
+const btnAtualizar =
+  document.getElementById('btnAtualizar');
+
+if (btnAtualizar) {
+
+  btnAtualizar.addEventListener(
+    'click',
+    async function () {
+
+      await carregarDashboard();
+
+    }
+  );
+
+}
+
+// ============================================================
 // INIT
 // ============================================================
 
@@ -125,9 +157,19 @@ window.addEventListener(
 
 async function carregarDashboard() {
 
-  const rodovia = state.rodoviaAtual;
+  // Evita múltiplas atualizações simultâneas
+  if (state.isUpdating) {
+    console.warn('Dashboard já está atualizando...');
+    return;
+  }
 
-  elements.tituloRodovia.innerText = rodovia;
+  state.isUpdating = true;
+
+  const rodovia =
+    state.rodoviaAtual;
+
+  elements.tituloRodovia.innerText =
+    rodovia;
 
   try {
 
@@ -141,9 +183,15 @@ async function carregarDashboard() {
 
       carregarMelhorDia(rodovia),
 
+      // carregarImpactoOperacional removido
+
+      carregarPressaoOperacional(rodovia),
+
+      carregarPerfilRodovia(rodovia),
+
       buildFlowChart(rodovia),
 
-      buildDayChart(rodovia),
+      // buildImpactoChart removido
 
       buildCongestionamentoChart(rodovia)
 
@@ -155,6 +203,10 @@ async function carregarDashboard() {
       'Erro ao carregar dashboard:',
       erro
     );
+
+  } finally {
+
+    state.isUpdating = false;
 
   }
 
@@ -189,11 +241,8 @@ async function carregarHorarioCritico(rodovia) {
 
   if (!dados.length) return;
 
-  const horas =
-    dados.map(item => formatarHora(item.hora));
-
   elements.horarioCritico.innerText =
-    horas.join(' / ');
+    dados[0].periodo || formatarHora(dados[0].hora);
 
 }
 
@@ -209,11 +258,8 @@ async function carregarJanelaIdeal(rodovia) {
 
   if (!dados.length) return;
 
-  const horas =
-    dados.map(item => formatarHora(item.hora));
-
   elements.janelaIdeal.innerText =
-    horas.join(' / ');
+    dados[0].periodo || formatarHora(dados[0].hora);
 
 }
 
@@ -237,6 +283,60 @@ async function carregarMelhorDia(rodovia) {
 }
 
 // ============================================================
+// KPI — IMPACTO OPERACIONAL
+// ============================================================
+
+// ImpactoOperacional removed
+// ============================================================
+// KPI — PRESSÃO OPERACIONAL
+// ============================================================
+
+async function carregarPressaoOperacional(rodovia) {
+
+  const dados = await request(
+    `/dashboard/pressao-operacional?rodovia=${encodeURIComponent(rodovia)}`
+  );
+
+  if (!dados.length) return;
+
+  const pressaoMedia =
+    dados.reduce(
+      (sum, item) => sum + Number(item.pressao_operacional),
+      0
+    ) / dados.length;
+
+  elements.pressaoOperacional.innerText =
+    `${pressaoMedia.toFixed(2)}%`;
+
+}
+
+// ============================================================
+// KPI — PERFIL DA RODOVIA
+// ============================================================
+
+async function carregarPerfilRodovia(rodovia) {
+
+  const dados = await request(
+    `/dashboard/perfil-rodovia?rodovia=${encodeURIComponent(rodovia)}`
+  );
+
+  if (!dados.length) return;
+
+  elements.perfilLeves.innerText =
+    formatarNumero(dados[0].media_leves);
+
+  elements.perfilPesados.innerText =
+    formatarNumero(dados[0].media_pesados);
+
+  elements.perfilMotos.innerText =
+    formatarNumero(dados[0].media_motos);
+
+  elements.perfilEspeciais.innerText =
+    formatarNumero(dados[0].media_especiais);
+
+}
+
+// ============================================================
 // CHART — FLUXO HORÁRIO
 // ============================================================
 
@@ -247,378 +347,403 @@ async function buildFlowChart(rodovia) {
   );
 
   const labels =
-    dados.map(item => formatarHora(item.hora));
+    dados.map(item =>
+      formatarHora(item.hora)
+    );
 
   const valores =
-    dados.map(item => item.volume);
+    dados.map(item =>
+      Number(item.volume)
+    );
 
-  const ctx =
-    elements.chartFlow.getContext('2d');
+  const canvas =
+    document.getElementById(
+      'chartFluxoHorario'
+    );
 
-  const grad =
-    ctx.createLinearGradient(0, 0, 0, 320);
+  if (!canvas) {
 
-  grad.addColorStop(0, 'rgba(37,99,235,0.35)');
-  grad.addColorStop(1, 'rgba(37,99,235,0.02)');
+    console.error(
+      'Canvas chartFluxoHorario não encontrado'
+    );
 
-  if (chartFlowInstance) {
-    chartFlowInstance.destroy();
+    return;
+
   }
 
-  chartFlowInstance = new Chart(ctx, {
+  // DESTROI INSTÂNCIA ANTERIOR
+  if (chartFlowInstance) {
 
-    type: 'line',
+    chartFlowInstance.destroy();
 
-    data: {
+    chartFlowInstance = null;
 
-      labels,
+  }
 
-      datasets: [{
+  const ctx =
+    canvas.getContext('2d');
 
-        label: 'Fluxo Médio',
+  // Reseta as dimensões do canvas
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
 
-        data: valores,
+  // LIMPA CANVAS
+  ctx.clearRect(
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
 
-        borderColor: '#2563eb',
+  const grad =
+    ctx.createLinearGradient(
+      0,
+      0,
+      0,
+      320
+    );
 
-        backgroundColor: grad,
+  grad.addColorStop(
+    0,
+    'rgba(37,99,235,0.35)'
+  );
 
-        fill: true,
+  grad.addColorStop(
+    1,
+    'rgba(37,99,235,0.02)'
+  );
 
-        tension: 0.4,
+  chartFlowInstance =
+    new Chart(ctx, {
 
-        pointRadius: 0,
+      type: 'line',
 
-        pointHoverRadius: 5,
+      data: {
 
-        pointHoverBackgroundColor: '#2563eb',
+        labels,
 
-        borderWidth: 2.5
+        datasets: [{
 
-      }]
-    },
+          label: 'Fluxo Médio',
 
-    options: {
+          data: valores,
 
-      responsive: true,
+          borderColor: '#2563eb',
 
-      maintainAspectRatio: false,
+          backgroundColor: grad,
 
-      plugins: {
+          fill: true,
 
-        legend: {
-          display: false
-        },
+          tension: 0.4,
 
-        tooltip: {
+          pointRadius: 0,
 
-          backgroundColor: '#0f172a',
+          pointHoverRadius: 5,
 
-          titleColor: '#94a3b8',
+          pointHoverBackgroundColor:
+            '#2563eb',
 
-          bodyColor: '#fff',
+          borderWidth: 2.5
 
-          padding: 10,
+        }]
 
-          cornerRadius: 8,
-
-          callbacks: {
-
-            label: ctx =>
-              ` ${formatarNumero(ctx.parsed.y)} veículos/h`
-
-          }
-        }
       },
 
-      scales: {
+      options: {
 
-        x: {
+        responsive: true,
 
-          grid: {
+        maintainAspectRatio: false,
+
+        animation: false,
+
+        plugins: {
+
+          legend: {
+
             display: false
+
           },
 
-          border: {
-            display: false
-          }
-        },
+          tooltip: {
 
-        y: {
+            backgroundColor:
+              '#0f172a',
 
-          grid: {
-            color: '#f1f5f9',
-            drawBorder: false
-          },
+            titleColor:
+              '#94a3b8',
 
-          border: {
-            display: false
-          },
+            bodyColor:
+              '#fff',
 
-          ticks: {
+            padding: 10,
 
-            callback: value => {
+            cornerRadius: 8,
 
-              if (value >= 1000) {
-                return `${(value / 1000).toFixed(1)}k`;
-              }
+            callbacks: {
 
-              return value;
+              label: ctx =>
+                ` ${formatarNumero(ctx.parsed.y)} veículos/h`
 
             }
+
           }
+
+        },
+
+        scales: {
+
+          x: {
+
+            grid: {
+
+              display: false
+
+            },
+
+            border: {
+
+              display: false
+
+            }
+
+          },
+
+          y: {
+
+            grid: {
+
+              color: '#f1f5f9',
+
+              drawBorder: false
+
+            },
+
+            border: {
+
+              display: false
+
+            },
+
+            ticks: {
+
+              callback: value => {
+
+                if (value >= 1000) {
+
+                  return `${(value / 1000).toFixed(1)}k`;
+
+                }
+
+                return value;
+
+              }
+
+            }
+
+          }
+
         }
+
       }
-    }
-  });
+
+    });
 
 }
 
 // ============================================================
-// CHART — FLUXO POR DIA
+// CHART — IMPACTO OPERACIONAL
 // ============================================================
 
-async function buildDayChart(rodovia) {
-
-  const dados = await request(
-    `/dashboard/melhor-dia?rodovia=${encodeURIComponent(rodovia)}`
-  );
-
-  const labels =
-    dados.map(item =>
-      traduzirDiaSemana(item.dia_semana)
-    );
-
-  const valores =
-    dados.map(item => item.media);
-
-  const menorValor =
-    Math.min(...valores);
-
-  const ctx =
-    elements.chartDay.getContext('2d');
-
-  if (chartDayInstance) {
-    chartDayInstance.destroy();
-  }
-
-  chartDayInstance = new Chart(ctx, {
-
-    type: 'bar',
-
-    data: {
-
-      labels,
-
-      datasets: [{
-
-        label: 'Fluxo diário',
-
-        data: valores,
-
-        backgroundColor: valores.map(valor => {
-
-          if (valor === menorValor) {
-            return '#2563eb';
-          }
-
-          return '#dbeafe';
-
-        }),
-
-        borderRadius: 8,
-
-        borderSkipped: false
-
-      }]
-    },
-
-    options: {
-
-      responsive: true,
-
-      maintainAspectRatio: false,
-
-      plugins: {
-
-        legend: {
-          display: false
-        },
-
-        tooltip: {
-
-          backgroundColor: '#0f172a',
-
-          callbacks: {
-
-            label: ctx =>
-              ` ${formatarNumero(ctx.parsed.y)} veículos`
-
-          }
-        }
-      },
-
-      scales: {
-
-        x: {
-
-          grid: {
-            display: false
-          },
-
-          border: {
-            display: false
-          }
-        },
-
-        y: {
-
-          grid: {
-            color: '#f1f5f9'
-          },
-
-          border: {
-            display: false
-          },
-
-          ticks: {
-
-            callback: value => {
-
-              if (value >= 1000) {
-                return `${(value / 1000).toFixed(0)}k`;
-              }
-
-              return value;
-
-            }
-          }
-        }
-      }
-    }
-  });
-
+async function buildImpactoChart(rodovia) {
+  // buildImpactoChart removido
 }
 
 // ============================================================
 // CHART — CONGESTIONAMENTO
 // ============================================================
 
-async function buildCongestionamentoChart(rodovia) {
+async function buildCongestionamentoChart(
+  rodovia
+) {
 
   const dados = await request(
     `/dashboard/congestionamento?rodovia=${encodeURIComponent(rodovia)}`
   );
 
   const labels =
-    dados.map(item => formatarHora(item.hora));
+    dados.map(item =>
+      formatarHora(item.hora)
+    );
 
   const valores =
-    dados.map(item => item.congestionamento);
+    dados.map(item =>
+      Number(item.congestionamento)
+    );
 
-  const ctx =
-    elements.chartCongestionamento.getContext('2d');
+  const canvas =
+    document.getElementById(
+      'chartCongestionamento'
+    );
 
-  if (chartCongestionamentoInstance) {
-    chartCongestionamentoInstance.destroy();
+  if (!canvas) {
+
+    console.error(
+      'Canvas chartCongestionamento não encontrado'
+    );
+
+    return;
+
   }
 
-  chartCongestionamentoInstance = new Chart(ctx, {
+  // DESTROI INSTÂNCIA ANTERIOR
+  if (chartCongestionamentoInstance) {
 
-    type: 'bar',
+    chartCongestionamentoInstance.destroy();
 
-    data: {
+    chartCongestionamentoInstance = null;
 
-      labels,
+  }
 
-      datasets: [{
+  const ctx =
+    canvas.getContext('2d');
 
-        label: 'Congestionamento (%)',
+  // Reseta as dimensões do canvas
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
 
-        data: valores,
+  // LIMPA CANVAS
+  ctx.clearRect(
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
 
-        borderRadius: 8,
+  chartCongestionamentoInstance =
+    new Chart(ctx, {
 
-        borderSkipped: false,
+      type: 'bar',
 
-        backgroundColor: valores.map(valor => {
+      data: {
 
-          if (valor >= 80) {
-            return '#dc2626';
-          }
+        labels,
 
-          if (valor >= 60) {
-            return '#f59e0b';
-          }
+        datasets: [{
 
-          return '#16a34a';
+          label: 'Congestionamento (%)',
 
-        })
+          data: valores,
 
-      }]
-    },
+          borderRadius: 8,
 
-    options: {
+          borderSkipped: false,
 
-      responsive: true,
+          backgroundColor:
+            valores.map(valor => {
 
-      maintainAspectRatio: false,
+              if (valor >= 80) {
 
-      plugins: {
+                return '#ef4444';
 
-        legend: {
-          display: false
-        },
+              }
 
-        tooltip: {
+              if (valor >= 60) {
 
-          backgroundColor: '#0f172a',
+                return '#f59e0b';
 
-          callbacks: {
+              }
 
-            label: ctx =>
-              ` ${ctx.parsed.y}%`
+              return '#10b981';
 
-          }
-        }
+            })
+
+        }]
+
       },
 
-      scales: {
+      options: {
 
-        x: {
+        responsive: true,
 
-          grid: {
+        maintainAspectRatio: false,
+
+        animation: false,
+
+        plugins: {
+
+          legend: {
+
             display: false
+
           },
 
-          border: {
-            display: false
+          tooltip: {
+
+            backgroundColor:
+              '#0f172a',
+
+            callbacks: {
+
+              label: ctx =>
+                ` ${ctx.parsed.y}%`
+
+            }
+
           }
+
         },
 
-        y: {
+        scales: {
 
-          beginAtZero: true,
+          x: {
 
-          max: 100,
+            grid: {
 
-          grid: {
-            color: '#f1f5f9'
+              display: false
+
+            },
+
+            border: {
+
+              display: false
+
+            }
+
           },
 
-          border: {
-            display: false
-          },
+          y: {
 
-          ticks: {
+            beginAtZero: true,
 
-            callback: value => `${value}%`
+            max: 100,
+
+            grid: {
+
+              color: '#f1f5f9'
+
+            },
+
+            border: {
+
+              display: false
+
+            },
+
+            ticks: {
+
+              callback: value =>
+                `${value}%`
+
+            }
 
           }
+
         }
+
       }
-    }
-  });
+
+    });
 
 }
 
@@ -626,9 +751,25 @@ async function buildCongestionamentoChart(rodovia) {
 // AUTO REFRESH
 // ============================================================
 
-setInterval(async function () {
+// Atualiza a cada 5 minutos
 
-  await carregarDashboard();
+setInterval(
+  async function () {
 
-}, 300000);
+    try {
+
+      await carregarDashboard();
+
+    } catch (erro) {
+
+      console.error(
+        'Erro no auto refresh:',
+        erro
+      );
+
+    }
+
+  },
+  300000
+);
 

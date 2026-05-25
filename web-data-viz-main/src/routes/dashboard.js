@@ -83,4 +83,32 @@ router.get(
     }
 );
 
+/* Impacto Operacional route removed */
+
+/*
+    ============================================================
+    KPI — PERFIL DA RODOVIA
+    ============================================================
+*/
+
+router.get(
+    "/perfil-rodovia",
+    function(req, res) {
+        dashboardController.buscarPerfilRodovia(req, res);
+    }
+);
+
+/*
+    ============================================================
+    KPI — PRESSÃO OPERACIONAL
+    ============================================================
+*/
+
+router.get(
+    "/pressao-operacional",
+    function(req, res) {
+        dashboardController.buscarPressaoOperacional(req, res);
+    }
+);
+
 module.exports = router;

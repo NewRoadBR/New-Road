@@ -219,28 +219,30 @@
         <!-- HORÁRIO CRÍTICO -->
         <div class="kpi-card critical">
 
-          <div class="kpi-top">
+          <div class="kpi-left">
+            <div class="kpi-top">
+              <span class="kpi-badge red">
+                Crítico
+              </span>
+            </div>
 
-            <span class="kpi-badge red">
-              Crítico
-            </span>
-
+            <div class="kpi-icon red">
+              <i class="fa-solid fa-clock"></i>
+            </div>
           </div>
 
-          <div class="kpi-icon red">
-            <i class="fa-solid fa-clock"></i>
-          </div>
+          <div class="kpi-info">
+            <div class="kpi-title">
+              Horário Crítico
+            </div>
 
-          <div class="kpi-title">
-            Horário Crítico
-          </div>
+            <div class="kpi-value" id="horarioCritico">
+              07h–10h / 17h–20h
+            </div>
 
-          <div class="kpi-value" id="horarioCritico">
-            07h–10h / 17h–20h
-          </div>
-
-          <div class="kpi-description">
-            Fluxo intenso identificado historicamente
+            <div class="kpi-description">
+              Período com maior fluxo histórico e maior risco para obras
+            </div>
           </div>
 
         </div>
@@ -248,28 +250,30 @@
         <!-- JANELA IDEAL -->
         <div class="kpi-card ideal">
 
-          <div class="kpi-top">
+          <div class="kpi-left">
+            <div class="kpi-top">
+              <span class="kpi-badge green">
+                Recomendado
+              </span>
+            </div>
 
-            <span class="kpi-badge green">
-              Recomendado
-            </span>
-
+            <div class="kpi-icon green">
+              <i class="fa-solid fa-calendar-check"></i>
+            </div>
           </div>
 
-          <div class="kpi-icon green">
-            <i class="fa-solid fa-calendar-check"></i>
-          </div>
+          <div class="kpi-info">
+            <div class="kpi-title">
+              Janela Ideal
+            </div>
 
-          <div class="kpi-title">
-            Janela Ideal
-          </div>
+            <div class="kpi-value" id="janelaIdeal">
+              01h–05h
+            </div>
 
-          <div class="kpi-value" id="janelaIdeal">
-            01h–05h
-          </div>
-
-          <div class="kpi-description">
-            Melhor período histórico para obras
+            <div class="kpi-description">
+              Período com menor fluxo histórico e menor impacto operacional
+            </div>
           </div>
 
         </div>
@@ -277,22 +281,32 @@
         <!-- FLUXO MÉDIO -->
         <div class="kpi-card">
 
-          <div class="kpi-icon blue">
-            <i class="fa-solid fa-car-side"></i>
+          <div class="kpi-left">
+            <div class="kpi-top">
+              <span class="kpi-badge blue">
+                Média histórica
+              </span>
+            </div>
+
+            <div class="kpi-icon blue">
+              <i class="fa-solid fa-car-side"></i>
+            </div>
           </div>
 
-          <div class="kpi-title">
-            Fluxo Médio
-          </div>
+          <div class="kpi-info">
+            <div class="kpi-title">
+              Fluxo Médio
+            </div>
 
-          <div class="kpi-value">
-            <span id="fluxoMedio">
-              7.820
-            </span>
-          </div>
+            <div class="kpi-value">
+              <span id="fluxoMedio">
+                7.820
+              </span>
+            </div>
 
-          <div class="kpi-description">
-            Veículos por hora
+            <div class="kpi-description">
+              Média histórica de veículos por hora na rodovia
+            </div>
           </div>
 
         </div>
@@ -300,20 +314,97 @@
         <!-- MELHOR DIA -->
         <div class="kpi-card">
 
-          <div class="kpi-icon green">
-            <i class="fa-solid fa-calendar-days"></i>
+          <div class="kpi-left">
+            <div class="kpi-top">
+              <span class="kpi-badge green">
+                Recomendado
+              </span>
+            </div>
+
+            <div class="kpi-icon green">
+              <i class="fa-solid fa-calendar-days"></i>
+            </div>
           </div>
 
-          <div class="kpi-title">
-            Melhor Dia para Obra
+          <div class="kpi-info">
+            <div class="kpi-title">
+              Melhor Dia para Obra
+            </div>
+
+            <div class="kpi-value" id="melhorDia">
+              Domingo
+            </div>
+
+            <div class="kpi-description">
+              Dia da semana com menor média histórica de fluxo
+            </div>
           </div>
 
-          <div class="kpi-value" id="melhorDia">
-            Domingo
+        </div>
+
+        <!-- IMPACTO OPERACIONAL removido -->
+
+        <!-- PRESSÃO OPERACIONAL -->
+        <div class="kpi-card ideal">
+
+          <div class="kpi-left">
+            <div class="kpi-top">
+              <span class="kpi-badge yellow">
+                Pressão
+              </span>
+            </div>
+
+            <div class="kpi-icon yellow">
+              <i class="fa-solid fa-tachometer-alt"></i>
+            </div>
           </div>
 
-          <div class="kpi-description">
-            Menor média histórica de tráfego
+          <div class="kpi-info">
+            <div class="kpi-title">
+              Pressão Operacional
+            </div>
+
+            <div class="kpi-value" id="pressaoOperacional">
+              0.00%
+            </div>
+
+            <div class="kpi-description">
+              Percentual de veículos pesados em relação ao fluxo total
+            </div>
+          </div>
+
+        </div>
+
+        <!-- PERFIL DA RODOVIA -->
+        <div class="kpi-card">
+
+          <div class="kpi-left">
+            <div class="kpi-top">
+              <span class="kpi-badge blue">
+                Perfil
+              </span>
+            </div>
+
+            <div class="kpi-icon blue">
+              <i class="fa-solid fa-chart-simple"></i>
+            </div>
+          </div>
+
+          <div class="kpi-info">
+            <div class="kpi-title">
+              Perfil da Rodovia
+            </div>
+
+            <div class="kpi-value" id="perfilRodovia">
+              <div>Leves: <span id="perfilLeves">0</span></div>
+              <div>Pesados: <span id="perfilPesados">0</span></div>
+              <div>Motos: <span id="perfilMotos">0</span></div>
+              <div>Especiais: <span id="perfilEspeciais">0</span></div>
+            </div>
+
+            <div class="kpi-description">
+              Composição média do fluxo por veículo
+            </div>
           </div>
 
         </div>
@@ -324,7 +415,7 @@
       <section class="charts-grid">
 
         <!-- FLUXO HORÁRIO -->
-        <div class="chart-card large-chart">
+        <div class="chart-card fluxo-card">
 
           <div class="chart-header">
 
@@ -342,12 +433,16 @@
 
           </div>
 
-          <canvas id="chartFluxoHorario"></canvas>
+          <div class="chart-body">
+            <canvas id="chartFluxoHorario"></canvas>
+          </div>
 
         </div>
 
+        <!-- IMPACTO OPERACIONAL chart removido -->
+
         <!-- CONGESTIONAMENTO -->
-        <div class="chart-card">
+        <div class="chart-card congestionamento-card">
 
           <div class="chart-header">
 
@@ -365,7 +460,9 @@
 
           </div>
 
-          <canvas id="chartCongestionamento"></canvas>
+          <div class="chart-body">
+            <canvas id="chartCongestionamento"></canvas>
+          </div>
 
         </div>
 

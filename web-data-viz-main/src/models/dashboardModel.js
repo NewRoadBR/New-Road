@@ -13,12 +13,12 @@ function buscarFluxoMedio(rodovia) {
             rodovia,
             fluxo
         FROM vw_fluxo_medio
-        WHERE rodovia = '${rodovia}';
+        WHERE rodovia = ?;
     `;
 
-    console.log(instrucaoSql);
+    console.log(instrucaoSql, rodovia);
 
-    return database.executar(instrucaoSql);
+    return database.executar(instrucaoSql, [rodovia]);
 }
 
 /*
@@ -33,15 +33,15 @@ function buscarHorarioCritico(rodovia) {
         SELECT
             rodovia,
             hora,
-            volume_medio
+            CONCAT(hora, 'h–', hora + 1, 'h') AS periodo,
+            volume
         FROM vw_horario_critico
-        WHERE rodovia = '${rodovia}'
-        ORDER BY hora;
+        WHERE rodovia = ?;
     `;
 
-    console.log(instrucaoSql);
+    console.log(instrucaoSql, rodovia);
 
-    return database.executar(instrucaoSql);
+    return database.executar(instrucaoSql, [rodovia]);
 }
 
 /*
@@ -56,15 +56,15 @@ function buscarJanelaIdeal(rodovia) {
         SELECT
             rodovia,
             hora,
-            volume_medio
+            CONCAT(hora, 'h–', hora + 1, 'h') AS periodo,
+            volume
         FROM vw_janela_ideal
-        WHERE rodovia = '${rodovia}'
-        ORDER BY hora;
+        WHERE rodovia = ?;
     `;
 
-    console.log(instrucaoSql);
+    console.log(instrucaoSql, rodovia);
 
-    return database.executar(instrucaoSql);
+    return database.executar(instrucaoSql, [rodovia]);
 }
 
 /*
@@ -81,14 +81,12 @@ function buscarMelhorDia(rodovia) {
             dia_semana,
             media
         FROM vw_melhor_dia
-        WHERE rodovia = '${rodovia}'
-        ORDER BY media ASC
-        LIMIT 1;
+        WHERE rodovia = ?;
     `;
 
-    console.log(instrucaoSql);
+    console.log(instrucaoSql, rodovia);
 
-    return database.executar(instrucaoSql);
+    return database.executar(instrucaoSql, [rodovia]);
 }
 
 /*
@@ -104,13 +102,13 @@ function buscarFluxoHorario(rodovia) {
             hora,
             volume
         FROM vw_fluxo_horario
-        WHERE rodovia = '${rodovia}'
+        WHERE rodovia = ?
         ORDER BY hora;
     `;
 
-    console.log(instrucaoSql);
+    console.log(instrucaoSql, rodovia);
 
-    return database.executar(instrucaoSql);
+    return database.executar(instrucaoSql, [rodovia]);
 }
 
 /*
@@ -126,13 +124,68 @@ function buscarCongestionamento(rodovia) {
             hora,
             congestionamento
         FROM vw_congestionamento
-        WHERE rodovia = '${rodovia}'
+        WHERE rodovia = ?
         ORDER BY hora;
     `;
 
-    console.log(instrucaoSql);
+    console.log(instrucaoSql, rodovia);
 
-    return database.executar(instrucaoSql);
+    return database.executar(instrucaoSql, [rodovia]);
+}
+
+/*
+    ============================================================
+    KPI — IMPACTO OPERACIONAL
+    ============================================================
+*/
+
+function buscarImpactoOperacional(rodovia) {
+    // Removido: Impacto Operacional será removido das APIs
+}
+
+/*
+    ============================================================
+    KPI — PERFIL DA RODOVIA
+    ============================================================
+*/
+
+function buscarPerfilRodovia(rodovia) {
+
+    var instrucaoSql = `
+        SELECT
+            media_leves,
+            media_pesados,
+            media_motos,
+            media_especiais
+        FROM vw_perfil_rodovia
+        WHERE rodovia = ?;
+    `;
+
+    console.log(instrucaoSql, rodovia);
+
+    return database.executar(instrucaoSql, [rodovia]);
+}
+
+/*
+    ============================================================
+    KPI — PRESSÃO OPERACIONAL
+    ============================================================
+*/
+
+function buscarPressaoOperacional(rodovia) {
+
+    var instrucaoSql = `
+        SELECT
+            hora,
+            pressao_operacional
+        FROM vw_pressao_operacional
+        WHERE rodovia = ?
+        ORDER BY hora;
+    `;
+
+    console.log(instrucaoSql, rodovia);
+
+    return database.executar(instrucaoSql, [rodovia]);
 }
 
 /*
@@ -148,6 +201,8 @@ module.exports = {
     buscarJanelaIdeal,
     buscarMelhorDia,
     buscarFluxoHorario,
-    buscarCongestionamento
+    buscarCongestionamento,
+    buscarPerfilRodovia,
+    buscarPressaoOperacional
 
 };
