@@ -1,137 +1,479 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>NewRoad — Plataforma de Obras Viárias</title>
+
+  <title>NewRoad — Inteligência Rodoviária</title>
 
   <!-- Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 
   <!-- Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 
-  <!-- Leaflet -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-
   <!-- Chart.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
+  <!-- CSS -->
   <link rel="stylesheet" href="../css/style.css"/>
 </head>
+
 <body>
 
-<!-- SIDEBAR -->
-<aside class="sidebar" id="sidebar">
-  <div class="sidebar-logo">
-    <div class="logo-icon" style="background:none; padding:0; overflow:hidden;">
-      <img src="../assets/imgs/Logov2.png" alt="">
-    </div>
-    <span class="logo-text">New<strong>Road</strong></span>
-  </div>
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
 
-  <nav class="sidebar-nav">
-    <p class="nav-label">PRINCIPAL</p>
-    <a href="#" class="nav-item active" data-page="dashboard">
-      <i class="fa-solid fa-chart-pie"></i>
-      <span>Dashboard</span>
-    </a>
-   
-    <a href="#" class="nav-item" data-page="obras">
-      <i class="fa-solid fa-helmet-safety"></i>
-      <span>Planejamento de Obras</span>
-    </a>
+    <div class="sidebar-logo">
 
-
-    <p class="nav-label">GESTÃO</p>
-
-    <a href="#" class="nav-item" data-page="mural">
-      <i class="fa-solid fa-bullhorn"></i>
-      <span>Mural de Avisos</span>
-    </a>
-
-    <a href="#" class="nav-item" data-page="usuarios">
-      <i class="fa-solid fa-users"></i>
-      <span>Usuários</span>
-    </a>
-
-    <a href="#" class="nav-item" data-page="settings">
-      <i class="fa-solid fa-gear"></i>
-      <span>Configurações</span>
-    </a>
-  </nav>
-
-  <div class="sidebar-footer">
-    <div class="system-status">
-      <span class="status-dot pulse"></span>
-      <span>Sistema online</span>
-    </div>
-    <p class="version-tag">SP Region</p>
-    <button class="sidebar-exit-btn" onclick="handleExitToLanding()">
-      <i class="fa-solid fa-arrow-left"></i>
-      <span>Voltar à página inicial</span>
-    </button>
-  </div>
-</aside>
-
-<!-- MAIN -->
-<div class="main-wrapper" id="mainWrapper">
-
-  <!-- HEADER -->
-  <header class="top-header">
-    <div class="header-left">
-      <button class="burger-btn" id="burgerBtn">
-        <i class="fa-solid fa-bars"></i>
-      </button>
-      <div class="search-box">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" placeholder="Buscar via, região ou obra…" id="searchInput"/>
-      </div>
-    </div>
-
-    <div class="header-right">
-      <div class="filter-group">
-        <select class="filter-select" id="filterRegion">
-          <option value="all">Todas as regiões</option>
-          <option value="centro">Centro</option>
-          <option value="paulista">Av. Paulista</option>
-          <option value="norte">Zona Norte</option>
-          <option value="sul">Zona Sul</option>
-          <option value="leste">Zona Leste</option>
-          <option value="oeste">Zona Oeste</option>
-        </select>
+      <div class="logo-icon">
+        <img src="../assets/imgs/Logov2.png" alt="Logo">
       </div>
 
-      <button class="icon-btn notif-btn" id="notifBtn">
-        <i class="fa-solid fa-bell"></i>
-        <span class="badge">3</span>
-      </button>
+      <span class="logo-text">
+        New<strong>Road</strong>
+      </span>
 
-      <div class="user-menu">
-        <div class="user-avatar">EM</div>
-        <div class="user-info">
-          <span class="user-name">Eng. Mateus</span>
-          <span class="user-role">Gestor SP</span>
+    </div>
+
+    <nav class="sidebar-nav">
+
+      <p class="nav-label">PRINCIPAL</p>
+
+      <a href="#" class="nav-item active">
+        <i class="fa-solid fa-chart-pie"></i>
+        <span>Dashboard</span>
+      </a>
+
+      <a href="#" class="nav-item">
+        <i class="fa-solid fa-road"></i>
+        <span>Rodovias</span>
+      </a>
+
+      <a href="#" class="nav-item">
+        <i class="fa-solid fa-helmet-safety"></i>
+        <span>Planejamento de Obras</span>
+      </a>
+
+      <p class="nav-label">GESTÃO</p>
+
+      <a href="#" class="nav-item">
+        <i class="fa-solid fa-users"></i>
+        <span>Usuários</span>
+      </a>
+
+      <a href="#" class="nav-item">
+        <i class="fa-solid fa-gear"></i>
+        <span>Configurações</span>
+      </a>
+
+    </nav>
+
+    <div class="sidebar-footer">
+
+      <div class="system-status">
+        <span class="status-dot"></span>
+        <span>Sistema online</span>
+      </div>
+
+      <p class="version-tag">
+        SP Region
+      </p>
+
+    </div>
+
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-wrapper">
+
+    <!-- HEADER -->
+    <header class="top-header">
+
+      <div class="header-left">
+
+        <button class="burger-btn">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+
+        <div class="search-box">
+
+          <i class="fa-solid fa-magnifying-glass"></i>
+
+          <input
+            type="text"
+            placeholder="Buscar rodovia..."
+            id="searchRodovia"
+          />
+
         </div>
+
       </div>
-    </div>
-  </header>
 
-  <!-- CONTENT -->
-  <main class="content" id="mainContent"></main>
-</div>
+      <div class="header-right">
 
-<!-- NOTIFICATION PANEL -->
-<div class="notif-panel" id="notifPanel">
-  <div class="notif-header">
-    <h4>Notificações</h4>
-    <button id="closeNotif"><i class="fa-solid fa-xmark"></i></button>
+        <!-- SELECT RODOVIA -->
+        <div class="filter-group">
+
+          <select class="filter-select" id="filterRodovia">
+
+            <option value="Rodovia Anhanguera">
+              Rodovia Anhanguera
+            </option>
+
+            <option value="Rodovia dos Bandeirantes">
+              Rodovia dos Bandeirantes
+            </option>
+
+            <option value="Rodovia Dom Pedro I">
+              Rodovia Dom Pedro I
+            </option>
+
+            <option value="Rodovia Washington Luís">
+              Rodovia Washington Luís
+            </option>
+
+            <option value="Rodovia Adhemar Pereira de Barros">
+              Rodovia Adhemar Pereira de Barros
+            </option>
+
+            <option value="Rodovia Castello Branco">
+              Rodovia Castello Branco
+            </option>
+
+            <option value="Rodovia Santos Dumont">
+              Rodovia Santos Dumont
+            </option>
+
+            <option value="Rodovia Raposo Tavares">
+              Rodovia Raposo Tavares
+            </option>
+
+            <option value="Rodovia Marechal Rondon">
+              Rodovia Marechal Rondon
+            </option>
+
+            <option value="Sistema Anchieta-Imigrantes">
+              Sistema Anchieta-Imigrantes
+            </option>
+
+            <option value="Rodovia Presidente Dutra">
+              Rodovia Presidente Dutra
+            </option>
+
+            <option value="Rodovia Ayrton Senna">
+              Rodovia Ayrton Senna
+            </option>
+
+            <option value="Rodoanel">
+              Rodoanel
+            </option>
+
+          </select>
+
+        </div>
+
+        <!-- BOTÃO -->
+        <button class="refresh-btn" id="btnAtualizar">
+
+          <i class="fa-solid fa-rotate-right"></i>
+
+          Atualizar
+
+        </button>
+
+      </div>
+
+    </header>
+
+    <!-- CONTENT -->
+    <main class="content">
+
+      <!-- HEADER DASHBOARD -->
+      <section class="dashboard-header">
+
+        <div class="road-header">
+
+          <div class="road-status-indicator danger"></div>
+
+          <div>
+
+            <h1 id="tituloRodovia">
+              Rodovia Anhanguera
+            </h1>
+
+            <p id="subtituloRodovia">
+              Média histórica baseada em fluxo consolidado de veículos
+            </p>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- KPI CARDS -->
+      <section class="cards-grid">
+
+        <!-- HORÁRIO CRÍTICO -->
+        <div class="kpi-card critical">
+
+          <div class="kpi-left">
+            <div class="kpi-top">
+              <span class="kpi-badge red">
+                Crítico
+              </span>
+            </div>
+
+            <div class="kpi-icon red">
+              <i class="fa-solid fa-clock"></i>
+            </div>
+          </div>
+
+          <div class="kpi-info">
+            <div class="kpi-title">
+              Horário Crítico
+            </div>
+
+            <div class="kpi-value" id="horarioCritico">
+              07h–10h / 17h–20h
+            </div>
+
+            <div class="kpi-description">
+              Período com maior fluxo histórico e maior risco para obras
+            </div>
+          </div>
+
+        </div>
+
+        <!-- JANELA IDEAL -->
+        <div class="kpi-card ideal">
+
+          <div class="kpi-left">
+            <div class="kpi-top">
+              <span class="kpi-badge green">
+                Recomendado
+              </span>
+            </div>
+
+            <div class="kpi-icon green">
+              <i class="fa-solid fa-calendar-check"></i>
+            </div>
+          </div>
+
+          <div class="kpi-info">
+            <div class="kpi-title">
+              Janela Ideal
+            </div>
+
+            <div class="kpi-value" id="janelaIdeal">
+              01h–05h
+            </div>
+
+            <div class="kpi-description">
+              Período com menor fluxo histórico e menor impacto operacional
+            </div>
+          </div>
+
+        </div>
+
+        <!-- FLUXO MÉDIO -->
+        <div class="kpi-card">
+
+          <div class="kpi-left">
+            <div class="kpi-top">
+              <span class="kpi-badge blue">
+                Média histórica
+              </span>
+            </div>
+
+            <div class="kpi-icon blue">
+              <i class="fa-solid fa-car-side"></i>
+            </div>
+          </div>
+
+          <div class="kpi-info">
+            <div class="kpi-title">
+              Fluxo Médio
+            </div>
+
+            <div class="kpi-value">
+              <span id="fluxoMedio">
+                7.820
+              </span>
+            </div>
+
+            <div class="kpi-description">
+              Média histórica de veículos por hora na rodovia
+            </div>
+          </div>
+
+        </div>
+
+        <!-- MELHOR DIA -->
+        <div class="kpi-card">
+
+          <div class="kpi-left">
+            <div class="kpi-top">
+              <span class="kpi-badge green">
+                Recomendado
+              </span>
+            </div>
+
+            <div class="kpi-icon green">
+              <i class="fa-solid fa-calendar-days"></i>
+            </div>
+          </div>
+
+          <div class="kpi-info">
+            <div class="kpi-title">
+              Melhor Dia para Obra
+            </div>
+
+            <div class="kpi-value" id="melhorDia">
+              Domingo
+            </div>
+
+            <div class="kpi-description">
+              Dia da semana com menor média histórica de fluxo
+            </div>
+          </div>
+
+        </div>
+
+        <!-- IMPACTO OPERACIONAL removido -->
+
+        <!-- PRESSÃO OPERACIONAL -->
+        <div class="kpi-card ideal">
+
+          <div class="kpi-left">
+            <div class="kpi-top">
+              <span class="kpi-badge yellow">
+                Pressão
+              </span>
+            </div>
+
+            <div class="kpi-icon yellow">
+              <i class="fa-solid fa-tachometer-alt"></i>
+            </div>
+          </div>
+
+          <div class="kpi-info">
+            <div class="kpi-title">
+              Pressão Operacional
+            </div>
+
+            <div class="kpi-value" id="pressaoOperacional">
+              0.00%
+            </div>
+
+            <div class="kpi-description">
+              Percentual de veículos pesados em relação ao fluxo total
+            </div>
+          </div>
+
+        </div>
+
+        <!-- PERFIL DA RODOVIA -->
+        <div class="kpi-card">
+
+          <div class="kpi-left">
+            <div class="kpi-top">
+              <span class="kpi-badge blue">
+                Perfil
+              </span>
+            </div>
+
+            <div class="kpi-icon blue">
+              <i class="fa-solid fa-chart-simple"></i>
+            </div>
+          </div>
+
+          <div class="kpi-info">
+            <div class="kpi-title">
+              Perfil da Rodovia
+            </div>
+
+            <div class="kpi-value" id="perfilRodovia">
+              <div>Leves: <span id="perfilLeves">0</span></div>
+              <div>Pesados: <span id="perfilPesados">0</span></div>
+              <div>Motos: <span id="perfilMotos">0</span></div>
+              <div>Especiais: <span id="perfilEspeciais">0</span></div>
+            </div>
+
+            <div class="kpi-description">
+              Composição média do fluxo por veículo
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- CHARTS -->
+      <section class="charts-grid">
+
+        <!-- FLUXO HORÁRIO -->
+        <div class="chart-card fluxo-card">
+
+          <div class="chart-header">
+
+            <div>
+
+              <h3>
+                Fluxo de Veículos por Horário
+              </h3>
+
+              <p>
+                Média histórica por hora do dia
+              </p>
+
+            </div>
+
+          </div>
+
+          <div class="chart-body">
+            <canvas id="chartFluxoHorario"></canvas>
+          </div>
+
+        </div>
+
+        <!-- IMPACTO OPERACIONAL chart removido -->
+
+        <!-- CONGESTIONAMENTO -->
+        <div class="chart-card congestionamento-card">
+
+          <div class="chart-header">
+
+            <div>
+
+              <h3>
+                Média de Congestionamento
+              </h3>
+
+              <p>
+                Comparativo relativo ao pico histórico
+              </p>
+
+            </div>
+
+          </div>
+
+          <div class="chart-body">
+            <canvas id="chartCongestionamento"></canvas>
+          </div>
+
+        </div>
+
+      </section>
+
+    </main>
+
   </div>
-  <div class="notif-list" id="notifList"></div>
-</div>
-<div class="overlay" id="overlay"></div>
 
-<script src="../js/script.js"></script>
+  <!-- JS -->
+  <script src="../js/dashboard.js"></script>
+
 </body>
 </html>
