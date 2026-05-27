@@ -64,8 +64,9 @@ services:
       context: ./etl-v3
 
     container_name: etl-newroad
-
-    restart: on-failure
+    restart: no
+    profiles:
+      - etl
 
     environment:
       DB_HOST: mysql-container

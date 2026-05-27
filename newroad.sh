@@ -8,6 +8,7 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
+CYAN='\033[0;36m'
 NC='\033[0m'
 
 PROJECT_DIR=~/New-Road
@@ -25,14 +26,12 @@ cd $PROJECT_DIR
 # ------------------------------------------------------------
 echo -e "${YELLOW}[0/4] Verificando dependências...${NC}"
 
-# Docker
 if ! command -v docker &> /dev/null; then
     echo -e "${RED}  [ERRO] Docker não encontrado. Instale o Docker e tente novamente.${NC}"
     exit 1
 fi
 echo -e "${GREEN}  [OK] Docker: $(docker --version)${NC}"
 
-# Docker Compose V2
 if ! docker compose version &> /dev/null; then
     echo -e "${YELLOW}  → Docker Compose não encontrado.${NC}"
     echo -e "${BLUE}  Deseja instalar agora? (s/n):${NC} \c"
@@ -49,7 +48,6 @@ else
     echo -e "${GREEN}  [OK] Docker Compose: $(docker compose version)${NC}"
 fi
 
-# Atualizar sistema
 echo ""
 echo -e "${BLUE}  Deseja atualizar o ambiente do sistema? (s/n):${NC} \c"
 read ATUALIZAR
@@ -72,7 +70,7 @@ echo -e "${GREEN}[OK]${NC}"
 echo ""
 
 # ------------------------------------------------------------
-# 2. BUILD E SUBIR CONTAINERS
+# 2. BUILD E SUBIR CONTAINERS (mysql + web apenas)
 # ------------------------------------------------------------
 echo -e "${YELLOW}[2/4] Buildando e subindo containers...${NC}"
 docker compose up -d --build mysql web
@@ -86,15 +84,58 @@ echo -e "${YELLOW}[3/4] Deseja executar o ETL agora? (s/n):${NC} \c"
 read RESPOSTA
 
 if [[ "$RESPOSTA" == "s" || "$RESPOSTA" == "S" ]]; then
-    echo -e "${YELLOW}Rodando ETL...${NC}"
-    docker compose up --build etl
-    echo -e "${GREEN}[OK] ETL finalizado!${NC}"
+    echo -e "${YELLOW}  → Buildando e rodando ETL...${NC}"
+    docker compose --profile etl up --build etl
+    EXIT_CODE=$?
+
+    if [ $EXIT_CODE -ne 0 ]; then
+        echo -e "${RED}  [ERRO] ETL finalizou com erro (exit code: $EXIT_CODE).${NC}"
+    else
+        echo -e "${GREEN}  [OK] ETL finalizado!${NC}"
+    fi
+
+    echo ""
+
+    # ----------------------------------------------------------
+    # VALIDAÇÃO DO ETL VIA SELECT NO BANCO
+    # ----------------------------------------------------------
+    echo -e "${CYAN}============================================================${NC}"
+    echo -e "${CYAN}              Validando dados do ETL no banco...${NC}"
+    echo -e "${CYAN}============================================================${NC}"
+
+    DB_PASSWORD=$(grep MYSQL_ROOT_PASSWORD .env | cut -d '=' -f2 | tr -d '"\r')
+
+    # Total de registros de tráfego inseridos
+    echo -e "${YELLOW}  → registros em transito_sp.registro_trafego:${NC}"
+    docker exec mysql-container mysql -uroot -p"${DB_PASSWORD}" -e \
+        "SELECT COUNT(*) AS total_registros FROM transito_sp.registro_trafego;" \
+        2>/dev/null
+    echo ""
+
+    # Últimos 5 registros inseridos
+    echo -e "${YELLOW}  → últimos 5 registros inseridos:${NC}"
+    docker exec mysql-container mysql -uroot -p"${DB_PASSWORD}" -e \
+        "SELECT * FROM transito_sp.registro_trafego ORDER BY id DESC LIMIT 5;" \
+        2>/dev/null
+    echo ""
+
+    # Log das execuções do ETL
+    echo -e "${YELLOW}  → log das execuções do ETL (log_etl):${NC}"
+    docker exec mysql-container mysql -uroot -p"${DB_PASSWORD}" -e \
+        "SELECT * FROM transito_sp.log_etl ORDER BY id DESC LIMIT 5;" \
+        2>/dev/null
+    echo ""
+
+    echo -e "${CYAN}============================================================${NC}"
+    echo -e "${GREEN}  [OK] Validação concluída!${NC}"
+    echo -e "${CYAN}============================================================${NC}"
+
 else
-    echo -e "${YELLOW}[SKIP] ETL não executado.${NC}"
+    echo -e "${YELLOW}  [SKIP] ETL não executado.${NC}"
 fi
 
 # ------------------------------------------------------------
-# RESUMO
+# RESUMO FINAL
 # ------------------------------------------------------------
 echo ""
 echo -e "${BLUE}============================================================${NC}"
