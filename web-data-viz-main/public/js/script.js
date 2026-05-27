@@ -683,6 +683,7 @@ function initNotifications() {
 // ── INTERACTIONS ───────────────────────────────────────────
 
 function initInteractions() {
+  aplicarRestricaoNav();
   // Sidebar nav
   document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', e => {
@@ -745,6 +746,35 @@ function getUsuarioId() {
   return Number(sessionStorage.ID_USUARIO) || 1;
 }
 
+function getUsuarioPerfil() {
+  return sessionStorage.PERFIL_USUARIO || 'Usuário Padrão';
+}
+
+const REGIONAL_PAGES = ['centro','norte','sul','leste','oeste','paulista'];
+const ROLE_ACCESS = {
+  'Gestor':          ['dashboard','obras','mural','usuarios','settings', ...REGIONAL_PAGES],
+  'Analista':        ['dashboard','obras','mural','settings',             ...REGIONAL_PAGES],
+  'Operador':        ['dashboard','obras','mural','settings',             ...REGIONAL_PAGES],
+  'Usuário Padrão':  ['dashboard','settings',                              ...REGIONAL_PAGES]
+};
+
+function paginasPermitidas() {
+  return ROLE_ACCESS[getUsuarioPerfil()] || ROLE_ACCESS['Usuário Padrão'];
+}
+
+function podeAcessar(page) {
+  return paginasPermitidas().indexOf(page) !== -1;
+}
+
+function aplicarRestricaoNav() {
+  const permitidas = paginasPermitidas();
+  document.querySelectorAll('.nav-item[data-page]').forEach(el => {
+    const p = el.dataset.page;
+    if (!p) return;
+    el.style.display = permitidas.indexOf(p) === -1 ? 'none' : '';
+  });
+}
+
 async function apiFetch(url, options) {
   const r = await fetch(url, Object.assign({
     headers: { 'Content-Type': 'application/json' }
@@ -767,6 +797,9 @@ async function loadUsers() {
 }
 
 function loadPage(page) {
+  if (!podeAcessar(page)) {
+    page = 'dashboard';
+  }
   const content = document.querySelector('.content');
 
   // Destroy charts if leaving dashboard
