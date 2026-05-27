@@ -122,15 +122,15 @@ function buscarFluxoHorario(req, res) {
 
 /*
     ============================================================
-    GRÁFICO — CONGESTIONAMENTO
+    GRÁFICO — VOLUME POR DIA DA SEMANA
     ============================================================
 */
 
-function buscarCongestionamento(req, res) {
+function buscarVolumeDiaSemana(req, res) {
 
     var rodovia = req.query.rodovia;
 
-    dashboardModel.buscarCongestionamento(rodovia)
+    dashboardModel.buscarVolumeDiaSemana(rodovia)
         .then(function(resultado) {
 
             res.json(resultado);
@@ -142,16 +142,6 @@ function buscarCongestionamento(req, res) {
             res.status(500).json(erro.sqlMessage);
 
         });
-}
-
-/*
-    ============================================================
-    KPI — IMPACTO OPERACIONAL
-    ============================================================
-*/
-
-function buscarImpactoOperacional(req, res) {
-    // função removida
 }
 
 /*
@@ -215,7 +205,7 @@ module.exports = {
     buscarJanelaIdeal,
     buscarMelhorDia,
     buscarFluxoHorario,
-    buscarCongestionamento,
+    buscarVolumeDiaSemana,
     buscarPerfilRodovia,
     buscarPressaoOperacional
 

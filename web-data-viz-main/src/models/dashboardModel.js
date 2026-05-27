@@ -113,34 +113,25 @@ function buscarFluxoHorario(rodovia) {
 
 /*
     ============================================================
-    GRÁFICO — CONGESTIONAMENTO
+    GRÁFICO — VOLUME POR DIA DA SEMANA
     ============================================================
 */
 
-function buscarCongestionamento(rodovia) {
+function buscarVolumeDiaSemana(rodovia) {
 
     var instrucaoSql = `
         SELECT
-            hora,
-            congestionamento
-        FROM vw_congestionamento
+            dia_semana,
+            nome_dia,
+            volume_total
+        FROM vw_volume_dia_semana
         WHERE rodovia = ?
-        ORDER BY hora;
+        ORDER BY dia_semana;
     `;
 
     console.log(instrucaoSql, rodovia);
 
     return database.executar(instrucaoSql, [rodovia]);
-}
-
-/*
-    ============================================================
-    KPI — IMPACTO OPERACIONAL
-    ============================================================
-*/
-
-function buscarImpactoOperacional(rodovia) {
-    // Removido: Impacto Operacional será removido das APIs
 }
 
 /*
@@ -201,7 +192,7 @@ module.exports = {
     buscarJanelaIdeal,
     buscarMelhorDia,
     buscarFluxoHorario,
-    buscarCongestionamento,
+    buscarVolumeDiaSemana,
     buscarPerfilRodovia,
     buscarPressaoOperacional
 

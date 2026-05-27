@@ -26,6 +26,7 @@ const elements = {
 
   melhorDia:
     document.getElementById('melhorDia'),
+
   pressaoOperacional:
     document.getElementById('pressaoOperacional'),
 
@@ -48,7 +49,7 @@ const elements = {
 // ============================================================
 
 let chartFlowInstance = null;
-let chartCongestionamentoInstance = null;
+let chartVolumeDiaSemanaInstance = null;
 
 // ============================================================
 // HELPERS
@@ -70,7 +71,6 @@ function formatarHora(hora) {
 function traduzirDiaSemana(numero) {
 
   const dias = {
-
     1: 'Domingo',
     2: 'Segunda',
     3: 'Terça',
@@ -78,7 +78,6 @@ function traduzirDiaSemana(numero) {
     5: 'Quinta',
     6: 'Sexta',
     7: 'Sábado'
-
   };
 
   return dias[numero] || 'N/A';
@@ -157,7 +156,6 @@ window.addEventListener(
 
 async function carregarDashboard() {
 
-  // Evita múltiplas atualizações simultâneas
   if (state.isUpdating) {
     console.warn('Dashboard já está atualizando...');
     return;
@@ -165,11 +163,9 @@ async function carregarDashboard() {
 
   state.isUpdating = true;
 
-  const rodovia =
-    state.rodoviaAtual;
+  const rodovia = state.rodoviaAtual;
 
-  elements.tituloRodovia.innerText =
-    rodovia;
+  elements.tituloRodovia.innerText = rodovia;
 
   try {
 
@@ -183,17 +179,13 @@ async function carregarDashboard() {
 
       carregarMelhorDia(rodovia),
 
-      // carregarImpactoOperacional removido
-
       carregarPressaoOperacional(rodovia),
 
       carregarPerfilRodovia(rodovia),
 
       buildFlowChart(rodovia),
 
-      // buildImpactoChart removido
-
-      buildCongestionamentoChart(rodovia)
+      buildVolumeDiaSemanaChart(rodovia)
 
     ]);
 
@@ -276,17 +268,10 @@ async function carregarMelhorDia(rodovia) {
   if (!dados.length) return;
 
   elements.melhorDia.innerText =
-    traduzirDiaSemana(
-      dados[0].dia_semana
-    );
+    traduzirDiaSemana(dados[0].dia_semana);
 
 }
 
-// ============================================================
-// KPI — IMPACTO OPERACIONAL
-// ============================================================
-
-// ImpactoOperacional removed
 // ============================================================
 // KPI — PRESSÃO OPERACIONAL
 // ============================================================
@@ -347,197 +332,131 @@ async function buildFlowChart(rodovia) {
   );
 
   const labels =
-    dados.map(item =>
-      formatarHora(item.hora)
-    );
+    dados.map(item => formatarHora(item.hora));
 
   const valores =
-    dados.map(item =>
-      Number(item.volume)
-    );
+    dados.map(item => Number(item.volume));
 
   const canvas =
-    document.getElementById(
-      'chartFluxoHorario'
-    );
+    document.getElementById('chartFluxoHorario');
 
   if (!canvas) {
-
-    console.error(
-      'Canvas chartFluxoHorario não encontrado'
-    );
-
+    console.error('Canvas chartFluxoHorario não encontrado');
     return;
-
   }
 
-  // DESTROI INSTÂNCIA ANTERIOR
   if (chartFlowInstance) {
-
     chartFlowInstance.destroy();
-
     chartFlowInstance = null;
-
   }
 
-  const ctx =
-    canvas.getContext('2d');
+  const ctx = canvas.getContext('2d');
 
-  // Reseta as dimensões do canvas
   canvas.width = canvas.offsetWidth;
   canvas.height = canvas.offsetHeight;
 
-  // LIMPA CANVAS
-  ctx.clearRect(
-    0,
-    0,
-    canvas.width,
-    canvas.height
-  );
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   const grad =
-    ctx.createLinearGradient(
-      0,
-      0,
-      0,
-      320
-    );
+    ctx.createLinearGradient(0, 0, 0, 320);
 
-  grad.addColorStop(
-    0,
-    'rgba(37,99,235,0.35)'
-  );
+  grad.addColorStop(0, 'rgba(37,99,235,0.35)');
+  grad.addColorStop(1, 'rgba(37,99,235,0.02)');
 
-  grad.addColorStop(
-    1,
-    'rgba(37,99,235,0.02)'
-  );
+  chartFlowInstance = new Chart(ctx, {
 
-  chartFlowInstance =
-    new Chart(ctx, {
+    type: 'line',
 
-      type: 'line',
+    data: {
 
-      data: {
+      labels,
 
-        labels,
+      datasets: [{
 
-        datasets: [{
+        label: 'Fluxo Médio',
 
-          label: 'Fluxo Médio',
+        data: valores,
 
-          data: valores,
+        borderColor: '#2563eb',
 
-          borderColor: '#2563eb',
+        backgroundColor: grad,
 
-          backgroundColor: grad,
+        fill: true,
 
-          fill: true,
+        tension: 0.4,
 
-          tension: 0.4,
+        pointRadius: 0,
 
-          pointRadius: 0,
+        pointHoverRadius: 5,
 
-          pointHoverRadius: 5,
+        pointHoverBackgroundColor: '#2563eb',
 
-          pointHoverBackgroundColor:
-            '#2563eb',
+        borderWidth: 2.5
 
-          borderWidth: 2.5
+      }]
 
-        }]
+    },
 
-      },
+    options: {
 
-      options: {
+      responsive: true,
 
-        responsive: true,
+      maintainAspectRatio: false,
 
-        maintainAspectRatio: false,
+      animation: false,
 
-        animation: false,
+      plugins: {
 
-        plugins: {
+        legend: { display: false },
 
-          legend: {
+        tooltip: {
 
-            display: false
+          backgroundColor: '#0f172a',
 
-          },
+          titleColor: '#94a3b8',
 
-          tooltip: {
+          bodyColor: '#fff',
 
-            backgroundColor:
-              '#0f172a',
+          padding: 10,
 
-            titleColor:
-              '#94a3b8',
+          cornerRadius: 8,
 
-            bodyColor:
-              '#fff',
+          callbacks: {
 
-            padding: 10,
-
-            cornerRadius: 8,
-
-            callbacks: {
-
-              label: ctx =>
-                ` ${formatarNumero(ctx.parsed.y)} veículos/h`
-
-            }
+            label: ctx =>
+              ` ${formatarNumero(ctx.parsed.y)} veículos/h`
 
           }
 
+        }
+
+      },
+
+      scales: {
+
+        x: {
+
+          grid: { display: false },
+
+          border: { display: false }
+
         },
 
-        scales: {
+        y: {
 
-          x: {
+          grid: { color: '#f1f5f9', drawBorder: false },
 
-            grid: {
+          border: { display: false },
 
-              display: false
+          ticks: {
 
-            },
+            callback: value => {
 
-            border: {
-
-              display: false
-
-            }
-
-          },
-
-          y: {
-
-            grid: {
-
-              color: '#f1f5f9',
-
-              drawBorder: false
-
-            },
-
-            border: {
-
-              display: false
-
-            },
-
-            ticks: {
-
-              callback: value => {
-
-                if (value >= 1000) {
-
-                  return `${(value / 1000).toFixed(1)}k`;
-
-                }
-
-                return value;
-
+              if (value >= 1000) {
+                return `${(value / 1000).toFixed(1)}k`;
               }
+
+              return value;
 
             }
 
@@ -546,230 +465,190 @@ async function buildFlowChart(rodovia) {
         }
 
       }
-
-    });
-
-}
-
-// ============================================================
-// CHART — IMPACTO OPERACIONAL
-// ============================================================
-
-async function buildImpactoChart(rodovia) {
-  // buildImpactoChart removido
-}
-
-// ============================================================
-// CHART — CONGESTIONAMENTO
-// ============================================================
-
-async function buildCongestionamentoChart(
-  rodovia
-) {
-
-  const dados = await request(
-    `/dashboard/congestionamento?rodovia=${encodeURIComponent(rodovia)}`
-  );
-
-  const labels =
-    dados.map(item =>
-      formatarHora(item.hora)
-    );
-
-  const valores =
-    dados.map(item =>
-      Number(item.congestionamento)
-    );
-
-  const canvas =
-    document.getElementById(
-      'chartCongestionamento'
-    );
-
-  if (!canvas) {
-
-    console.error(
-      'Canvas chartCongestionamento não encontrado'
-    );
-
-    return;
-
-  }
-
-  // DESTROI INSTÂNCIA ANTERIOR
-  if (chartCongestionamentoInstance) {
-
-    chartCongestionamentoInstance.destroy();
-
-    chartCongestionamentoInstance = null;
-
-  }
-
-  const ctx =
-    canvas.getContext('2d');
-
-  // Reseta as dimensões do canvas
-  canvas.width = canvas.offsetWidth;
-  canvas.height = canvas.offsetHeight;
-
-  // LIMPA CANVAS
-  ctx.clearRect(
-    0,
-    0,
-    canvas.width,
-    canvas.height
-  );
-
-  chartCongestionamentoInstance =
-    new Chart(ctx, {
-
-      type: 'bar',
-
-      data: {
-
-        labels,
-
-        datasets: [{
-
-          label: 'Congestionamento (%)',
-
-          data: valores,
-
-          borderRadius: 8,
-
-          borderSkipped: false,
-
-          backgroundColor:
-            valores.map(valor => {
-
-              if (valor >= 80) {
-
-                return '#ef4444';
-
-              }
-
-              if (valor >= 60) {
-
-                return '#f59e0b';
-
-              }
-
-              return '#10b981';
-
-            })
-
-        }]
-
-      },
-
-      options: {
-
-        responsive: true,
-
-        maintainAspectRatio: false,
-
-        animation: false,
-
-        plugins: {
-
-          legend: {
-
-            display: false
-
-          },
-
-          tooltip: {
-
-            backgroundColor:
-              '#0f172a',
-
-            callbacks: {
-
-              label: ctx =>
-                ` ${ctx.parsed.y}%`
-
-            }
-
-          }
-
-        },
-
-        scales: {
-
-          x: {
-
-            grid: {
-
-              display: false
-
-            },
-
-            border: {
-
-              display: false
-
-            }
-
-          },
-
-          y: {
-
-            beginAtZero: true,
-
-            max: 100,
-
-            grid: {
-
-              color: '#f1f5f9'
-
-            },
-
-            border: {
-
-              display: false
-
-            },
-
-            ticks: {
-
-              callback: value =>
-                `${value}%`
-
-            }
-
-          }
-
-        }
-
-      }
-
-    });
-
-}
-
-// ============================================================
-// AUTO REFRESH
-// ============================================================
-
-// Atualiza a cada 5 minutos
-
-setInterval(
-  async function () {
-
-    try {
-
-      await carregarDashboard();
-
-    } catch (erro) {
-
-      console.error(
-        'Erro no auto refresh:',
-        erro
-      );
 
     }
 
-  },
-  300000
-);
+  });
 
+}
+
+// ============================================================
+// CHART — VOLUME POR DIA DA SEMANA
+// ============================================================
+
+async function buildVolumeDiaSemanaChart(rodovia) {
+
+  const dados = await request(
+    `/dashboard/volume-dia-semana?rodovia=${encodeURIComponent(rodovia)}`
+  );
+
+  const ordemDias = [
+    'Seg',
+    'Ter',
+    'Qua',
+    'Qui',
+    'Sex',
+    'Sáb',
+    'Dom'
+  ];
+
+  dados.sort(
+    (a, b) =>
+      ordemDias.indexOf(a.nome_dia) -
+      ordemDias.indexOf(b.nome_dia)
+  );
+
+  const labels =
+    dados.map(item => item.nome_dia);
+
+  const valores =
+    dados.map(item => Number(item.volume_total));
+
+  const canvas =
+    document.getElementById('chartVolumeDiaSemana');
+
+  if (!canvas) {
+    console.error('Canvas chartVolumeDiaSemana não encontrado');
+    return;
+  }
+
+  if (chartVolumeDiaSemanaInstance) {
+    chartVolumeDiaSemanaInstance.destroy();
+    chartVolumeDiaSemanaInstance = null;
+  }
+
+  const ctx = canvas.getContext('2d');
+
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const minValor = Math.min(...valores);
+
+  const media =
+    valores.reduce((a, b) => a + b, 0) /
+    valores.length;
+
+  chartVolumeDiaSemanaInstance = new Chart(ctx, {
+
+    type: 'bar',
+
+    data: {
+
+      labels,
+
+      datasets: [{
+
+        label: 'Volume Médio',
+
+        data: valores,
+
+        borderRadius: 10,
+
+        borderSkipped: false,
+
+        backgroundColor: valores.map(v => {
+
+          if (v === minValor) {
+            return '#10b981';
+          }
+
+          if (v >= media) {
+            return '#ef4444';
+          }
+
+          return '#f59e0b';
+
+        })
+
+      }]
+
+    },
+
+    options: {
+
+      indexAxis: 'y',
+
+      responsive: true,
+
+      maintainAspectRatio: false,
+
+      animation: false,
+
+      plugins: {
+
+        legend: {
+          display: false
+        },
+
+        tooltip: {
+
+          backgroundColor: '#0f172a',
+
+          titleColor: '#94a3b8',
+
+          bodyColor: '#fff',
+
+          padding: 10,
+
+          cornerRadius: 8,
+
+          callbacks: {
+
+            label: ctx =>
+              ` ${formatarNumero(ctx.parsed.x)} veículos`
+
+          }
+
+        }
+
+      },
+
+      scales: {
+
+        x: {
+
+          grid: {
+            color: '#f1f5f9'
+          },
+
+          border: {
+            display: false
+          },
+
+          ticks: {
+
+            callback: value => {
+
+              if (value >= 1000) {
+                return `${(value / 1000).toFixed(0)}k`;
+              }
+
+              return value;
+
+            }
+
+          }
+
+        },
+
+        y: {
+
+          grid: {
+            display: false
+          },
+
+          border: {
+            display: false
+          }
+
+        }
+
+      }
+
+    }
+
+  });
+
+}

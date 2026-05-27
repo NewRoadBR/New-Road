@@ -72,18 +72,16 @@ router.get(
 
 /*
     ============================================================
-    GRÁFICO — CONGESTIONAMENTO
+    GRÁFICO — VOLUME POR DIA DA SEMANA
     ============================================================
 */
 
 router.get(
-    "/congestionamento",
+    "/volume-dia-semana",
     function(req, res) {
-        dashboardController.buscarCongestionamento(req, res);
+        dashboardController.buscarVolumeDiaSemana(req, res);
     }
 );
-
-/* Impacto Operacional route removed */
 
 /*
     ============================================================

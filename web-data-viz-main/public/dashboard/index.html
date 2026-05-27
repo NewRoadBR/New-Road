@@ -411,66 +411,60 @@
 
       </section>
 
-      <!-- CHARTS -->
-      <section class="charts-grid">
+     <!-- CHARTS -->
+<section class="charts-grid">
 
-        <!-- FLUXO HORÁRIO -->
-        <div class="chart-card fluxo-card">
+  <!-- FLUXO HORÁRIO -->
+  <div class="chart-card fluxo-card">
 
-          <div class="chart-header">
+    <div class="chart-header">
 
-            <div>
+      <div>
 
-              <h3>
-                Fluxo de Veículos por Horário
-              </h3>
+        <h3>
+          Fluxo de Veículos por Horário
+        </h3>
 
-              <p>
-                Média histórica por hora do dia
-              </p>
+        <p>
+          Média histórica por hora do dia
+        </p>
 
-            </div>
+      </div>
 
-          </div>
+    </div>
 
-          <div class="chart-body">
-            <canvas id="chartFluxoHorario"></canvas>
-          </div>
-
-        </div>
-
-        <!-- IMPACTO OPERACIONAL chart removido -->
-
-        <!-- CONGESTIONAMENTO -->
-        <div class="chart-card congestionamento-card">
-
-          <div class="chart-header">
-
-            <div>
-
-              <h3>
-                Média de Congestionamento
-              </h3>
-
-              <p>
-                Comparativo relativo ao pico histórico
-              </p>
-
-            </div>
-
-          </div>
-
-          <div class="chart-body">
-            <canvas id="chartCongestionamento"></canvas>
-          </div>
-
-        </div>
-
-      </section>
-
-    </main>
+    <div class="chart-body">
+      <canvas id="chartFluxoHorario"></canvas>
+    </div>
 
   </div>
+
+  <!-- VOLUME POR DIA DA SEMANA -->
+  <div class="chart-card congestionamento-card">
+
+    <div class="chart-header">
+
+      <div>
+
+        <h3>
+          Volume por Dia da Semana
+        </h3>
+
+        <p>
+          Média histórica • Verde = melhor para obras
+        </p>
+
+      </div>
+
+    </div>
+
+    <div class="chart-body">
+      <canvas id="chartVolumeDiaSemana"></canvas>
+    </div>
+
+  </div>
+
+</section>
 
   <!-- JS -->
   <script src="../js/dashboard.js"></script>
