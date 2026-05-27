@@ -15,11 +15,12 @@ var HOST_APP = process.env.APP_HOST;
 
 var app = express();
 
-var indexRouter = require("./src/routes/index");
-var usuarioRouter = require("./src/routes/usuarios");
-var avisosRouter = require("./src/routes/avisos");
-var medidasRouter = require("./src/routes/medidas");
-var empresasRouter = require("./src/routes/empresas");
+var indexRouter        = require("./src/routes/index");
+var usuarioRouter      = require("./src/routes/usuarios");
+var obrasRouter        = require("./src/routes/obras");
+var muralRouter        = require("./src/routes/mural");
+var preferenciasRouter = require("./src/routes/preferencias");
+var empresasRouter     = require("./src/routes/empresas");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -28,11 +29,12 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.use(cors());
 
-app.use("/", indexRouter);
-app.use("/usuarios", usuarioRouter);
-app.use("/avisos", avisosRouter);
-app.use("/medidas", medidasRouter);
-app.use("/empresas", empresasRouter);
+app.use("/",             indexRouter);
+app.use("/usuarios",     usuarioRouter);
+app.use("/obras",        obrasRouter);
+app.use("/mural",        muralRouter);
+app.use("/preferencias", preferenciasRouter);
+app.use("/empresas",     empresasRouter);
 
 app.listen(PORTA_APP, function () {
     console.log(`
