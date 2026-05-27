@@ -11,4 +11,4 @@ db.senha=${DB_PASSWORD}
 etl.pasta.temp=/app/temp_csv
 etl.min.medicoes=${ETL_MIN_MEDICOES:-5}
 PROPS
-exec java -cp /app:app.jar br.edu.etl.EtlApplication
+exec java -jar app.jar
