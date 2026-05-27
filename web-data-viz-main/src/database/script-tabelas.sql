@@ -11,13 +11,13 @@ USE newroad_db;
 -- ────────────────────────────────────────────────────────────────
 --  TABELAS
 -- ────────────────────────────────────────────────────────────────
-
 CREATE TABLE empresa (
-    id          INT UNSIGNED AUTO_INCREMENT PR"IMARY KEY,
+    id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     nome        VARCHAR(120) NOT NULL,
     cnpj        VARCHAR(20),
     criado_em   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 
 CREATE TABLE usuario (
     id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
