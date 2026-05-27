@@ -228,6 +228,16 @@ public class ProcessadorETL {
                 );
             }
 
+            if (totalInserido > 0) {
+                trafegoRepository.atualizarHistoricoRodovia();
+                servicoLog.salvar(
+                        new LogOperacional(
+                                CLASSE,
+                                "Processamento histórico concluído."
+                        )
+                );
+            }
+
             long duracao =
                     System.currentTimeMillis()
                             - inicioGeral;
@@ -568,10 +578,6 @@ public class ProcessadorETL {
                 .append(',');
 
         sb.append(hora).append(',');
-
-        sb.append(
-                escapeCsv(valores[2])
-        ).append(',');
 
         sb.append(
                 escapeCsv(valores[3])

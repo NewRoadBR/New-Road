@@ -17,7 +17,6 @@ CREATE TABLE IF NOT EXISTS registro_trafego (
     -- Campos da classe mãe RegistroTrafego
     data            DATE         NOT NULL,
     hora            TINYINT      NOT NULL,
-    lote            VARCHAR(100) NOT NULL,
     praca           VARCHAR(100) NOT NULL,
     sentido         VARCHAR(50)  NOT NULL,
 
@@ -47,7 +46,7 @@ CREATE TABLE IF NOT EXISTS registro_trafego (
 
     PRIMARY KEY (id),
     INDEX idx_data_hora  (data, hora),
-    INDEX idx_lote_praca (lote, praca),
+    INDEX idx_praca_hora (praca, hora),
     INDEX idx_arquivo    (arquivo_origem)
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -67,5 +66,35 @@ CREATE TABLE IF NOT EXISTS log_etl (
     PRIMARY KEY (id),
     INDEX idx_nivel_log (nivel_log),
     INDEX idx_timestamp (timestamp)
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- =============================================================
+-- TABELA: trafego_rodovia_historico
+-- =============================================================
+CREATE TABLE IF NOT EXISTS trafego_rodovia_historico (
+
+    rodovia VARCHAR(120) NOT NULL,
+
+    dia_semana TINYINT NOT NULL,
+
+    hora TINYINT NOT NULL,
+
+    volume_total DECIMAL(12,2),
+
+    volume_leve DECIMAL(12,2),
+
+    volume_pesado DECIMAL(12,2),
+
+    volume_moto DECIMAL(12,2),
+
+    volume_especial DECIMAL(12,2),
+
+    PRIMARY KEY (
+        rodovia,
+        dia_semana,
+        hora
+    )
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
