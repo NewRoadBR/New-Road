@@ -73,7 +73,16 @@ echo ""
 # 2. BUILD E SUBIR CONTAINERS (mysql + web apenas)
 # ------------------------------------------------------------
 echo -e "${YELLOW}[2/4] Buildando e subindo containers...${NC}"
-docker compose up -d --build mysql web
+
+echo -e "${YELLOW}  → Derrubando containers existentes...${NC}"
+docker compose down
+
+echo -e "${YELLOW}  → Rebuild sem cache (garante imagem atualizada)...${NC}"
+docker compose build --no-cache mysql web
+
+echo -e "${YELLOW}  → Subindo containers...${NC}"
+docker compose up -d mysql web
+
 echo -e "${GREEN}[OK]${NC}"
 echo ""
 
