@@ -43,14 +43,7 @@ services:
       - "3333:3333"
 
     env_file:
-      - ./web-data-viz-main/.env
-
-    environment:
-      DB_HOST: mysql-container
-      DB_PORT: 3306
-      DB_USER: root
-      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      DB_DATABASE: newroad_db
+      - ./web-data-viz-main/.env.dev
 
     depends_on:
       mysql:
