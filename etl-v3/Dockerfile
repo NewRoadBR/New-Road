@@ -7,7 +7,7 @@ RUN mvn package -DskipTests -q
 
 FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
-COPY --from=builder /build/target/*-shaded.jar app.jar
+COPY --from=builder /build/target/new_road_etl-1.0.0.jar app.jar
 RUN mkdir -p /app/temp_csv
 COPY entrypoint.sh .
 RUN chmod +x entrypoint.sh
