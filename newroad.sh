@@ -82,7 +82,7 @@ echo -e "${YELLOW}→ Limpando container ETL antigo...${NC}"
 docker rm -f etl-newroad >/dev/null 2>&1 || true
 
 echo -e "${YELLOW}→ Rebuildando imagens...${NC}"
-docker compose build --no-cache mysql web
+docker compose build --no-cache mysql web etl
 
 if [ $? -ne 0 ]; then
     echo -e "${RED}[ERRO] Falha no build.${NC}"
