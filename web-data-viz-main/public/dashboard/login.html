@@ -99,6 +99,8 @@
         sessionStorage.EMAIL_USUARIO = json.email;
         sessionStorage.NOME_USUARIO = json.nome;
         sessionStorage.ID_USUARIO = json.id;
+        sessionStorage.ROLE_USUARIO = json.role || json.perfil || "";
+        sessionStorage.AVATAR_USUARIO = json.avatar || "";
 
         window.location = "./dashboard/index.html";
     })
