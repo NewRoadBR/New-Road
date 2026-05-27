@@ -85,7 +85,9 @@
                         <configuration>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>br.com.artesp.etl.Main</mainClass>
+    <!-- versão antiga:
+    <mainClass>br.com.artesp.etl.Main</mainClass>
+    -->                                        <mainClass>br.com.newroad.Main</mainClass>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                             </transformers>
