@@ -19,7 +19,10 @@ echo "              NewRoad - Gerenciador de Ambiente"
 echo "============================================================"
 echo -e "${NC}"
 
-cd $PROJECT_DIR
+cd $PROJECT_DIR || {
+    echo -e "${RED}[ERRO] Diretório do projeto não encontrado.${NC}"
+    exit 1
+}
 
 # ------------------------------------------------------------
 # 0. VERIFICAR DEPENDÊNCIAS
@@ -27,37 +30,28 @@ cd $PROJECT_DIR
 echo -e "${YELLOW}[0/4] Verificando dependências...${NC}"
 
 if ! command -v docker &> /dev/null; then
-    echo -e "${RED}  [ERRO] Docker não encontrado. Instale o Docker e tente novamente.${NC}"
+    echo -e "${RED}[ERRO] Docker não encontrado.${NC}"
     exit 1
 fi
-echo -e "${GREEN}  [OK] Docker: $(docker --version)${NC}"
+
+echo -e "${GREEN}[OK] Docker: $(docker --version)${NC}"
 
 if ! docker compose version &> /dev/null; then
-    echo -e "${YELLOW}  → Docker Compose não encontrado.${NC}"
-    echo -e "${BLUE}  Deseja instalar agora? (s/n):${NC} \c"
-    read INSTALAR
-    if [[ "$INSTALAR" == "s" || "$INSTALAR" == "S" ]]; then
-        sudo apt-get update -qq
-        sudo apt-get install docker-compose-plugin -y -qq
-        echo -e "${GREEN}  [OK] Docker Compose instalado: $(docker compose version)${NC}"
-    else
-        echo -e "${RED}  [ERRO] Docker Compose é necessário. Abortando.${NC}"
-        exit 1
-    fi
-else
-    echo -e "${GREEN}  [OK] Docker Compose: $(docker compose version)${NC}"
+    echo -e "${RED}[ERRO] Docker Compose não encontrado.${NC}"
+    exit 1
 fi
 
-echo ""
-echo -e "${BLUE}  Deseja atualizar o ambiente do sistema? (s/n):${NC} \c"
-read ATUALIZAR
-if [[ "$ATUALIZAR" == "s" || "$ATUALIZAR" == "S" ]]; then
-    echo -e "${YELLOW}  → Atualizando sistema...${NC}"
-    sudo apt-get update -qq && sudo apt-get upgrade -y -qq
-    echo -e "${GREEN}  [OK] Sistema atualizado!${NC}"
-else
-    echo -e "${YELLOW}  [SKIP] Atualização do sistema ignorada.${NC}"
+echo -e "${GREEN}[OK] Docker Compose: $(docker compose version)${NC}"
+
+# ------------------------------------------------------------
+# VERIFICAR .env
+# ------------------------------------------------------------
+if [ ! -f .env ]; then
+    echo -e "${RED}[ERRO] Arquivo .env não encontrado.${NC}"
+    exit 1
 fi
+
+source .env
 
 echo ""
 
@@ -65,25 +59,60 @@ echo ""
 # 1. ATUALIZAR CÓDIGO
 # ------------------------------------------------------------
 echo -e "${YELLOW}[1/4] Atualizando código (git pull)...${NC}"
+
 git pull
-echo -e "${GREEN}[OK]${NC}"
+
+if [ $? -ne 0 ]; then
+    echo -e "${RED}[ERRO] Falha no git pull.${NC}"
+    exit 1
+fi
+
+echo -e "${GREEN}[OK] Código atualizado!${NC}"
 echo ""
 
 # ------------------------------------------------------------
-# 2. BUILD E SUBIR CONTAINERS (mysql + web apenas)
+# 2. BUILD E SUBIR MYSQL + WEB
 # ------------------------------------------------------------
 echo -e "${YELLOW}[2/4] Buildando e subindo containers...${NC}"
 
-echo -e "${YELLOW}  → Derrubando containers existentes...${NC}"
-docker compose down
+echo -e "${YELLOW}→ Derrubando containers antigos...${NC}"
+docker compose down --remove-orphans
 
-echo -e "${YELLOW}  → Rebuild sem cache (garante imagem atualizada)...${NC}"
+echo -e "${YELLOW}→ Limpando container ETL antigo...${NC}"
+docker rm -f etl-newroad >/dev/null 2>&1 || true
+
+echo -e "${YELLOW}→ Rebuildando imagens...${NC}"
 docker compose build --no-cache mysql web
 
-echo -e "${YELLOW}  → Subindo containers...${NC}"
+if [ $? -ne 0 ]; then
+    echo -e "${RED}[ERRO] Falha no build.${NC}"
+    exit 1
+fi
+
+echo -e "${YELLOW}→ Subindo MySQL e Web...${NC}"
 docker compose up -d mysql web
 
-echo -e "${GREEN}[OK]${NC}"
+if [ $? -ne 0 ]; then
+    echo -e "${RED}[ERRO] Falha ao subir containers.${NC}"
+    exit 1
+fi
+
+echo -e "${GREEN}[OK] Containers iniciados!${NC}"
+echo ""
+
+# ------------------------------------------------------------
+# AGUARDAR MYSQL
+# ------------------------------------------------------------
+echo -e "${YELLOW}→ Aguardando MySQL ficar saudável...${NC}"
+
+until docker exec mysql-container mysqladmin ping -h "localhost" -p"${MYSQL_ROOT_PASSWORD}" --silent &> /dev/null
+do
+    printf "."
+    sleep 2
+done
+
+echo ""
+echo -e "${GREEN}[OK] MySQL pronto!${NC}"
 echo ""
 
 # ------------------------------------------------------------
@@ -93,66 +122,98 @@ echo -e "${YELLOW}[3/4] Deseja executar o ETL agora? (s/n):${NC} \c"
 read RESPOSTA
 
 if [[ "$RESPOSTA" == "s" || "$RESPOSTA" == "S" ]]; then
-    echo -e "${YELLOW}  → Buildando e rodando ETL...${NC}"
-    docker compose --profile etl up --build etl
+
+    echo -e "${YELLOW}→ Buildando imagem do ETL...${NC}"
+
+    docker compose --profile etl build etl
+
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}[ERRO] Falha no build do ETL.${NC}"
+        exit 1
+    fi
+
+    echo -e "${YELLOW}→ Removendo container ETL antigo...${NC}"
+    docker rm -f etl-newroad >/dev/null 2>&1 || true
+
+    echo -e "${YELLOW}→ Executando ETL...${NC}"
+
+    docker compose --profile etl run --rm etl
+
     EXIT_CODE=$?
 
+    echo ""
+
     if [ $EXIT_CODE -ne 0 ]; then
-        echo -e "${RED}  [ERRO] ETL finalizou com erro (exit code: $EXIT_CODE).${NC}"
+        echo -e "${RED}[ERRO] ETL finalizou com erro (exit code: $EXIT_CODE).${NC}"
     else
-        echo -e "${GREEN}  [OK] ETL finalizado!${NC}"
+        echo -e "${GREEN}[OK] ETL executado com sucesso!${NC}"
     fi
 
     echo ""
 
     # ----------------------------------------------------------
-    # VALIDAÇÃO DO ETL VIA SELECT NO BANCO
+    # VALIDAÇÃO DO ETL
     # ----------------------------------------------------------
     echo -e "${CYAN}============================================================${NC}"
-    echo -e "${CYAN}              Validando dados do ETL no banco...${NC}"
+    echo -e "${CYAN}           Validando dados do ETL no banco${NC}"
     echo -e "${CYAN}============================================================${NC}"
 
-    DB_PASSWORD=$(grep MYSQL_ROOT_PASSWORD .env | cut -d '=' -f2 | tr -d '"\r')
+    # ----------------------------------------------------------
+    # TOTAL DE REGISTROS
+    # ----------------------------------------------------------
+    echo -e "${YELLOW}→ Total de registros em medicao_transito:${NC}"
 
-    # Total de registros de tráfego inseridos
-    echo -e "${YELLOW}  → registros em transito_sp.registro_trafego:${NC}"
-    docker exec mysql-container mysql -uroot -p"${DB_PASSWORD}" -e \
-        "SELECT COUNT(*) AS total_registros FROM transito_sp.registro_trafego;" \
-        2>/dev/null
+    docker exec mysql-container mysql -uroot -p"${MYSQL_ROOT_PASSWORD}" -e \
+    "SELECT COUNT(*) AS total_registros FROM transito_sp.medicao_transito;" \
+    2>/dev/null
+
     echo ""
 
-    # Últimos 5 registros inseridos
-    echo -e "${YELLOW}  → últimos 5 registros inseridos:${NC}"
-    docker exec mysql-container mysql -uroot -p"${DB_PASSWORD}" -e \
-        "SELECT * FROM transito_sp.registro_trafego ORDER BY id DESC LIMIT 5;" \
-        2>/dev/null
+    # ----------------------------------------------------------
+    # ÚLTIMOS REGISTROS
+    # ----------------------------------------------------------
+    echo -e "${YELLOW}→ Últimos 5 registros inseridos:${NC}"
+
+    docker exec mysql-container mysql -uroot -p"${MYSQL_ROOT_PASSWORD}" -e \
+    "SELECT * FROM transito_sp.medicao_transito ORDER BY id DESC LIMIT 5;" \
+    2>/dev/null
+
     echo ""
 
-    # Log das execuções do ETL
-    echo -e "${YELLOW}  → log das execuções do ETL (log_etl):${NC}"
-    docker exec mysql-container mysql -uroot -p"${DB_PASSWORD}" -e \
-        "SELECT * FROM transito_sp.log_etl ORDER BY id DESC LIMIT 5;" \
-        2>/dev/null
+    # ----------------------------------------------------------
+    # LOGS DO ETL
+    # ----------------------------------------------------------
+    echo -e "${YELLOW}→ Logs do ETL:${NC}"
+
+    docker exec mysql-container mysql -uroot -p"${MYSQL_ROOT_PASSWORD}" -e \
+    "SELECT * FROM transito_sp.log_etl ORDER BY id DESC LIMIT 10;" \
+    2>/dev/null
+
     echo ""
 
     echo -e "${CYAN}============================================================${NC}"
-    echo -e "${GREEN}  [OK] Validação concluída!${NC}"
+    echo -e "${GREEN}[OK] Validação concluída!${NC}"
     echo -e "${CYAN}============================================================${NC}"
 
 else
-    echo -e "${YELLOW}  [SKIP] ETL não executado.${NC}"
+    echo -e "${YELLOW}[SKIP] ETL não executado.${NC}"
 fi
 
 # ------------------------------------------------------------
-# RESUMO FINAL
+# 4. STATUS FINAL
 # ------------------------------------------------------------
 echo ""
 echo -e "${BLUE}============================================================${NC}"
 echo -e "${BLUE}              Aplicações em execução${NC}"
 echo -e "${BLUE}============================================================${NC}"
+
 docker compose ps --format "table {{.Name}}\t{{.Status}}\t{{.Ports}}"
+
 echo ""
+
 echo -e "${GREEN}============================================================${NC}"
-echo -e "${GREEN}              Tudo pronto! NewRoad está no ar.${NC}"
+echo -e "${GREEN}           Tudo pronto! NewRoad está no ar.${NC}"
 echo -e "${GREEN}============================================================${NC}"
+
 echo ""
+```
