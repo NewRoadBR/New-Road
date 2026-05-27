@@ -736,16 +736,35 @@ function formatDate(str) {
 //  SPA — PAGE ROUTER
 // ══════════════════════════════════════════════════════════════
 
-const MOCK_USERS = [
-  { id:1,  nome:"Samara Freitas",    email:"samara.freitas@newroad.sp",    perfil:"Gestor",      regiao:"SP Region",    status:"ativo",    ultimo:"Hoje, 09:11",    avatar:"SF" },
-  { id:2,  nome:"Giovanna Pina",        email:"giovanna.pina@newroad.sp",   perfil:"Analista",    regiao:"Zona Norte",   status:"ativo",    ultimo:"Hoje, 08:45",    avatar:"AR" },
-  { id:3,  nome:"Leandro Almeida",        email:"leandro.almeida@newroad.sp",   perfil:"Operador",    regiao:"Zona Sul",     status:"ativo",    ultimo:"Ontem, 17:30",   avatar:"CM" },
-  { id:4,  nome:"Gustavo Henrique",    email:"gustavo.henrique@newroad.sp",    perfil:"Analista",    regiao:"Zona Leste",   status:"inativo",  ultimo:"15/07/2025",     avatar:"PF" },
-  { id:5,  nome:"Marcos Lopes",        email:"marcos.lopes@newroad.sp",   perfil:"Operador",    regiao:"Centro",       status:"ativo",    ultimo:"Hoje, 07:58",    avatar:"RA" },
-  { id:6,  nome:"Juliana Costa",        email:"juliana.costa@newroad.sp",   perfil:"Gestor",      regiao:"SP Region",    status:"ativo",    ultimo:"Hoje, 09:02",    avatar:"JC" },
-  { id:7,  nome:"Felipe Nunes",         email:"felipe.nunes@newroad.sp",    perfil:"Operador",    regiao:"Zona Oeste",   status:"pendente", ultimo:"Nunca",          avatar:"FN" },
-  { id:8,  nome:"Mariana Teixeira",     email:"mariana.t@newroad.sp",       perfil:"Analista",    regiao:"Pinheiros",    status:"ativo",    ultimo:"Ontem, 14:22",   avatar:"MT" },
-];
+// ─── API HELPERS ───────────────────────────────────────────────
+// Dados que antes eram mocks agora vêm da API. Mantemos os nomes
+// originais para não quebrar referências do restante do script.
+let MOCK_USERS = [];
+
+function getUsuarioId() {
+  return Number(sessionStorage.ID_USUARIO) || 1;
+}
+
+async function apiFetch(url, options) {
+  const r = await fetch(url, Object.assign({
+    headers: { 'Content-Type': 'application/json' }
+  }, options || {}));
+  if (!r.ok && r.status !== 204) {
+    const t = await r.text().catch(() => '');
+    throw new Error(`API ${url} → ${r.status} ${t}`);
+  }
+  if (r.status === 204) return null;
+  return r.json();
+}
+
+async function loadUsers() {
+  try {
+    MOCK_USERS = await apiFetch('/usuarios') || [];
+  } catch (e) {
+    console.error('Falha ao carregar usuários:', e);
+    MOCK_USERS = [];
+  }
+}
 
 function loadPage(page) {
   const content = document.querySelector('.content');
@@ -987,7 +1006,8 @@ let usersFiltered = [...MOCK_USERS];
 let userModalMode = null; // 'add' | 'edit'
 let userEditId = null;
 
-function renderUsuariosPage(content) {
+async function renderUsuariosPage(content) {
+  await loadUsers();
   usersFiltered = [...MOCK_USERS];
 
   content.innerHTML = `
@@ -1324,7 +1344,7 @@ window.closeUserModal = function() {
   document.getElementById('userModalOverlay')?.classList.remove('visible');
 };
 
-window.saveUser = function() {
+window.saveUser = async function() {
   const nome     = document.getElementById('fNome').value.trim();
   const email    = document.getElementById('fEmail').value.trim();
   const telefone = document.getElementById('fTelefone')?.value.trim() || '';
@@ -1365,14 +1385,25 @@ window.saveUser = function() {
   }
 
   const initials = nome.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+  const payload  = { nome, email, telefone, perfil, regiao, status, avatar: initials };
 
-  if (userModalMode === 'add') {
-    MOCK_USERS.push({ id: Date.now(), nome, email, telefone, perfil, regiao, status, ultimo:'Agora', avatar: initials });
-  } else {
-    const u = MOCK_USERS.find(x => x.id === userEditId);
-    if (u) Object.assign(u, { nome, email, telefone, perfil, regiao, status, avatar: initials });
+  try {
+    if (userModalMode === 'add') {
+      payload.senha = senha;
+      await apiFetch('/usuarios', { method: 'POST', body: JSON.stringify(payload) });
+    } else {
+      await apiFetch(`/usuarios/${userEditId}`, { method: 'PUT', body: JSON.stringify(payload) });
+    }
+  } catch (e) {
+    if (banner) {
+      banner.style.display = 'flex';
+      document.getElementById('formErrorMsg').textContent = 'Erro ao salvar. Tente novamente.';
+    }
+    console.error(e);
+    return;
   }
 
+  await loadUsers();
   closeUserModal();
   filterUsers();
   // re-render stats
@@ -1381,7 +1412,6 @@ window.saveUser = function() {
   document.querySelectorAll('.kpi-value')[2].textContent = MOCK_USERS.filter(u=>u.status==='pendente').length;
   document.querySelectorAll('.kpi-value')[3].textContent = MOCK_USERS.filter(u=>u.perfil==='Gestor').length;
 
-  // Toast de sucesso
   showToast(userModalMode === 'add' ? `Usuário <strong>${nome}</strong> criado com sucesso!` : `Alterações salvas para <strong>${nome}</strong>.`);
 };
 
@@ -1398,17 +1428,39 @@ window.showToast = function(msg) {
   toast._timer = setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 400); }, 3200);
 };
 
-window.removeUser = function(id) {
+window.removeUser = async function(id) {
   if (!confirm('Remover este usuário?')) return;
-  const idx = MOCK_USERS.findIndex(u => u.id === id);
-  if (idx > -1) MOCK_USERS.splice(idx, 1);
+  try {
+    await apiFetch(`/usuarios/${id}`, { method: 'DELETE' });
+  } catch (e) {
+    console.error(e);
+    showToast('Erro ao remover usuário.', 'info');
+    return;
+  }
+  await loadUsers();
   filterUsers();
 };
 
 // ══════════════════════════════════════════════════════════════
 //  PÁGINA: CONFIGURAÇÕES
 // ══════════════════════════════════════════════════════════════
-function renderSettingsPage(content) {
+async function renderSettingsPage(content) {
+  const idUsuario = getUsuarioId();
+  let perfil = null, prefs = null;
+  try {
+    [perfil, prefs] = await Promise.all([
+      apiFetch(`/usuarios/${idUsuario}`),
+      apiFetch(`/preferencias/${idUsuario}`)
+    ]);
+  } catch (e) { console.error('Erro ao carregar preferências:', e); }
+  perfil = perfil || { nome: 'Eng. Mateus', email: 'mateus.silva@newroad.sp', regiao: 'SP Region', avatar: 'EM', role: 'Gestor SP' };
+  prefs  = prefs  || { intervalo: '1 minuto', regiaoPadrao: 'SP Region (todas)', notifCritica: true, notifPico: true, notifRelatorio: true, darkMode: false };
+  window._currentPrefs = prefs;
+  window._currentUserProfile = perfil;
+
+  const sel = function (val, opt) { return val === opt ? 'selected' : ''; };
+  const chk = function (b) { return b ? 'checked' : ''; };
+
   content.innerHTML = `
     <div class="page-title">
       <div>
@@ -1425,10 +1477,10 @@ function renderSettingsPage(content) {
       <!-- PERFIL -->
       <div class="settings-card">
         <div class="settings-lean-header">
-          <div class="settings-lean-avatar">EM</div>
+          <div class="settings-lean-avatar">${perfil.avatar || 'EM'}</div>
           <div>
-            <p class="settings-lean-name"> Eng. Mateus</p>
-            <p class="settings-lean-role">Gestor SP · mateus.silva@newroad.sp</p>
+            <p class="settings-lean-name"> ${perfil.nome}</p>
+            <p class="settings-lean-role">${perfil.role || perfil.perfil || 'Gestor SP'} · ${perfil.email}</p>
           </div>
           <span class="status-pill status-completed" style="margin-left:auto;font-size:11px;">
             <i class="fa-solid fa-circle-check"></i> 2FA ativa
@@ -1438,27 +1490,30 @@ function renderSettingsPage(content) {
         <div class="settings-lean-grid">
           <div class="form-group">
             <label>Nome</label>
-            <input type="text" class="form-input" value="Eng. Mateus Silva" id="cfgNome"/>
+            <input type="text" class="form-input" value="${perfil.nome}" id="cfgNome"/>
           </div>
           <div class="form-group">
             <label>E-mail</label>
-            <input type="email" class="form-input" value="mateus.silva@newroad.sp" id="cfgEmail"/>
+            <input type="email" class="form-input" value="${perfil.email}" id="cfgEmail"/>
           </div>
           <div class="form-group">
             <label>Região padrão</label>
             <select class="form-input" id="cfgRegiao">
-              <option selected>SP Region (todas)</option>
-              <option>Zona Norte</option><option>Zona Sul</option>
-              <option>Zona Leste</option><option>Zona Oeste</option><option>Centro</option>
+              <option ${sel(prefs.regiaoPadrao, 'SP Region (todas)')}>SP Region (todas)</option>
+              <option ${sel(prefs.regiaoPadrao, 'Zona Norte')}>Zona Norte</option>
+              <option ${sel(prefs.regiaoPadrao, 'Zona Sul')}>Zona Sul</option>
+              <option ${sel(prefs.regiaoPadrao, 'Zona Leste')}>Zona Leste</option>
+              <option ${sel(prefs.regiaoPadrao, 'Zona Oeste')}>Zona Oeste</option>
+              <option ${sel(prefs.regiaoPadrao, 'Centro')}>Centro</option>
             </select>
           </div>
           <div class="form-group">
             <label>Atualização automática</label>
             <select class="form-input" id="cfgInterval">
-              <option>30 segundos</option>
-              <option selected>1 minuto</option>
-              <option>5 minutos</option>
-              <option>Desativado</option>
+              <option ${sel(prefs.intervalo, '30 segundos')}>30 segundos</option>
+              <option ${sel(prefs.intervalo, '1 minuto')}>1 minuto</option>
+              <option ${sel(prefs.intervalo, '5 minutos')}>5 minutos</option>
+              <option ${sel(prefs.intervalo, 'Desativado')}>Desativado</option>
             </select>
           </div>
         </div>
@@ -1470,19 +1525,19 @@ function renderSettingsPage(content) {
         <div class="settings-lean-toggles">
           <div class="toggle-row">
             <div><p class="toggle-label">Obras críticas</p><p class="toggle-desc">Impacto ≥ 70%</p></div>
-            <label class="toggle-switch"><input type="checkbox" checked id="tgCritica"/><span class="toggle-slider"></span></label>
+            <label class="toggle-switch"><input type="checkbox" ${chk(prefs.notifCritica)} id="tgCritica"/><span class="toggle-slider"></span></label>
           </div>
           <div class="toggle-row">
             <div><p class="toggle-label">Picos de tráfego</p><p class="toggle-desc">Volume acima da média</p></div>
-            <label class="toggle-switch"><input type="checkbox" checked id="tgPico"/><span class="toggle-slider"></span></label>
+            <label class="toggle-switch"><input type="checkbox" ${chk(prefs.notifPico)} id="tgPico"/><span class="toggle-slider"></span></label>
           </div>
           <div class="toggle-row">
             <div><p class="toggle-label">Relatórios semanais</p><p class="toggle-desc">Toda segunda-feira</p></div>
-            <label class="toggle-switch"><input type="checkbox" checked id="tgRelatorio"/><span class="toggle-slider"></span></label>
+            <label class="toggle-switch"><input type="checkbox" ${chk(prefs.notifRelatorio)} id="tgRelatorio"/><span class="toggle-slider"></span></label>
           </div>
           <div class="toggle-row">
             <div><p class="toggle-label">Modo escuro</p><p class="toggle-desc">Tema escuro na interface</p></div>
-            <label class="toggle-switch"><input type="checkbox" id="tgDark"/><span class="toggle-slider"></span></label>
+            <label class="toggle-switch"><input type="checkbox" ${chk(prefs.darkMode)} id="tgDark"/><span class="toggle-slider"></span></label>
           </div>
         </div>
       </div>
@@ -1509,15 +1564,46 @@ function renderSettingsPage(content) {
     </div>`;
 }
 
-window.saveSettings = function() {
-  const nome = document.getElementById('cfgNome')?.value;
-  if (nome) {
-    document.querySelector('.user-name').textContent = nome.split(' ').slice(0,2).join(' ');
-  }
+window.saveSettings = async function() {
+  const idUsuario = getUsuarioId();
+  const nome   = document.getElementById('cfgNome')?.value.trim();
+  const email  = document.getElementById('cfgEmail')?.value.trim();
+  const profile = window._currentUserProfile || {};
+
+  const prefsPayload = {
+    intervalo:       document.getElementById('cfgInterval')?.value || '1 minuto',
+    regiaoPadrao:    document.getElementById('cfgRegiao')?.value || 'SP Region (todas)',
+    notifCritica:    document.getElementById('tgCritica')?.checked,
+    notifPico:       document.getElementById('tgPico')?.checked,
+    notifRelatorio:  document.getElementById('tgRelatorio')?.checked,
+    darkMode:        document.getElementById('tgDark')?.checked
+  };
+
+  const userPayload = {
+    nome:     nome  || profile.nome,
+    email:    email || profile.email,
+    telefone: profile.telefone || '',
+    perfil:   profile.perfil   || 'Gestor',
+    regiao:   prefsPayload.regiaoPadrao.replace(' (todas)', ''),
+    status:   profile.status   || 'ativo',
+    avatar:   profile.avatar   || ''
+  };
+
   const btn = document.querySelector('.btn-primary');
   const orig = btn.innerHTML;
-  btn.innerHTML = '<i class="fa-solid fa-check"></i> Salvo!';
-  btn.style.background = '#10b981';
+  try {
+    await Promise.all([
+      apiFetch(`/preferencias/${idUsuario}`, { method: 'PUT', body: JSON.stringify(prefsPayload) }),
+      apiFetch(`/usuarios/${idUsuario}`,     { method: 'PUT', body: JSON.stringify(userPayload) })
+    ]);
+    if (nome) document.querySelector('.user-name').textContent = nome.split(' ').slice(0,2).join(' ');
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> Salvo!';
+    btn.style.background = '#10b981';
+  } catch (e) {
+    console.error(e);
+    btn.innerHTML = '<i class="fa-solid fa-xmark"></i> Erro';
+    btn.style.background = '#dc2626';
+  }
   setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; }, 2000);
 };
 
@@ -2188,79 +2274,25 @@ window.goToObraPlanning = function(localObra) {
 //  OBRAS PLANNING PAGE
 // ══════════════════════════════════════════════════════════════
 
-// Extended obras data — espelha MOCK_DATA.obras + campos extras
-const OBRAS_CADASTRADAS = [
-  {
-    id:1, local:"Av. Paulista, 1578", bairro:"Bela Vista", tipo:"Recapeamento",
-    dataInicio:"2025-07-10", duracao:18, impacto:72, status:"ongoing",
-    lat:-23.5631, lng:-46.6542, marcador:"red",
-    urgencia:"alta", grauUrgencia:5,
-    descricao:"Recapeamento total da via com troca de guias"
-  },
-  {
-    id:2, local:"R. da Consolação", bairro:"Consolação", tipo:"Galeria de drenagem",
-    dataInicio:"2025-07-22", duracao:30, impacto:88, status:"planned",
-    lat:-23.5569, lng:-46.6580, marcador:"red",
-    urgencia:"urgente", grauUrgencia:3,
-    descricao:"Instalação de nova galeria pluvial"
-  },
-  {
-    id:3, local:"Av. Ipiranga, 200", bairro:"República", tipo:"Sinalização viária",
-    dataInicio:"2025-07-05", duracao:5, impacto:28, status:"completed",
-    lat:-23.5445, lng:-46.6394, marcador:"green",
-    urgencia:"baixa", grauUrgencia:15,
-    descricao:"Atualização de faixas e placas de sinalização"
-  },
-  {
-    id:4, local:"Viaduto do Chá", bairro:"Centro", tipo:"Estrutural",
-    dataInicio:"2025-08-01", duracao:45, impacto:91, status:"planned",
-    lat:-23.5461, lng:-46.6370, marcador:"red",
-    urgencia:"urgente", grauUrgencia:2,
-    descricao:"Reforço estrutural das vigas e pilares"
-  },
-  {
-    id:5, local:"Av. Rebouças, 3200", bairro:"Pinheiros", tipo:"Pavimentação",
-    dataInicio:"2025-07-15", duracao:12, impacto:48, status:"ongoing",
-    lat:-23.5598, lng:-46.6733, marcador:"yellow",
-    urgencia:"media", grauUrgencia:10,
-    descricao:"Pavimentação de trecho deteriorado"
-  },
-  {
-    id:6, local:"Av. Brigadeiro Faria Lima", bairro:"Pinheiros", tipo:"Rede elétrica",
-    dataInicio:"2025-07-20", duracao:8, impacto:55, status:"planned",
-    lat:-23.5680, lng:-46.6932, marcador:"yellow",
-    urgencia:"media", grauUrgencia:12,
-    descricao:"Substituição de cabos e postes na via"
-  },
-  {
-    id:7, local:"Rua Augusta, 800", bairro:"Cerqueira César", tipo:"Calçada acessível",
-    dataInicio:"2025-07-08", duracao:6, impacto:18, status:"completed",
-    lat:-23.5554, lng:-46.6588, marcador:"green",
-    urgencia:"baixa", grauUrgencia:20,
-    descricao:"Adequação de calçadas às normas de acessibilidade"
-  },
-  {
-    id:8, local:"Av. 9 de Julho", bairro:"Jardins", tipo:"Canalização",
-    dataInicio:"2025-08-10", duracao:22, impacto:62, status:"planned",
-    lat:-23.5635, lng:-46.6653, marcador:"yellow",
-    urgencia:"alta", grauUrgencia:7,
-    descricao:"Canalização de córrego e galerias pluviais"
-  },
-  {
-    id:9, local:"Av. Radial Leste", bairro:"Brás", tipo:"Recapeamento",
-    dataInicio:"2025-07-12", duracao:20, impacto:45, status:"ongoing",
-    lat:-23.5420, lng:-46.6080, marcador:"yellow",
-    urgencia:"media", grauUrgencia:14,
-    descricao:"Recapeamento asfáltico em trecho degradado"
-  },
-  {
-    id:10, local:"Tnel. Jânio Quadros", bairro:"Barra Funda", tipo:"Inspeção estrutural",
-    dataInicio:"2025-07-30", duracao:3, impacto:80, status:"planned",
-    lat:-23.5243, lng:-46.6575, marcador:"red",
-    urgencia:"urgente", grauUrgencia:4,
-    descricao:"Inspeção e diagnóstico estrutural do túnel"
-  },
-];
+// Obras carregadas via API (GET /obras). Os campos retornam com mesmo shape
+// dos antigos mocks para preservar todos os renders/filtros já existentes.
+let OBRAS_CADASTRADAS = [];
+
+async function loadObras() {
+  try {
+    OBRAS_CADASTRADAS = await apiFetch('/obras') || [];
+    // Mantém o array do dashboard principal sincronizado (MOCK_DATA.obras
+    // é lido por outras telas; duracao precisa virar string "X dias").
+    if (window.MOCK_DATA && Array.isArray(window.MOCK_DATA.obras)) {
+      window.MOCK_DATA.obras = OBRAS_CADASTRADAS.map(function (o) {
+        return Object.assign({}, o, { duracao: o.duracao + ' dias' });
+      });
+    }
+  } catch (e) {
+    console.error('Falha ao carregar obras:', e);
+    OBRAS_CADASTRADAS = [];
+  }
+}
 
 // Calendar data — day quality for construction
 const CALENDAR_DATA = {
@@ -2354,7 +2386,8 @@ function getBestDayForRegion() {
   };
 }
 
-function renderObrasPage(content) {
+async function renderObrasPage(content) {
+  await loadObras();
   const total = OBRAS_CADASTRADAS.length;
   const emAndamento = OBRAS_CADASTRADAS.filter(o => o.status === 'ongoing').length;
   const criticas = OBRAS_CADASTRADAS.filter(o => o.impacto >= 70 && o.status !== 'completed').length;
@@ -2831,7 +2864,7 @@ window.closeNewObraForm = function() {
   if (card) card.style.display = 'none';
 };
 
-window.saveNewObra = function() {
+window.saveNewObra = async function() {
   const local = document.getElementById('obraLocal').value.trim();
   const bairro = document.getElementById('obraBairro').value;
   const tipo = document.getElementById('obraTipo').value;
@@ -2848,20 +2881,20 @@ window.saveNewObra = function() {
   const marcador = impacto >= 70 ? 'red' : impacto >= 40 ? 'yellow' : 'green';
   const urgenciaLabel = urgencia <= 7 ? 'urgente' : urgencia <= 15 ? 'alta' : urgencia <= 30 ? 'media' : 'baixa';
 
-  const newObra = {
-    id: Date.now(), local, bairro, tipo, dataInicio,
+  const payload = {
+    local, bairro, tipo, dataInicio,
     duracao, impacto, status, lat, lng, marcador,
-    urgencia: urgenciaLabel, grauUrgencia: urgencia
+    urgencia: urgenciaLabel, grauUrgencia: urgencia, descricao: ''
   };
 
-  OBRAS_CADASTRADAS.push(newObra);
-  // Also add to global MOCK_DATA.obras for the dashboard
-  MOCK_DATA.obras.push({ ...newObra, duracao: duracao + ' dias' });
+  try {
+    await apiFetch('/obras', { method: 'POST', body: JSON.stringify(payload) });
+    await loadObras();
+  } catch (e) { console.error(e); alert('Erro ao salvar obra.'); return; }
 
   closeNewObraForm();
   filterObrasTable();
 
-  // Flash success
   const btn = document.querySelector('#obraFormCard .btn-primary');
   if (btn) { btn.innerHTML = '<i class="fa-solid fa-check"></i> Salvo!'; btn.style.background='#10b981'; setTimeout(()=>{btn.innerHTML='<i class="fa-solid fa-floppy-disk"></i> Salvar Obra';btn.style.background='';},2000); }
 };
@@ -2939,22 +2972,22 @@ function renderObrasTable(obras) {
   }).join('');
 }
 
-window.changeObraStatus = function(id, newStatus) {
+window.changeObraStatus = async function(id, newStatus) {
+  try {
+    await apiFetch(`/obras/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status: newStatus }) });
+  } catch (e) { console.error(e); return; }
   const obra = OBRAS_CADASTRADAS.find(o => o.id === id);
-  if (obra) {
-    obra.status = newStatus;
-    // Update MOCK_DATA too
-    const mo = MOCK_DATA.obras.find(o => o.id === id);
-    if (mo) mo.status = newStatus;
-  }
+  if (obra) obra.status = newStatus;
+  const mo = MOCK_DATA.obras.find(o => o.id === id);
+  if (mo) mo.status = newStatus;
 };
 
-window.deleteObra = function(id) {
+window.deleteObra = async function(id) {
   if (!confirm('Remover esta obra?')) return;
-  const idx = OBRAS_CADASTRADAS.findIndex(o => o.id === id);
-  if (idx > -1) OBRAS_CADASTRADAS.splice(idx, 1);
-  const midx = MOCK_DATA.obras.findIndex(o => o.id === id);
-  if (midx > -1) MOCK_DATA.obras.splice(midx, 1);
+  try {
+    await apiFetch(`/obras/${id}`, { method: 'DELETE' });
+    await loadObras();
+  } catch (e) { console.error(e); alert('Erro ao remover obra.'); return; }
   filterObrasTable();
 };
 
@@ -3026,28 +3059,33 @@ window.closeEditModal = function() {
   if (modal) modal.style.display = 'none';
 };
 
-window.saveEditObra = function(id) {
+window.saveEditObra = async function(id) {
   const obra = OBRAS_CADASTRADAS.find(o => o.id === id);
   if (!obra) return;
 
-  obra.local = document.getElementById('editLocal').value.trim() || obra.local;
-  obra.bairro = document.getElementById('editBairro').value.trim() || obra.bairro;
-  obra.tipo = document.getElementById('editTipo').value.trim() || obra.tipo;
-  obra.dataInicio = document.getElementById('editDataInicio').value || obra.dataInicio;
-  obra.duracao = parseInt(document.getElementById('editDuracao').value) || obra.duracao;
-  obra.impacto = parseInt(document.getElementById('editImpacto').value) || obra.impacto;
-  obra.status = document.getElementById('editStatus').value;
-  obra.grauUrgencia = parseInt(document.getElementById('editUrgencia').value) || obra.grauUrgencia;
-  obra.marcador = obra.impacto >= 70 ? 'red' : obra.impacto >= 40 ? 'yellow' : 'green';
+  const dados = {
+    local:        document.getElementById('editLocal').value.trim() || obra.local,
+    bairro:       document.getElementById('editBairro').value.trim() || obra.bairro,
+    tipo:         document.getElementById('editTipo').value.trim() || obra.tipo,
+    dataInicio:   document.getElementById('editDataInicio').value || obra.dataInicio,
+    duracao:      parseInt(document.getElementById('editDuracao').value) || obra.duracao,
+    impacto:      parseInt(document.getElementById('editImpacto').value) || obra.impacto,
+    status:       document.getElementById('editStatus').value,
+    grauUrgencia: parseInt(document.getElementById('editUrgencia').value) || obra.grauUrgencia,
+    lat:          obra.lat,
+    lng:          obra.lng,
+    urgencia:     obra.urgencia,
+    descricao:    obra.descricao
+  };
+  dados.marcador = dados.impacto >= 70 ? 'red' : dados.impacto >= 40 ? 'yellow' : 'green';
 
-  // Update MOCK_DATA too
-  const mo = MOCK_DATA.obras.find(o => o.id === id);
-  if (mo) Object.assign(mo, obra, { duracao: obra.duracao + ' dias' });
+  try {
+    await apiFetch(`/obras/${id}`, { method: 'PUT', body: JSON.stringify(dados) });
+    await loadObras();
+  } catch (e) { console.error(e); alert('Erro ao salvar alterações.'); return; }
 
   closeEditModal();
   filterObrasTable();
-
-  // Refresh fixed map
 };
 
 
@@ -3057,112 +3095,62 @@ window.saveEditObra = function(id) {
 //  PÁGINA: MURAL DE AVISOS
 // ══════════════════════════════════════════════════════════════
 
-const MURAL_USERS = [
-  { id: 1, initials: 'EM', name: 'Eng. Mateus',    role: 'Gestor SP',         color: '#2563eb', isMe: true  },
-  { id: 2, initials: 'AC', name: 'Ana Carvalho',    role: 'Técnica de Campo',  color: '#0d9488', isMe: false },
-  { id: 3, initials: 'RF', name: 'Roberto Farias',  role: 'Inspetor Norte',    color: '#8b5cf6', isMe: false },
-  { id: 4, initials: 'LP', name: 'Lívia Prado',     role: 'Coord. Sul',        color: '#f59e0b', isMe: false },
-  { id: 5, initials: 'DT', name: 'Diego Torres',    role: 'Eng. Tráfego',     color: '#ef4444', isMe: false },
-  { id: 6, initials: 'CS', name: 'Camila Santos',   role: 'Analista Leste',    color: '#10b981', isMe: false },
-  { id: 7, initials: 'FO', name: 'Felipe Oliveira', role: 'Tec. Semáforos',   color: '#f97316', isMe: false },
-  { id: 8, initials: 'MR', name: 'Marina Ramos',    role: 'Supervisora Oeste', color: '#06b6d4', isMe: false },
-];
+// Usuários do mural (carregados via GET /mural/usuarios)
+let MURAL_USERS = [];
 
-let muralAvisos = [
-  {
-    id: 1, pinned: true,
-    author: MURAL_USERS[1], tipo: 'urgente', regiao: 'Zona Leste',
-    title: 'Afundamento crítico na Radial Leste — km 8',
-    desc: 'Detectado afundamento de aproximadamente 40 cm no pavimento próximo ao viaduto Bresser. Trecho interditado no sentido centro. Aguardando equipe de emergência.',
-    time: new Date(Date.now() - 8*60000),
-    likes: 7, liked: false,
-    comments: [
-      { author: MURAL_USERS[2], text: 'Equipe do Norte confirmou deslocamento. ETA 25 min.', time: new Date(Date.now() - 5*60000) },
-      { author: MURAL_USERS[0], text: 'Sinalizando desvio pela Av. Celso Garcia. Atualizando mapa.', time: new Date(Date.now() - 2*60000) },
-    ],
-    commentsOpen: false, hasImg: true,
-  },
-  {
-    id: 2, pinned: false,
-    author: MURAL_USERS[4], tipo: 'urgente', regiao: 'Centro',
-    title: 'Semáforo apagado no cruzamento Viaduto do Chá × R. Direita',
-    desc: 'Falha de energia no quadro de controle. Agentes de trânsito já acionados para o local. Previsão de normalização em 2h.',
-    time: new Date(Date.now() - 22*60000),
-    likes: 4, liked: false,
-    comments: [
-      { author: MURAL_USERS[6], text: 'Técnico de semáforos a caminho. Será necessária substituição da placa de controle.', time: new Date(Date.now() - 15*60000) },
-    ],
-    commentsOpen: false, hasImg: false,
-  },
-  {
-    id: 3, pinned: false,
-    author: MURAL_USERS[2], tipo: 'atencao', regiao: 'Zona Norte',
-    title: 'Pico de tráfego 34% acima da média — Marginal Tietê sentido Castelo',
-    desc: 'Volume registrado às 08h20 excedeu limiar histórico. Recomenda-se ativação do sinal de coordenação verde para fluxo norte–sul na malha de vias paralelas.',
-    time: new Date(Date.now() - 45*60000),
-    likes: 2, liked: false, comments: [], commentsOpen: false, hasImg: false,
-  },
-  {
-    id: 4, pinned: false,
-    author: MURAL_USERS[1], tipo: 'info', regiao: 'Av. Paulista',
-    title: 'Início de obras de recapeamento — Av. Paulista trecho Consolação',
-    desc: 'As obras programadas terão início amanhã às 01h. Equipamentos já posicionados. Impacto estimado em 72% — desvios sinalizados via app CET SP.',
-    time: new Date(Date.now() - 2*3600000),
-    likes: 9, liked: false,
-    comments: [
-      { author: MURAL_USERS[0], text: 'Comunicado enviado para a imprensa local. Câmeras monitorando o trecho.', time: new Date(Date.now() - 90*60000) },
-    ],
-    commentsOpen: false, hasImg: false,
-  },
-  {
-    id: 5, pinned: false,
-    author: MURAL_USERS[5], tipo: 'atencao', regiao: 'Zona Leste',
-    title: 'Alagamento pontual na R. do Gasômetro após chuva intensa',
-    desc: 'Lâmina de água de ~15 cm bloqueando faixa da direita. Bomba de recalque ativada. Monitoramento contínuo até normalização.',
-    time: new Date(Date.now() - 3*3600000),
-    likes: 3, liked: false, comments: [], commentsOpen: false, hasImg: false,
-  },
-  {
-    id: 6, pinned: false,
-    author: MURAL_USERS[7], tipo: 'concluido', regiao: 'Zona Oeste',
-    title: 'Obra de galeria de drenagem concluída — Av. Rebouças km 3',
-    desc: 'Trecho totalmente liberado após 12 dias de obras. Sinalização definitiva implantada. Pavimento em excelente estado.',
-    time: new Date(Date.now() - 5*3600000),
-    likes: 15, liked: false,
-    comments: [
-      { author: MURAL_USERS[0], text: 'Parabéns à equipe! Prazo cumprido com 2 dias de antecedência.', time: new Date(Date.now() - 4.5*3600000) },
-    ],
-    commentsOpen: false, hasImg: false,
-  },
-  {
-    id: 7, pinned: false,
-    author: MURAL_USERS[0], tipo: 'info', regiao: 'Zona Sul',
-    title: 'Relatório semanal de tráfego disponível — semana 27',
-    desc: 'O relatório consolidado com dados de fluxo, incidentes e obras da semana 27/2025 está disponível no sistema. Destaques: redução de 8% no congestionamento na Zona Sul.',
-    time: new Date(Date.now() - 8*3600000),
-    likes: 6, liked: false, comments: [], commentsOpen: false, hasImg: false,
-  },
-  {
-    id: 8, pinned: false,
-    author: MURAL_USERS[1], tipo: 'planejado', regiao: 'Centro',
-    title: 'Interdição planejada: Viaduto do Chá — inspeção estrutural (01/08)',
-    desc: 'Na próxima sexta-feira haverá inspeção estrutural completa. Interdição das 22h às 06h. Desvios serão sinalizados com 48h de antecedência.',
-    time: new Date(Date.now() - 12*3600000),
-    likes: 5, liked: false, comments: [], commentsOpen: false, hasImg: false,
-  },
-];
+async function loadMuralUsers() {
+  try {
+    const rows = await apiFetch('/mural/usuarios') || [];
+    const myId = getUsuarioId();
+    MURAL_USERS = rows.map(function (u) {
+      return Object.assign({}, u, { isMe: u.id === myId });
+    });
+  } catch (e) {
+    console.error('Falha ao carregar usuários do mural:', e);
+    MURAL_USERS = [];
+  }
+}
 
-let muralChatMessages = [
-  { author: MURAL_USERS[1], text: 'Bom dia equipe! Situação na Radial Leste está crítica. Todos atualizados?', time: new Date(Date.now() - 30*60000) },
-  { author: MURAL_USERS[2], text: 'Ciente. Já estou deslocando para o local com a equipe Norte.', time: new Date(Date.now() - 28*60000) },
-  { author: MURAL_USERS[4], text: 'Semáforo do Viaduto do Chá também saiu. Felipe, você pode dar uma passada?', time: new Date(Date.now() - 20*60000) },
-  { author: MURAL_USERS[6], text: 'Estou a 10 min do local!', time: new Date(Date.now() - 19*60000) },
-  { author: MURAL_USERS[5], text: 'Alagamento na Zona Leste normalizado. 👍', time: new Date(Date.now() - 5*60000) },
-];
+let muralAvisos = [];
+let muralChatMessages = [];
+
+async function loadMuralAvisos() {
+  try {
+    const rows = await apiFetch(`/mural/avisos?idUsuario=${getUsuarioId()}`) || [];
+    const myId = getUsuarioId();
+    muralAvisos = rows.map(function (a) {
+      a.time = new Date(a.time);
+      a.comments = (a.comments || []).map(function (c) {
+        c.time = new Date(c.time);
+        if (c.author) c.author.isMe = c.author.id === myId;
+        return c;
+      });
+      if (a.author) a.author.isMe = a.author.id === myId;
+      return a;
+    });
+  } catch (e) {
+    console.error('Falha ao carregar avisos do mural:', e);
+    muralAvisos = [];
+  }
+}
+
+async function loadMuralChat() {
+  try {
+    const rows = await apiFetch('/mural/chat') || [];
+    const myId = getUsuarioId();
+    muralChatMessages = rows.map(function (m) {
+      m.time = new Date(m.time);
+      if (m.author) m.author.isMe = m.author.id === myId;
+      return m;
+    });
+  } catch (e) {
+    console.error('Falha ao carregar chat:', e);
+    muralChatMessages = [];
+  }
+}
 
 let muralTypeFilter   = 'all';
 let muralRegionFilter = 'all';
-let muralNextId       = muralAvisos.length + 1;
 
 // ── HELPERS ────────────────────────────────
 function muralTimeAgo(date) {
@@ -3185,7 +3173,8 @@ const MURAL_TYPE_CFG = {
 };
 
 // ── RENDER PAGE ────────────────────────────
-function renderMuralPage(content) {
+async function renderMuralPage(content) {
+  await Promise.all([loadMuralUsers(), loadMuralAvisos(), loadMuralChat()]);
   content.innerHTML = `
     <!-- MURAL STYLES -->
     <style>
@@ -3640,11 +3629,18 @@ function muralApplyFilters() {
   muralRegionFilter = sel ? sel.value : 'all';
   muralRenderAvisos();
 }
-function muralToggleLike(id) {
+async function muralToggleLike(id) {
   const a = muralAvisos.find(x => x.id === id);
   if (!a) return;
-  a.liked = !a.liked;
-  a.likes += a.liked ? 1 : -1;
+  let estado;
+  try {
+    estado = await apiFetch(`/mural/avisos/${id}/curtir`, {
+      method: 'POST',
+      body: JSON.stringify({ idUsuario: getUsuarioId() })
+    });
+  } catch (e) { console.error(e); return; }
+  a.liked = !!estado.liked;
+  a.likes = estado.likes;
   const cnt = document.getElementById(`mlike-${id}`);
   const btn = cnt?.closest('.mural-action');
   if (cnt) cnt.textContent = a.likes;
@@ -3663,15 +3659,21 @@ function muralToggleComments(id) {
   if (sec) sec.classList.toggle('open', a.commentsOpen);
   if (a.commentsOpen) setTimeout(() => document.getElementById(`mcinput-${id}`)?.focus(), 100);
 }
-function muralAddComment(id) {
+async function muralAddComment(id) {
   const input = document.getElementById(`mcinput-${id}`);
   const text = input?.value.trim();
   if (!text) return;
   const a = muralAvisos.find(x => x.id === id);
   if (!a) return;
-  a.comments.push({ author: MURAL_USERS[0], text, time: new Date() });
-  const cnt = document.getElementById('mStatComents');
-  if (cnt) cnt.textContent = parseInt(cnt.textContent) + 1;
+  try {
+    await apiFetch(`/mural/avisos/${id}/comentarios`, {
+      method: 'POST',
+      body: JSON.stringify({ idUsuario: getUsuarioId(), texto: text })
+    });
+    await loadMuralAvisos();
+  } catch (e) { console.error(e); showToast('Erro ao comentar.', 'info'); return; }
+  const updated = muralAvisos.find(x => x.id === id);
+  if (updated) updated.commentsOpen = true;
   muralRenderAvisos();
   setTimeout(() => {
     const sec = document.getElementById(`mcomments-${id}`);
@@ -3679,23 +3681,28 @@ function muralAddComment(id) {
   }, 50);
   showToast('Comentário adicionado!', 'success');
 }
-function muralTogglePin(id) {
+async function muralTogglePin(id) {
+  try {
+    await apiFetch(`/mural/avisos/${id}/pin`, { method: 'POST' });
+    await loadMuralAvisos();
+  } catch (e) { console.error(e); return; }
   const a = muralAvisos.find(x => x.id === id);
-  if (!a) return;
-  a.pinned = !a.pinned;
   muralRenderAvisos();
-  showToast(a.pinned ? 'Aviso fixado!' : 'Aviso desafixado.', 'info');
+  showToast(a && a.pinned ? 'Aviso fixado!' : 'Aviso desafixado.', 'info');
 }
 function muralShare(id) {
   const a = muralAvisos.find(x => x.id === id);
   showToast(`Link do aviso "${(a?.title||'').substring(0,30)}…" copiado!`, 'success');
 }
 
-window.muralDeleteAviso = function(id) {
+window.muralDeleteAviso = async function(id) {
   const a = muralAvisos.find(x => x.id === id);
   if (!a) return;
   if (!confirm(`Deseja realmente apagar o aviso "${a.title.substring(0,50)}"?`)) return;
-  muralAvisos = muralAvisos.filter(x => x.id !== id);
+  try {
+    await apiFetch(`/mural/avisos/${id}`, { method: 'DELETE' });
+    await loadMuralAvisos();
+  } catch (e) { console.error(e); showToast('Erro ao apagar aviso.', 'info'); return; }
   muralUpdateStats();
   muralRenderAvisos();
   showToast('Aviso apagado.', 'info');
@@ -3763,15 +3770,19 @@ window.muralOpenEdit = function(id) {
   document.getElementById('mEditRegiao').value= a.regiao;
 };
 
-window.muralSaveEdit = function(id) {
-  const a = muralAvisos.find(x => x.id === id);
-  if (!a) return;
+window.muralSaveEdit = async function(id) {
   const title = document.getElementById('mEditTitle')?.value.trim();
   if (!title) { showToast('Informe o titulo do aviso.', 'info'); return; }
-  a.title  = title;
-  a.desc   = document.getElementById('mEditDesc')?.value.trim() || a.desc;
-  a.tipo   = document.getElementById('mEditTipo')?.value   || a.tipo;
-  a.regiao = document.getElementById('mEditRegiao')?.value || a.regiao;
+  const payload = {
+    title,
+    desc:   document.getElementById('mEditDesc')?.value.trim() || '',
+    tipo:   document.getElementById('mEditTipo')?.value,
+    regiao: document.getElementById('mEditRegiao')?.value
+  };
+  try {
+    await apiFetch(`/mural/avisos/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
+    await loadMuralAvisos();
+  } catch (e) { console.error(e); showToast('Erro ao atualizar aviso.', 'info'); return; }
   document.getElementById('muralEditModal')?.remove();
   muralUpdateStats();
   muralRenderAvisos();
@@ -3786,19 +3797,24 @@ function muralOpenModal() {
 function muralCloseModal() {
   document.getElementById('muralModal')?.classList.remove('open');
 }
-function muralPostAviso() {
+async function muralPostAviso() {
   const title  = document.getElementById('mModalTitle')?.value.trim();
   const desc   = document.getElementById('mModalDesc')?.value.trim();
   const tipo   = document.getElementById('mModalTipo')?.value;
   const regiao = document.getElementById('mModalRegiao')?.value;
   const local  = document.getElementById('mModalLocal')?.value.trim();
   if (!title) { showToast('Informe o título do aviso.', 'info'); return; }
-  muralAvisos.unshift({
-    id: muralNextId++, pinned: false,
-    author: MURAL_USERS[0], tipo, regiao,
-    title, desc: desc || (local ? `Local: ${local}` : 'Sem descrição adicional.'),
-    time: new Date(), likes: 0, liked: false, comments: [], commentsOpen: false, hasImg: false,
-  });
+  try {
+    await apiFetch('/mural/avisos', {
+      method: 'POST',
+      body: JSON.stringify({
+        idUsuario: getUsuarioId(),
+        tipo, regiao, title,
+        desc: desc || (local ? `Local: ${local}` : 'Sem descrição adicional.')
+      })
+    });
+    await loadMuralAvisos();
+  } catch (e) { console.error(e); showToast('Erro ao publicar aviso.', 'info'); return; }
   muralCloseModal();
   if (document.getElementById('mModalTitle')) document.getElementById('mModalTitle').value = '';
   if (document.getElementById('mModalDesc'))  document.getElementById('mModalDesc').value  = '';
@@ -3807,16 +3823,18 @@ function muralPostAviso() {
   muralRenderAvisos();
   showToast('Aviso publicado com sucesso!', 'success');
 }
-function muralPostQuick() {
+async function muralPostQuick() {
   const title  = document.getElementById('mQuickTitle')?.value.trim();
   const tipo   = document.getElementById('mQuickTipo')?.value;
   const regiao = document.getElementById('mQuickRegiao')?.value;
   if (!title) { showToast('Informe o título do aviso rápido.', 'info'); return; }
-  muralAvisos.unshift({
-    id: muralNextId++, pinned: false,
-    author: MURAL_USERS[0], tipo, regiao,
-    title, desc: '', time: new Date(), likes: 0, liked: false, comments: [], commentsOpen: false, hasImg: false,
-  });
+  try {
+    await apiFetch('/mural/avisos', {
+      method: 'POST',
+      body: JSON.stringify({ idUsuario: getUsuarioId(), tipo, regiao, title, desc: '' })
+    });
+    await loadMuralAvisos();
+  } catch (e) { console.error(e); showToast('Erro ao publicar aviso.', 'info'); return; }
   if (document.getElementById('mQuickTitle')) { document.getElementById('mQuickTitle').value = ''; document.getElementById('mQuickTitleCount').textContent = '0/60'; }
   muralUpdateStats();
   muralRenderAvisos();
@@ -3851,14 +3869,19 @@ function muralRenderChat() {
   `).join('');
   container.scrollTop = container.scrollHeight;
 }
-function muralSendChat() {
+async function muralSendChat() {
   const input = document.getElementById('muralChatInput');
   const text = input?.value.trim();
   if (!text) return;
-  muralChatMessages.push({ author: MURAL_USERS[0], text, time: new Date() });
+  try {
+    await apiFetch('/mural/chat', {
+      method: 'POST',
+      body: JSON.stringify({ idUsuario: getUsuarioId(), texto: text })
+    });
+    await loadMuralChat();
+  } catch (e) { console.error(e); return; }
   if (input) input.value = '';
   muralRenderChat();
-  muralSimulateReply();
 }
 function muralChatKey(e) { if (e.key === 'Enter') muralSendChat(); }
 function muralSimulateReply() {
