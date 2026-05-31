@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Mural Operacional
+    </title>
+
+    <link rel="stylesheet" href="../css/global.css">
+    <link rel="stylesheet" href="../css/layout.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="./mural.css">
+
+</head>
+
+<body>
+
+    <div class="layout">
+
+        <aside class="sidebar">
+
+            <div class="logo">
+
+                New<span>Road</span>
+
+            </div>
+
+            <nav class="menu">
+
+                <a href="../dashboard/index.html">
+
+                    Dashboard
+
+                </a>
+
+                <a href="../obras/obras.html">
+
+                    Obras
+
+                </a>
+
+                <a
+                    href="../mural/mural.html"
+                    class="ativo"
+                >
+
+                    Mural
+
+                </a>
+
+            </nav>
+
+        </aside>
+
+        <main class="conteudo">
+
+            <header class="topbar">
+
+                <div>
+
+                    <h1>
+                        Mural Operacional
+                    </h1>
+
+                    <p>
+                        Comunicação interna da operação
+                    </p>
+
+                </div>
+
+            </header>
+
+            <section class="novo-aviso">
+
+                <div class="card">
+
+                    <h2>
+                        Novo Aviso
+                    </h2>
+
+                    <div class="form-grid">
+
+                        <div class="campo">
+
+                            <label>
+                                Tipo
+                            </label>
+
+                            <select id="inputTipo">
+
+                                <option value="urgente">
+                                    Urgente
+                                </option>
+
+                                <option value="atencao">
+                                    Atenção
+                                </option>
+
+                                <option value="info">
+                                    Informação
+                                </option>
+
+                                <option value="planejado">
+                                    Planejado
+                                </option>
+
+                                <option value="concluido">
+                                    Concluído
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="campo">
+
+                            <label>
+                                Região
+                            </label>
+
+                            <input
+                                type="text"
+                                id="inputRegiao"
+                            >
+
+                        </div>
+
+                        <div class="campo">
+
+                            <label>
+                                Pinado
+                            </label>
+
+                            <select id="inputPinned">
+
+                                <option value="0">
+                                    Não
+                                </option>
+
+                                <option value="1">
+                                    Sim
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                    <div class="campo">
+
+                        <label>
+                            Título
+                        </label>
+
+                        <input
+                            type="text"
+                            id="inputTitulo"
+                        >
+
+                    </div>
+
+                    <div class="campo">
+
+                        <label>
+                            Descrição
+                        </label>
+
+                        <textarea id="inputDescricao"></textarea>
+
+                    </div>
+
+                    <button
+                        class="btn-primary"
+                        onclick="publicarAviso()"
+                    >
+
+                        Publicar Aviso
+
+                    </button>
+
+                </div>
+
+            </section>
+
+            <section class="mural-grid">
+
+                <div
+                    class="feed-container"
+                    id="feedAvisos"
+                >
+
+                </div>
+
+                <aside class="chat-container">
+
+                    <div class="chat-card">
+
+                        <div class="chat-header">
+
+                            <h3>
+                                Chat Operacional
+                            </h3>
+
+                        </div>
+
+                        <div
+                            class="chat-mensagens"
+                            id="chatMensagens"
+                        >
+
+                        </div>
+
+                        <div class="chat-input">
+
+                            <input
+                                type="text"
+                                id="inputChat"
+                                placeholder="Mensagem..."
+                            >
+
+                            <button onclick="enviarMensagem()">
+
+                                Enviar
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </aside>
+
+            </section>
+
+        </main>
+
+    </div>
+
+    <script src="./mural.js"></script>
+
+</body>
+
+</html>

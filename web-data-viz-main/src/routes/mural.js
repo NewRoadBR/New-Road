@@ -1,21 +1,63 @@
 var express = require("express");
+
 var router = express.Router();
+
 var muralController = require("../controllers/muralController");
 
-// avisos
-router.get("/avisos",                  function (req, res) { muralController.listarAvisos(req, res); });
-router.post("/avisos",                 function (req, res) { muralController.criarAviso(req, res); });
-router.put("/avisos/:id",              function (req, res) { muralController.atualizarAviso(req, res); });
-router.delete("/avisos/:id",           function (req, res) { muralController.deletarAviso(req, res); });
-router.post("/avisos/:id/pin",         function (req, res) { muralController.togglePin(req, res); });
-router.post("/avisos/:id/curtir",      function (req, res) { muralController.curtir(req, res); });
-router.post("/avisos/:id/comentarios", function (req, res) { muralController.comentar(req, res); });
+/*
+=========================================================
+AVISOS
+=========================================================
+*/
 
-// usuários do mural
-router.get("/usuarios",                function (req, res) { muralController.listarUsuariosMural(req, res); });
+router.get("/listar", function (req, res) {
+  muralController.listarAvisos(req, res);
+});
 
-// chat
-router.get("/chat",                    function (req, res) { muralController.listarChat(req, res); });
-router.post("/chat",                   function (req, res) { muralController.enviarChat(req, res); });
+router.post("/publicar", function (req, res) {
+  muralController.publicarAviso(req, res);
+});
+
+router.delete("/deletar/:id", function (req, res) {
+  muralController.deletarAviso(req, res);
+});
+
+/*
+=========================================================
+CURTIDAS
+=========================================================
+*/
+
+router.post("/curtir", function (req, res) {
+  muralController.curtirAviso(req, res);
+});
+
+/*
+=========================================================
+COMENTÁRIOS
+=========================================================
+*/
+
+router.get("/comentarios/:idAviso", function (req, res) {
+  muralController.listarComentarios(req, res);
+});
+
+router.post("/comentar", function (req, res) {
+  muralController.comentarAviso(req, res);
+});
+
+/*
+=========================================================
+CHAT
+=========================================================
+*/
+
+router.get("/chat", function (req, res) {
+  muralController.listarChat(req, res);
+});
+
+router.post("/chat/enviar", function (req, res) {
+  muralController.enviarMensagem(req, res);
+});
 
 module.exports = router;
