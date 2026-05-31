@@ -17,3 +17,9 @@ dependency-reduced-pom.xml
 csv/
 xlsx_input/
 *.jar
+
+
+# Arquivos de ambiente
+.env
+.env.dev
+*.env*

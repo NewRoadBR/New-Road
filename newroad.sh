@@ -60,15 +60,22 @@ echo ""
 # ------------------------------------------------------------
 echo -e "${YELLOW}[1/4] Atualizando código (git pull)...${NC}"
 
-git pull
+git fetch origin
+
+git reset --hard origin/main
 
 if [ $? -ne 0 ]; then
-    echo -e "${RED}[ERRO] Falha no git pull.${NC}"
+    echo -e "${RED}[ERRO] Falha ao atualizar código.${NC}"
     exit 1
 fi
 
 echo -e "${GREEN}[OK] Código atualizado!${NC}"
 echo ""
+
+# ------------------------------------------------------------
+# 1. ATUALIZAR CÓDIGO
+# ------------------------------------------------------------
+
 
 # ------------------------------------------------------------
 # 2. BUILD E SUBIR MYSQL + WEB
@@ -216,4 +223,3 @@ echo -e "${GREEN}           Tudo pronto! NewRoad está no ar.${NC}"
 echo -e "${GREEN}============================================================${NC}"
 
 echo ""
-```
