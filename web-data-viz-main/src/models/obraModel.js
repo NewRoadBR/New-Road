@@ -1,105 +1,130 @@
-var database = require("../database/config");
+const database = require("../database/config");
 
 function listar() {
-    var sql = `
-        SELECT
-            id,
-            local,
-            bairro,
-            tipo,
-            DATE_FORMAT(data_inicio, '%Y-%m-%d') AS dataInicio,
-            duracao,
-            impacto,
-            status,
-            lat,
-            lng,
-            marcador,
-            urgencia,
-            grau_urgencia AS grauUrgencia,
-            descricao
+
+    const instrucao = `
+        SELECT *
         FROM obra
-        ORDER BY id;
+        ORDER BY created_at DESC;
     `;
-    return database.executar(sql);
+
+    return database.executar(instrucao);
+}
+
+function listarPorRodovia(rodovia) {
+
+    const instrucao = `
+        SELECT *
+        FROM obra
+        WHERE rodovia = '${rodovia}'
+        ORDER BY data_inicio DESC;
+    `;
+
+    return database.executar(instrucao);
 }
 
 function buscarPorId(id) {
-    var sql = `
-        SELECT
-            id, local, bairro, tipo,
-            DATE_FORMAT(data_inicio, '%Y-%m-%d') AS dataInicio,
-            duracao, impacto, status, lat, lng, marcador,
-            urgencia, grau_urgencia AS grauUrgencia, descricao
+
+    const instrucao = `
+        SELECT *
         FROM obra
-        WHERE id = ?;
+        WHERE id = ${id};
     `;
-    return database.executar(sql, [id]);
+
+    return database.executar(instrucao);
 }
 
-function criar(dados) {
-    var sql = `
-        INSERT INTO obra
-            (local, bairro, tipo, data_inicio, duracao, impacto, status, lat, lng, marcador, urgencia, grau_urgencia, descricao)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+function cadastrar(
+    rodovia,
+    titulo,
+    descricao,
+    tipo,
+    status,
+    dataInicio,
+    dataFim,
+    horaInicio,
+    horaFim,
+    impactoPrevisto,
+    fkEmpresa
+) {
+
+    const instrucao = `
+        INSERT INTO obra (
+            rodovia,
+            titulo,
+            descricao,
+            tipo,
+            status,
+            data_inicio,
+            data_fim,
+            hora_inicio,
+            hora_fim,
+            impacto_previsto,
+            fk_empresa
+        ) VALUES (
+            '${rodovia}',
+            '${titulo}',
+            '${descricao}',
+            '${tipo}',
+            '${status}',
+            '${dataInicio}',
+            '${dataFim}',
+            ${horaInicio},
+            ${horaFim},
+            ${impactoPrevisto},
+            ${fkEmpresa}
+        );
     `;
-    return database.executar(sql, [
-        dados.local,
-        dados.bairro,
-        dados.tipo,
-        dados.dataInicio,
-        dados.duracao,
-        dados.impacto,
-        dados.status,
-        dados.lat,
-        dados.lng,
-        dados.marcador,
-        dados.urgencia,
-        dados.grauUrgencia,
-        dados.descricao
-    ]);
+
+    return database.executar(instrucao);
 }
 
-function atualizar(id, dados) {
-    var sql = `
-        UPDATE obra SET
-            local = ?, bairro = ?, tipo = ?, data_inicio = ?, duracao = ?,
-            impacto = ?, status = ?, lat = ?, lng = ?, marcador = ?,
-            urgencia = ?, grau_urgencia = ?, descricao = ?
-        WHERE id = ?;
-    `;
-    return database.executar(sql, [
-        dados.local,
-        dados.bairro,
-        dados.tipo,
-        dados.dataInicio,
-        dados.duracao,
-        dados.impacto,
-        dados.status,
-        dados.lat,
-        dados.lng,
-        dados.marcador,
-        dados.urgencia,
-        dados.grauUrgencia,
-        dados.descricao,
-        id
-    ]);
-}
+function atualizar(
+    id,
+    titulo,
+    descricao,
+    tipo,
+    status,
+    dataInicio,
+    dataFim,
+    horaInicio,
+    horaFim,
+    impactoPrevisto
+) {
 
-function atualizarStatus(id, status) {
-    var sql = `UPDATE obra SET status = ? WHERE id = ?;`;
-    return database.executar(sql, [status, id]);
+    const instrucao = `
+        UPDATE obra
+        SET
+            titulo = '${titulo}',
+            descricao = '${descricao}',
+            tipo = '${tipo}',
+            status = '${status}',
+            data_inicio = '${dataInicio}',
+            data_fim = '${dataFim}',
+            hora_inicio = ${horaInicio},
+            hora_fim = ${horaFim},
+            impacto_previsto = ${impactoPrevisto}
+        WHERE id = ${id};
+    `;
+
+    return database.executar(instrucao);
 }
 
 function deletar(id) {
-    var sql = `DELETE FROM obra WHERE id = ?;`;
-    return database.executar(sql, [id]);
+
+    const instrucao = `
+        DELETE FROM obra
+        WHERE id = ${id};
+    `;
+
+    return database.executar(instrucao);
 }
 
 module.exports = {
     listar,
+    listarPorRodovia,
     buscarPorId,
-    criar,
+    cadastrar,
     atualizar,
-    atualizarStatus,
     deletar
 };

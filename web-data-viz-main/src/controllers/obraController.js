@@ -1,120 +1,161 @@
-var obraModel = require("../models/obraModel");
-
-var STATUS_VALIDOS = ["planned", "ongoing", "completed", "critical"];
-
-function calcularMarcador(impacto) {
-    if (impacto >= 70) return "red";
-    if (impacto >= 40) return "yellow";
-    return "green";
-}
-
-function calcularUrgencia(grauUrgencia) {
-    if (grauUrgencia <= 7)  return "urgente";
-    if (grauUrgencia <= 15) return "alta";
-    if (grauUrgencia <= 30) return "media";
-    return "baixa";
-}
-
-function montarPayload(req) {
-    var b = req.body;
-    var impacto = parseInt(b.impacto);
-    if (isNaN(impacto)) impacto = 50;
-    var grau = parseInt(b.grauUrgencia);
-    if (isNaN(grau)) grau = 30;
-
-    return {
-        local: b.local,
-        bairro: b.bairro || null,
-        tipo: b.tipo || null,
-        dataInicio: b.dataInicio || null,
-        duracao: parseInt(b.duracao) || 7,
-        impacto: impacto,
-        status: STATUS_VALIDOS.indexOf(b.status) >= 0 ? b.status : "planned",
-        lat: parseFloat(b.lat) || null,
-        lng: parseFloat(b.lng) || null,
-        marcador: b.marcador || calcularMarcador(impacto),
-        urgencia: b.urgencia || calcularUrgencia(grau),
-        grauUrgencia: grau,
-        descricao: b.descricao || null
-    };
-}
+const obraModel = require("../models/obraModel");
 
 function listar(req, res) {
+
     obraModel.listar()
-        .then(function (resultado) {
+        .then(resultado => {
             res.status(200).json(resultado);
         })
-        .catch(function (erro) {
-            console.log("Erro ao listar obras:", erro);
-            res.status(500).json(erro.sqlMessage || erro.message);
+        .catch(erro => {
+            console.log(erro);
+            res.status(500).json(erro.sqlMessage);
         });
+
+}
+
+function listarPorRodovia(req, res) {
+
+    const rodovia = req.params.rodovia;
+
+    obraModel.listarPorRodovia(rodovia)
+        .then(resultado => {
+            res.status(200).json(resultado);
+        })
+        .catch(erro => {
+            console.log(erro);
+            res.status(500).json(erro.sqlMessage);
+        });
+
 }
 
 function buscarPorId(req, res) {
-    obraModel.buscarPorId(req.params.id)
-        .then(function (resultado) {
-            if (!resultado.length) return res.status(404).send("Obra não encontrada");
-            res.status(200).json(resultado[0]);
+
+    const id = req.params.id;
+
+    obraModel.buscarPorId(id)
+        .then(resultado => {
+
+            if (resultado.length > 0) {
+                res.status(200).json(resultado[0]);
+            } else {
+                res.status(404).json({
+                    mensagem: "Obra não encontrada"
+                });
+            }
+
         })
-        .catch(function (erro) {
-            console.log("Erro ao buscar obra:", erro);
-            res.status(500).json(erro.sqlMessage || erro.message);
+        .catch(erro => {
+            console.log(erro);
+            res.status(500).json(erro.sqlMessage);
         });
+
 }
 
-function criar(req, res) {
-    if (!req.body.local) return res.status(400).send("Localização é obrigatória");
-    if (!req.body.dataInicio) return res.status(400).send("Data de início é obrigatória");
+function cadastrar(req, res) {
 
-    var dados = montarPayload(req);
-    obraModel.criar(dados)
-        .then(function (resultado) {
-            res.status(201).json(Object.assign({ id: resultado.insertId }, dados));
-        })
-        .catch(function (erro) {
-            console.log("Erro ao criar obra:", erro);
-            res.status(500).json(erro.sqlMessage || erro.message);
+    const {
+        rodovia,
+        titulo,
+        descricao,
+        tipo,
+        status,
+        data_inicio,
+        data_fim,
+        hora_inicio,
+        hora_fim,
+        impacto_previsto,
+        fk_empresa
+    } = req.body;
+
+    if (!rodovia || !titulo || !status || !data_inicio) {
+
+        return res.status(400).json({
+            mensagem: "Dados obrigatórios não informados"
         });
+
+    }
+
+    obraModel.cadastrar(
+        rodovia,
+        titulo,
+        descricao,
+        tipo,
+        status,
+        data_inicio,
+        data_fim,
+        hora_inicio,
+        hora_fim,
+        impacto_previsto,
+        fk_empresa
+    )
+        .then(resultado => {
+            res.status(201).json(resultado);
+        })
+        .catch(erro => {
+            console.log(erro);
+            res.status(500).json(erro.sqlMessage);
+        });
+
 }
 
 function atualizar(req, res) {
-    var dados = montarPayload(req);
-    obraModel.atualizar(req.params.id, dados)
-        .then(function () {
-            res.status(200).json(Object.assign({ id: Number(req.params.id) }, dados));
+
+    const id = req.params.id;
+
+    const {
+        titulo,
+        descricao,
+        tipo,
+        status,
+        data_inicio,
+        data_fim,
+        hora_inicio,
+        hora_fim,
+        impacto_previsto
+    } = req.body;
+
+    obraModel.atualizar(
+        id,
+        titulo,
+        descricao,
+        tipo,
+        status,
+        data_inicio,
+        data_fim,
+        hora_inicio,
+        hora_fim,
+        impacto_previsto
+    )
+        .then(resultado => {
+            res.status(200).json(resultado);
         })
-        .catch(function (erro) {
-            console.log("Erro ao atualizar obra:", erro);
-            res.status(500).json(erro.sqlMessage || erro.message);
+        .catch(erro => {
+            console.log(erro);
+            res.status(500).json(erro.sqlMessage);
         });
-}
 
-function atualizarStatus(req, res) {
-    var status = req.body.status;
-    if (STATUS_VALIDOS.indexOf(status) < 0) return res.status(400).send("Status inválido");
-
-    obraModel.atualizarStatus(req.params.id, status)
-        .then(function () { res.status(200).json({ id: Number(req.params.id), status: status }); })
-        .catch(function (erro) {
-            console.log("Erro ao atualizar status:", erro);
-            res.status(500).json(erro.sqlMessage || erro.message);
-        });
 }
 
 function deletar(req, res) {
-    obraModel.deletar(req.params.id)
-        .then(function () { res.status(200).json({ ok: true }); })
-        .catch(function (erro) {
-            console.log("Erro ao deletar obra:", erro);
-            res.status(500).json(erro.sqlMessage || erro.message);
+
+    const id = req.params.id;
+
+    obraModel.deletar(id)
+        .then(resultado => {
+            res.status(200).json(resultado);
+        })
+        .catch(erro => {
+            console.log(erro);
+            res.status(500).json(erro.sqlMessage);
         });
+
 }
 
 module.exports = {
     listar,
+    listarPorRodovia,
     buscarPorId,
-    criar,
+    cadastrar,
     atualizar,
-    atualizarStatus,
     deletar
 };

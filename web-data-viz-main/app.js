@@ -1,54 +1,115 @@
 // var ambiente_processo = 'producao';
 var ambiente_processo = 'desenvolvimento';
 
-var caminho_env = ambiente_processo === 'producao' ? '.env' : '.env.dev';
-// Acima, temos o uso do operador ternário para definir o caminho do arquivo .env
-// A sintaxe do operador ternário é: condição ? valor_se_verdadeiro : valor_se_falso
+var caminho_env =
+    ambiente_processo === 'producao'
+        ? '.env'
+        : '.env.dev';
 
-require("dotenv").config({ path: caminho_env });
+require("dotenv").config({
+    path: caminho_env
+});
 
-var express = require("express");
-var cors = require("cors");
-var path = require("path");
-var PORTA_APP = process.env.APP_PORT;
-var HOST_APP = process.env.APP_HOST;
+const express = require("express");
 
-var app = express();
+const cors = require("cors");
 
-var indexRouter        = require("./src/routes/index");
-var usuarioRouter      = require("./src/routes/usuarios");
-var obrasRouter        = require("./src/routes/obras");
-var muralRouter        = require("./src/routes/mural");
-var preferenciasRouter = require("./src/routes/preferencias");
-var empresasRouter     = require("./src/routes/empresas");
+const path = require("path");
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(express.static(path.join(__dirname, "public")));
+const app = express();
 
+const PORTA_APP = process.env.APP_PORT;
+
+const HOST_APP = process.env.APP_HOST;
+
+/*
+=========================================================
+ROUTES
+=========================================================
+*/
+
+const indexRouter =
+    require("./src/routes/index");
+
+const usuarioRouter =
+    require("./src/routes/usuarios");
+
+const obrasRouter =
+    require("./src/routes/obras");
+
+const dashboardRouter =
+    require("./src/routes/dashboard");
+
+const muralRouter =
+    require("./src/routes/mural");
+
+const preferenciasRouter =
+    require("./src/routes/preferencias");
+
+const empresasRouter =
+    require("./src/routes/empresas");
+
+/*
+=========================================================
+MIDDLEWARES
+=========================================================
+*/
 
 app.use(cors());
 
-app.use("/",             indexRouter);
-app.use("/usuarios",     usuarioRouter);
-app.use("/obras",        obrasRouter);
-app.use("/mural",        muralRouter);
+app.use(express.json());
+
+app.use(express.urlencoded({
+    extended: false
+}));
+
+app.use(express.static(
+    path.join(__dirname, "public")
+));
+
+/*
+=========================================================
+ROTAS
+=========================================================
+*/
+
+app.use("/", indexRouter);
+
+app.use("/usuarios", usuarioRouter);
+
+app.use("/obras", obrasRouter);
+
+app.use("/dashboard", dashboardRouter);
+
+app.use("/mural", muralRouter);
+
 app.use("/preferencias", preferenciasRouter);
-app.use("/empresas",     empresasRouter);
+
+app.use("/empresas", empresasRouter);
+
+/*
+=========================================================
+SERVER
+=========================================================
+*/
 
 app.listen(PORTA_APP, function () {
+
     console.log(`
-    ##   ##  ######   #####             ####       ##     ######     ##              ##  ##    ####    ######  
-    ##   ##  ##       ##  ##            ## ##     ####      ##      ####             ##  ##     ##         ##  
-    ##   ##  ##       ##  ##            ##  ##   ##  ##     ##     ##  ##            ##  ##     ##        ##   
-    ## # ##  ####     #####    ######   ##  ##   ######     ##     ######   ######   ##  ##     ##       ##    
-    #######  ##       ##  ##            ##  ##   ##  ##     ##     ##  ##            ##  ##     ##      ##     
-    ### ###  ##       ##  ##            ## ##    ##  ##     ##     ##  ##             ####      ##     ##      
-    ##   ##  ######   #####             ####     ##  ##     ##     ##  ##              ##      ####    ######  
-    \n\n\n                                                                                                 
-    Servidor do seu site já está rodando! Acesse o caminho a seguir para visualizar .: http://${HOST_APP}:${PORTA_APP} :. \n\n
-    Você está rodando sua aplicação em ambiente de .:${process.env.AMBIENTE_PROCESSO}:. \n\n
-    \tSe .:desenvolvimento:. você está se conectando ao banco local. \n
-    \tSe .:producao:. você está se conectando ao banco remoto. \n\n
-    \t\tPara alterar o ambiente, comente ou descomente as linhas 1 ou 2 no arquivo 'app.js'\n\n`);
+
+=========================================================
+NEWROAD SERVER
+=========================================================
+
+Servidor rodando em:
+
+http://${HOST_APP}:${PORTA_APP}
+
+Ambiente:
+${process.env.AMBIENTE_PROCESSO}
+
+=========================================================
+
+`);
+
 });
