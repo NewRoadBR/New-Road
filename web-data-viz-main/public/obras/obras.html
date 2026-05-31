@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Gestão de Obras</title>
+
+    <link rel="stylesheet" href="../css/global.css" />
+    <link rel="stylesheet" href="../css/layout.css" />
+    <link rel="stylesheet" href="../css/components.css" />
+  </head>
+
+  <body>
+    <div class="layout">
+      <!-- ===================================================== -->
+      <!-- SIDEBAR -->
+      <!-- ===================================================== -->
+
+      <aside class="sidebar">
+        <div class="logo">New<span>Road</span></div>
+
+        <nav class="menu">
+          <a href="../dashboard/index.html"> Dashboard </a>
+
+          <a href="../obras/obras.html" class="ativo"> Obras </a>
+
+          <a href="#"> Operações </a>
+
+          <a href="#"> Relatórios </a>
+
+          <a href="#"> Configurações </a>
+        </nav>
+      </aside>
+
+      <!-- ===================================================== -->
+      <!-- CONTEÚDO -->
+      <!-- ===================================================== -->
+
+      <main class="conteudo">
+        <!-- ================================================= -->
+        <!-- TOPBAR -->
+        <!-- ================================================= -->
+
+        <header class="topbar">
+          <div>
+            <h1>Gestão de Obras</h1>
+
+            <p>Controle operacional de intervenções rodoviárias</p>
+          </div>
+
+          <div class="user-box">
+            <div class="avatar">NR</div>
+
+            <div>
+              <strong> NewRoad </strong>
+
+              <p>Operações</p>
+            </div>
+          </div>
+        </header>
+
+        <!-- ================================================= -->
+        <!-- KPIs -->
+        <!-- ================================================= -->
+
+        <section class="kpis">
+          <div class="kpi-card">
+            <span> Obras Ativas </span>
+
+            <h2 id="kpiAtivas">0</h2>
+          </div>
+
+          <div class="kpi-card">
+            <span> Obras Planejadas </span>
+
+            <h2 id="kpiPlanejadas">0</h2>
+          </div>
+
+          <div class="kpi-card">
+            <span> Finalizadas </span>
+
+            <h2 id="kpiFinalizadas">0</h2>
+          </div>
+
+          <div class="kpi-card">
+            <span> Impacto Médio </span>
+
+            <h2 id="kpiImpacto">0%</h2>
+          </div>
+        </section>
+
+        <!-- ================================================= -->
+        <!-- AÇÕES -->
+        <!-- ================================================= -->
+
+        <section class="acoes-topo">
+          <div class="filtros">
+            <select id="filtroRodovia">
+              <option value="">Todas as Rodovias</option>
+
+              <option>Rodovia Anhanguera</option>
+
+              <option>Rodovia dos Bandeirantes</option>
+
+              <option>Rodovia Dom Pedro I</option>
+
+              <option>Rodovia Castello Branco</option>
+
+              <option>Rodovia Santos Dumont</option>
+
+              <option>Sistema Anchieta-Imigrantes</option>
+            </select>
+          </div>
+
+          <button class="btn-nova-obra" onclick="abrirModal()">
+            + Nova Obra
+          </button>
+        </section>
+
+        <!-- ================================================= -->
+        <!-- TABELA -->
+        <!-- ================================================= -->
+
+        <section class="tabela-section">
+          <table class="tabela-obras">
+            <thead>
+              <tr>
+                <th>Rodovia</th>
+
+                <th>Título</th>
+
+                <th>Tipo</th>
+
+                <th>Status</th>
+
+                <th>Início</th>
+
+                <th>Fim</th>
+
+                <th>Impacto</th>
+
+                <th>Ações</th>
+              </tr>
+            </thead>
+
+            <tbody id="tbodyObras"></tbody>
+          </table>
+        </section>
+      </main>
+    </div>
+
+    <!-- ===================================================== -->
+    <!-- MODAL -->
+    <!-- ===================================================== -->
+
+    <div class="modal" id="modalObra">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Nova Obra</h2>
+
+          <button onclick="fecharModal()">×</button>
+        </div>
+
+        <div class="form-grid">
+          <div class="campo">
+            <label> Rodovia </label>
+
+            <select id="inputRodovia">
+              <option>Rodovia Anhanguera</option>
+
+              <option>Rodovia dos Bandeirantes</option>
+
+              <option>Rodovia Dom Pedro I</option>
+
+              <option>Rodovia Castello Branco</option>
+
+              <option>Rodovia Santos Dumont</option>
+
+              <option>Sistema Anchieta-Imigrantes</option>
+            </select>
+          </div>
+
+          <div class="campo">
+            <label> Título </label>
+
+            <input type="text" id="inputTitulo" />
+          </div>
+
+          <div class="campo">
+            <label> Tipo </label>
+
+            <input type="text" id="inputTipo" />
+          </div>
+
+          <div class="campo">
+            <label> Status </label>
+
+            <select id="inputStatus">
+              <option>Planejada</option>
+
+              <option>Em andamento</option>
+
+              <option>Finalizada</option>
+            </select>
+          </div>
+
+          <div class="campo">
+            <label> Data Início </label>
+
+            <input type="date" id="inputDataInicio" />
+          </div>
+
+          <div class="campo">
+            <label> Data Fim </label>
+
+            <input type="date" id="inputDataFim" />
+          </div>
+
+          <div class="campo">
+            <label> Hora Início </label>
+
+            <input type="number" id="inputHoraInicio" />
+          </div>
+
+          <div class="campo">
+            <label> Hora Fim </label>
+
+            <input type="number" id="inputHoraFim" />
+          </div>
+
+          <div class="campo">
+            <label> Impacto Previsto </label>
+
+            <input type="number" step="0.01" id="inputImpacto" />
+          </div>
+        </div>
+
+        <div class="campo descricao">
+          <label> Descrição </label>
+
+          <textarea id="inputDescricao"></textarea>
+        </div>
+
+        <button class="btn-salvar" onclick="cadastrar()">Salvar Obra</button>
+      </div>
+    </div>
+
+    <script src="./obras.js"></script>
+  </body>
+</html>
