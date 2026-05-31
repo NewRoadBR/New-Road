@@ -58,17 +58,7 @@ echo ""
 # ------------------------------------------------------------
 # 1. ATUALIZAR CÓDIGO
 # ------------------------------------------------------------
-echo -e "${YELLOW}[1/4] Atualizando código (git pull)...${NC}"
 
-git pull
-
-if [ $? -ne 0 ]; then
-    echo -e "${RED}[ERRO] Falha no git pull.${NC}"
-    exit 1
-fi
-
-echo -e "${GREEN}[OK] Código atualizado!${NC}"
-echo ""
 
 # ------------------------------------------------------------
 # 2. BUILD E SUBIR MYSQL + WEB
@@ -216,4 +206,3 @@ echo -e "${GREEN}           Tudo pronto! NewRoad está no ar.${NC}"
 echo -e "${GREEN}============================================================${NC}"
 
 echo ""
-```
