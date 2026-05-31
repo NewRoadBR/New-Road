@@ -1,31 +1,41 @@
-const express = require("express");
+var express = require("express");
 
-const router = express.Router();
+var router = express.Router();
 
-const obraController = require("../controllers/obraController");
+var obrasController =
+    require("../controllers/obrasController");
 
-router.get("/", function (req, res) {
-    obraController.listar(req, res);
-});
+router.get(
+    "/",
+    obrasController.listar
+);
 
-router.get("/rodovia/:rodovia", function (req, res) {
-    obraController.listarPorRodovia(req, res);
-});
+router.get(
+    "/rodovia/:rodovia",
+    obrasController.listarPorRodovia
+);
 
-router.get("/:id", function (req, res) {
-    obraController.buscarPorId(req, res);
-});
+router.get(
+    "/:id",
+    obrasController.buscarPorId
+);
 
-router.post("/", function (req, res) {
-    obraController.cadastrar(req, res);
-});
+router.post(
+    "/",
+    obrasController.cadastrar
+);
 
-router.put("/:id", function (req, res) {
-    obraController.atualizar(req, res);
-});
+router.put(
+    "/:id",
+    obrasController.atualizar
+);
 
-router.delete("/:id", function (req, res) {
-    obraController.deletar(req, res);
-});
+
+router.delete(
+    "/:id",
+    obrasController.deletar
+);
+
+
 
 module.exports = router;
