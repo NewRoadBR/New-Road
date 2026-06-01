@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS log_etl (
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE mapa_praca_rodovia (
+CREATE TABLE IF NOT EXISTS mapa_praca_rodovia (
     praca VARCHAR(120) PRIMARY KEY,
     rodovia VARCHAR(120) NOT NULL
 );
