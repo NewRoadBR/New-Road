@@ -334,5 +334,3 @@ CREATE TABLE preferencia (
     dark_mode              TINYINT(1) DEFAULT 0,
     FOREIGN KEY (fk_usuario) REFERENCES usuario(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-select * from usuario;
