@@ -1,5 +1,16 @@
 const usuarioModel = require("../models/usuarioModel");
 
+function obterEmpresaId(req, res) {
+    var empresaId = Number(req.query.empresaId);
+
+    if (!Number.isInteger(empresaId) || empresaId <= 0) {
+        res.status(400).send("empresaId inválido");
+        return null;
+    }
+
+    return empresaId;
+}
+
 function autenticar(req, res) {
     var email = req.body.emailServer;
     var senha = req.body.senhaServer;
@@ -51,7 +62,10 @@ function cadastrar(req, res) {
 }
 
 function listar(req, res) {
-    usuarioModel.listar()
+    var empresaId = obterEmpresaId(req, res);
+    if (!empresaId) return;
+
+    usuarioModel.listar(empresaId)
         .then(function (rows) {
             // shape esperado pelo frontend: MOCK_USERS
             var mapped = rows.map(function (u) {
@@ -61,8 +75,6 @@ function listar(req, res) {
                     email: u.email,
                     telefone: u.telefone || "",
                     perfil: u.perfil,
-                    regiao: u.regiao,
-                    status: u.status,
                     ultimo: u.ultimo || "—",
                     avatar: u.avatar || ""
                 };
@@ -76,7 +88,10 @@ function listar(req, res) {
 }
 
 function buscarPorId(req, res) {
-    usuarioModel.buscarPorId(req.params.id)
+    var empresaId = obterEmpresaId(req, res);
+    if (!empresaId) return;
+
+    usuarioModel.buscarPorId(req.params.id, empresaId)
         .then(function (rows) {
             if (!rows.length) return res.status(404).send("Usuário não encontrado");
             var u = rows[0];
@@ -86,11 +101,9 @@ function buscarPorId(req, res) {
                 email: u.email,
                 telefone: u.telefone || "",
                 perfil: u.perfil,
-                regiao: u.regiao,
                 avatar: u.avatar || "",
                 cor: u.cor,
                 role: u.role,
-                status: u.status,
                 ultimo: u.ultimo || "—"
             });
         })
@@ -101,15 +114,17 @@ function buscarPorId(req, res) {
 }
 
 function criar(req, res) {
+    var empresaId = obterEmpresaId(req, res);
+    if (!empresaId) return;
+
     var dados = {
         nome: (req.body.nome || "").trim(),
         email: (req.body.email || "").trim(),
         senha: req.body.senha,
         telefone: req.body.telefone,
         perfil: req.body.perfil,
-        regiao: req.body.regiao,
-        status: req.body.status,
-        avatar: req.body.avatar
+        avatar: req.body.avatar,
+        fk_empresa: empresaId
     };
     if (!dados.nome)  return res.status(400).send("Nome é obrigatório");
     if (!dados.email) return res.status(400).send("Email é obrigatório");
@@ -122,8 +137,6 @@ function criar(req, res) {
                 nome: dados.nome,
                 email: dados.email,
                 perfil: dados.perfil || "Analista",
-                regiao: dados.regiao || "SP Region",
-                status: dados.status || "ativo",
                 ultimo: "Agora",
                 avatar: dados.avatar || usuarioModel.gerarAvatar(dados.nome)
             });
@@ -135,19 +148,20 @@ function criar(req, res) {
 }
 
 function atualizar(req, res) {
+    var empresaId = obterEmpresaId(req, res);
+    if (!empresaId) return;
+
     var dados = {
         nome: (req.body.nome || "").trim(),
         email: (req.body.email || "").trim(),
         telefone: req.body.telefone,
         perfil: req.body.perfil,
-        regiao: req.body.regiao,
-        status: req.body.status,
         avatar: req.body.avatar
     };
     if (!dados.nome)  return res.status(400).send("Nome é obrigatório");
     if (!dados.email) return res.status(400).send("Email é obrigatório");
 
-    usuarioModel.atualizar(req.params.id, dados)
+    usuarioModel.atualizar(req.params.id, dados, empresaId)
         .then(function () { res.status(200).json(Object.assign({ id: Number(req.params.id) }, dados)); })
         .catch(function (erro) {
             console.log("Erro ao atualizar usuário:", erro);
@@ -156,7 +170,10 @@ function atualizar(req, res) {
 }
 
 function deletar(req, res) {
-    usuarioModel.deletar(req.params.id)
+    var empresaId = obterEmpresaId(req, res);
+    if (!empresaId) return;
+
+    usuarioModel.deletar(req.params.id, empresaId)
         .then(function () { res.status(200).json({ ok: true }); })
         .catch(function (erro) {
             console.log("Erro ao deletar usuário:", erro);

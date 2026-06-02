@@ -3,7 +3,6 @@ var preferenciaModel = require("../models/preferenciaModel");
 var DEFAULT = {
     idUsuario: null,
     intervalo: "1 minuto",
-    regiaoPadrao: "SP Region (todas)",
     notifCritica: true,
     notifPico: true,
     notifRelatorio: true,
@@ -23,7 +22,6 @@ function buscar(req, res) {
             res.status(200).json({
                 idUsuario: p.idUsuario,
                 intervalo: p.intervalo,
-                regiaoPadrao: p.regiaoPadrao,
                 notifCritica: p.notifCritica === 1,
                 notifPico: p.notifPico === 1,
                 notifRelatorio: p.notifRelatorio === 1,
@@ -42,7 +40,6 @@ function salvar(req, res) {
 
     var dados = {
         intervalo: req.body.intervalo || DEFAULT.intervalo,
-        regiaoPadrao: req.body.regiaoPadrao || DEFAULT.regiaoPadrao,
         notifCritica: !!req.body.notifCritica,
         notifPico: !!req.body.notifPico,
         notifRelatorio: !!req.body.notifRelatorio,

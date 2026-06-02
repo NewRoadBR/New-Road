@@ -1,0 +1,109 @@
+/* ============================================
+   CONFIGURACOES PAGE
+============================================ */
+
+.config-wrapper {
+  display: grid;
+  gap: 16px;
+}
+
+.config-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: var(--shadow-sm);
+}
+
+.config-card h2 {
+  font-size: 16px;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.config-card p {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.config-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+}
+
+.config-item:first-of-type {
+  border-top: none;
+}
+
+.config-item label {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.switch {
+  width: 46px;
+  height: 26px;
+  border-radius: 999px;
+  background: #dbeafe;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 3px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.switch::after {
+  content: "";
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #2563eb;
+  transition: transform 0.2s ease;
+}
+
+.switch.off {
+  justify-content: flex-start;
+  background: #e2e8f0;
+}
+
+.switch.off::after {
+  background: #64748b;
+}
+
+.config-inline {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.config-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#statusConfiguracoes {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+#statusConfiguracoes.ok {
+  color: #047857;
+}
+
+#statusConfiguracoes.erro {
+  color: #b91c1c;
+}
+
+@media (max-width: 820px) {
+  .config-inline {
+    grid-template-columns: 1fr;
+  }
+}

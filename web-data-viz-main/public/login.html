@@ -66,11 +66,16 @@
 
    function entrar() {
 
-    const emailVar = document.getElementById("input_email").value;
+    const emailVar = document.getElementById("input_email").value.trim();
     const senhaVar = document.getElementById("input_senha").value;
 
     if (!emailVar || !senhaVar) {
         alert("Preencha todos os campos!");
+        return false;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVar)) {
+        alert("Informe um e-mail válido!");
         return false;
     }
 
@@ -85,30 +90,42 @@
         })
     })
     .then(async resposta => {
+        const text = await resposta.text();
+        let json;
 
-        const json = await resposta.json().catch(() => null);
+        try {
+            json = JSON.parse(text);
+        } catch {
+            json = null;
+        }
 
-        if (!resposta.ok || !json || json.length === 0) {
+        if (!resposta.ok) {
+            const message = json?.erro || text || "Email ou senha inválidos";
+            throw new Error(message);
+        }
+
+        if (!json || json.length === 0) {
             throw new Error("USUARIO_NAO_ENCONTRADO");
         }
 
         return json;
     })
     .then(json => {
-
         sessionStorage.EMAIL_USUARIO = json.email;
         sessionStorage.NOME_USUARIO = json.nome;
         sessionStorage.ID_USUARIO = json.id;
         sessionStorage.PERFIL_USUARIO = json.perfil || 'Usuário Padrão';
+        sessionStorage.ROLE_USUARIO = json.role || json.perfil || '';
+        sessionStorage.AVATAR_USUARIO = json.avatar || '';
+        sessionStorage.EMPRESA_ID_USUARIO = json.empresaId || '';
 
         window.location = "./dashboard/index.html";
     })
     .catch(erro => {
-
         if (erro.message === "USUARIO_NAO_ENCONTRADO") {
             alert("Usuário não encontrado!");
         } else {
-            alert("Email ou senha inválidos!");
+            alert(erro.message || "Email ou senha inválidos!");
         }
     });
 

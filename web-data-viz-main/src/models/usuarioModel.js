@@ -17,25 +17,27 @@ function cadastrar(nome, email, senha, fkEmpresa) {
     return database.executar(sql, [nome, email, senha, fkEmpresa]);
 }
 
-function listar() {
+function listar(empresaId) {
     var sql = `
         SELECT
-            id, nome, email, telefone, perfil, regiao, avatar, status, ultimo_acesso AS ultimo
+            id, nome, email, telefone, perfil, avatar, ultimo_acesso AS ultimo
         FROM usuario
+        WHERE fk_empresa = ?
         ORDER BY id;
     `;
-    return database.executar(sql);
+    return database.executar(sql, [empresaId]);
 }
 
-function buscarPorId(id) {
+function buscarPorId(id, empresaId) {
     var sql = `
         SELECT
-            id, nome, email, telefone, perfil, regiao, avatar, cor, role, status,
+            id, nome, email, telefone, perfil, avatar, cor, role,
             ultimo_acesso AS ultimo
         FROM usuario
-        WHERE id = ?;
+        WHERE id = ?
+          AND fk_empresa = ?;
     `;
-    return database.executar(sql, [id]);
+    return database.executar(sql, [id, empresaId]);
 }
 
 function gerarAvatar(nome) {
@@ -48,8 +50,8 @@ function gerarAvatar(nome) {
 function criar(dados) {
     var sql = `
         INSERT INTO usuario
-            (nome, email, senha, telefone, perfil, regiao, avatar, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+            (nome, email, senha, telefone, perfil, avatar, fk_empresa)
+        VALUES (?, ?, ?, ?, ?, ?, ?);
     `;
     return database.executar(sql, [
         dados.nome,
@@ -57,38 +59,35 @@ function criar(dados) {
         dados.senha || "senha123",
         dados.telefone || null,
         dados.perfil || "Analista",
-        dados.regiao || "SP Region",
         dados.avatar || gerarAvatar(dados.nome),
-        dados.status || "ativo"
+        dados.fk_empresa
     ]);
 }
 
-function atualizar(id, dados) {
+function atualizar(id, dados, empresaId) {
     var sql = `
         UPDATE usuario SET
             nome     = ?,
             email    = ?,
             telefone = ?,
             perfil   = ?,
-            regiao   = ?,
-            avatar   = ?,
-            status   = ?
-        WHERE id = ?;
+            avatar   = ?
+        WHERE id = ?
+          AND fk_empresa = ?;
     `;
     return database.executar(sql, [
         dados.nome,
         dados.email,
         dados.telefone || null,
         dados.perfil,
-        dados.regiao,
         dados.avatar || gerarAvatar(dados.nome),
-        dados.status || "ativo",
-        id
+        id,
+        empresaId
     ]);
 }
 
-function deletar(id) {
-    return database.executar(`DELETE FROM usuario WHERE id = ?;`, [id]);
+function deletar(id, empresaId) {
+    return database.executar(`DELETE FROM usuario WHERE id = ? AND fk_empresa = ?;`, [id, empresaId]);
 }
 
 module.exports = {

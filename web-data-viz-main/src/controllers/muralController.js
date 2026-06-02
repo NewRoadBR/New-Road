@@ -1,210 +1,237 @@
 var muralModel = require("../models/muralModel");
 
-function autorObj(row, prefix) {
-    return {
-        id: row[prefix + "Id"],
-        initials: row[prefix + "Avatar"] || "",
-        name: row[prefix + "Nome"] || "",
-        role: row[prefix + "Role"] || "",
-        color: row[prefix + "Cor"] || "#64748b",
-        isMe: row[prefix + "IsMe"] === 1 || row[prefix + "IsMe"] === true
-    };
+function obterEmpresaId(req, res) {
+  var empresaId = Number(req.query.empresaId);
+
+  if (!Number.isInteger(empresaId) || empresaId <= 0) {
+    res.status(400).send("empresaId inválido");
+    return null;
+  }
+
+  return empresaId;
 }
+
+/*
+=========================================================
+LISTAR AVISOS
+=========================================================
+*/
 
 function listarAvisos(req, res) {
-    var idUsuario = parseInt(req.query.idUsuario) || 1;
+  var empresaId = obterEmpresaId(req, res);
+  if (!empresaId) return;
 
-    muralModel.listarAvisos(idUsuario)
-        .then(function (avisos) {
-            if (!avisos.length) return res.status(200).json([]);
-            var ids = avisos.map(function (a) { return a.id; });
+  muralModel
+    .listarAvisos(empresaId)
 
-            return muralModel.listarComentarios(ids).then(function (comentarios) {
-                var mapaComentarios = {};
-                comentarios.forEach(function (c) {
-                    if (!mapaComentarios[c.avisoId]) mapaComentarios[c.avisoId] = [];
-                    mapaComentarios[c.avisoId].push({
-                        id: c.id,
-                        author: autorObj(c, "autor"),
-                        text: c.texto,
-                        time: c.criadoEm
-                    });
-                });
+    .then(function (resultado) {
+      res.json(resultado);
+    })
 
-                var payload = avisos.map(function (a) {
-                    return {
-                        id: a.id,
-                        pinned: a.pinned === 1,
-                        tipo: a.tipo,
-                        regiao: a.regiao,
-                        title: a.titulo,
-                        desc: a.descricao || "",
-                        time: a.criadoEm,
-                        likes: a.likes,
-                        liked: a.liked === 1,
-                        hasImg: a.hasImg === 1,
-                        commentsOpen: false,
-                        comments: mapaComentarios[a.id] || [],
-                        author: {
-                            id: a.autorId,
-                            initials: a.autorAvatar || "",
-                            name: a.autorNome || "",
-                            role: a.autorRole || "",
-                            color: a.autorCor || "#64748b",
-                            isMe: a.autorIsMe === 1
-                        }
-                    };
-                });
+    .catch(function (erro) {
+      console.log(erro);
 
-                res.status(200).json(payload);
-            });
-        })
-        .catch(function (erro) {
-            console.log("Erro ao listar avisos:", erro);
-            res.status(500).json(erro.sqlMessage || erro.message);
-        });
+      res.status(500).json(erro);
+    });
 }
 
-function criarAviso(req, res) {
-    var dados = {
-        fkUsuario: parseInt(req.body.idUsuario) || 1,
-        tipo: req.body.tipo || "info",
-        regiao: req.body.regiao || "Centro",
-        titulo: (req.body.title || req.body.titulo || "").trim(),
-        descricao: (req.body.desc || req.body.descricao || "").trim(),
-        pinned: !!req.body.pinned,
-        hasImg: !!req.body.hasImg
-    };
-    if (!dados.titulo) return res.status(400).send("Título é obrigatório");
+/*
+=========================================================
+PUBLICAR AVISO
+=========================================================
+*/
 
-    muralModel.criarAviso(dados)
-        .then(function (r) { res.status(201).json({ id: r.insertId }); })
-        .catch(function (erro) {
-            console.log("Erro ao criar aviso:", erro);
-            res.status(500).json(erro.sqlMessage || erro.message);
-        });
+function publicarAviso(req, res) {
+  var empresaId = obterEmpresaId(req, res);
+  if (!empresaId) return;
+
+  var fkUsuario = req.body.fkUsuario;
+
+  var tipo = req.body.tipo;
+
+  var rodovia = req.body.rodovia;
+
+  var titulo = req.body.titulo;
+
+  var descricao = req.body.descricao;
+
+  var pinned = req.body.pinned || 0;
+
+  muralModel
+    .publicarAviso(fkUsuario, tipo, rodovia, titulo, descricao, pinned, empresaId)
+
+    .then(function (resultado) {
+      res.json(resultado);
+    })
+
+    .catch(function (erro) {
+      console.log(erro);
+
+      res.status(500).json(erro);
+    });
 }
 
-function atualizarAviso(req, res) {
-    var dados = {
-        titulo: (req.body.title || req.body.titulo || "").trim(),
-        descricao: (req.body.desc || req.body.descricao || "").trim(),
-        tipo: req.body.tipo,
-        regiao: req.body.regiao
-    };
-    if (!dados.titulo) return res.status(400).send("Título é obrigatório");
+function editarAviso(req, res) {
+  var idAviso = req.params.id;
+  var fkUsuarioSolicitante = req.body.fkUsuario;
 
-    muralModel.atualizarAviso(req.params.id, dados)
-        .then(function () { res.status(200).json({ ok: true }); })
-        .catch(function (erro) {
-            console.log("Erro ao atualizar aviso:", erro);
-            res.status(500).json(erro.sqlMessage || erro.message);
-        });
+  muralModel
+    .editarAviso(idAviso, fkUsuarioSolicitante, req.body)
+    .then(function (resultado) {
+      res.json(resultado);
+    })
+    .catch(function (erro) {
+      console.log(erro);
+      res.status(500).json({ erro: erro.message || erro });
+    });
 }
+
+/*
+=========================================================
+DELETAR
+=========================================================
+*/
 
 function deletarAviso(req, res) {
-    muralModel.deletarAviso(req.params.id)
-        .then(function () { res.status(200).json({ ok: true }); })
-        .catch(function (erro) {
-            console.log("Erro ao deletar aviso:", erro);
-            res.status(500).json(erro.sqlMessage || erro.message);
-        });
+  var id = req.params.id;
+  var fkUsuario = req.body.fkUsuario;
+
+  muralModel
+    .deletarAviso(id, fkUsuario)
+
+    .then(function (resultado) {
+      res.json(resultado);
+    })
+    .catch(function (erro) {
+      console.log(erro);
+      res.status(500).json({ erro: erro.message || erro });
+    });
 }
 
-function togglePin(req, res) {
-    muralModel.togglePin(req.params.id)
-        .then(function () { res.status(200).json({ ok: true }); })
-        .catch(function (erro) {
-            console.log("Erro ao alternar pin:", erro);
-            res.status(500).json(erro.sqlMessage || erro.message);
-        });
+/*
+=========================================================
+CURTIR
+=========================================================
+*/
+
+function curtirAviso(req, res) {
+  var empresaId = obterEmpresaId(req, res);
+  if (!empresaId) return;
+
+  var fkAviso = req.body.fkAviso;
+
+  var fkUsuario = req.body.fkUsuario;
+
+  muralModel
+    .curtirAviso(fkAviso, fkUsuario, empresaId)
+
+    .then(function (resultado) {
+      res.json(resultado);
+    });
 }
 
-function curtir(req, res) {
-    var idUsuario = parseInt(req.body.idUsuario) || 1;
-    muralModel.toggleCurtida(req.params.id, idUsuario)
-        .then(function (estado) { res.status(200).json(estado); })
-        .catch(function (erro) {
-            console.log("Erro ao curtir aviso:", erro);
-            res.status(500).json(erro.sqlMessage || erro.message);
-        });
+/*
+=========================================================
+COMENTAR
+=========================================================
+*/
+
+function comentarAviso(req, res) {
+  var empresaId = obterEmpresaId(req, res);
+  if (!empresaId) return;
+
+  var fkAviso = req.body.fkAviso;
+
+  var fkUsuario = req.body.fkUsuario;
+
+  var texto = req.body.texto;
+
+  muralModel
+    .comentarAviso(fkAviso, fkUsuario, texto, empresaId)
+
+    .then(function (resultado) {
+      res.json(resultado);
+    });
 }
 
-function comentar(req, res) {
-    var idUsuario = parseInt(req.body.idUsuario) || 1;
-    var texto = (req.body.texto || req.body.text || "").trim();
-    if (!texto) return res.status(400).send("Texto do comentário é obrigatório");
+/*
+=========================================================
+LISTAR COMENTÁRIOS
+=========================================================
+*/
 
-    muralModel.criarComentario(req.params.id, idUsuario, texto)
-        .then(function (r) { res.status(201).json({ id: r.insertId }); })
-        .catch(function (erro) {
-            console.log("Erro ao comentar aviso:", erro);
-            res.status(500).json(erro.sqlMessage || erro.message);
-        });
+function listarComentarios(req, res) {
+  var empresaId = obterEmpresaId(req, res);
+  if (!empresaId) return;
+
+  var idAviso = req.params.idAviso;
+
+  muralModel
+    .listarComentarios(idAviso, empresaId)
+
+    .then(function (resultado) {
+      res.json(resultado);
+    });
 }
 
-function listarUsuariosMural(req, res) {
-    muralModel.listarUsuariosMural()
-        .then(function (resultado) {
-            var mapped = resultado.map(function (u) {
-                return {
-                    id: u.id,
-                    initials: u.initials || "",
-                    name: u.name,
-                    role: u.role || "",
-                    color: u.color || "#64748b",
-                    isMe: u.isMe === 1
-                };
-            });
-            res.status(200).json(mapped);
-        })
-        .catch(function (erro) {
-            console.log("Erro ao listar usuários do mural:", erro);
-            res.status(500).json(erro.sqlMessage || erro.message);
-        });
+function fixarAviso(req, res) {
+  muralModel
+    .fixarAviso(req.params.id, req.body.fkUsuario, req.body.pinned)
+    .then(function (resultado) {
+      res.json(resultado);
+    })
+    .catch(function (erro) {
+      console.log(erro);
+      res.status(500).json({ erro: erro.message || erro });
+    });
 }
+
+/*
+=========================================================
+CHAT
+=========================================================
+*/
 
 function listarChat(req, res) {
-    muralModel.listarChat()
-        .then(function (rows) {
-            var mapped = rows.map(function (m) {
-                return {
-                    id: m.id,
-                    text: m.text,
-                    time: m.time,
-                    author: autorObj(m, "autor")
-                };
-            });
-            res.status(200).json(mapped);
-        })
-        .catch(function (erro) {
-            console.log("Erro ao listar chat:", erro);
-            res.status(500).json(erro.sqlMessage || erro.message);
-        });
+  var empresaId = obterEmpresaId(req, res);
+  if (!empresaId) return;
+
+  muralModel
+    .listarChat(empresaId)
+
+    .then(function (resultado) {
+      res.json(resultado);
+    });
 }
 
-function enviarChat(req, res) {
-    var idUsuario = parseInt(req.body.idUsuario) || 1;
-    var texto = (req.body.texto || req.body.text || "").trim();
-    if (!texto) return res.status(400).send("Mensagem é obrigatória");
+function enviarMensagem(req, res) {
+  var empresaId = obterEmpresaId(req, res);
+  if (!empresaId) return;
 
-    muralModel.enviarChat(idUsuario, texto)
-        .then(function (r) { res.status(201).json({ id: r.insertId }); })
-        .catch(function (erro) {
-            console.log("Erro ao enviar chat:", erro);
-            res.status(500).json(erro.sqlMessage || erro.message);
-        });
+  var fkUsuario = req.body.fkUsuario;
+
+  var texto = req.body.texto;
+
+  muralModel
+    .enviarMensagem(fkUsuario, texto, empresaId)
+
+    .then(function (resultado) {
+      res.json(resultado);
+    });
 }
 
 module.exports = {
-    listarAvisos,
-    criarAviso,
-    atualizarAviso,
-    deletarAviso,
-    togglePin,
-    curtir,
-    comentar,
-    listarUsuariosMural,
-    listarChat,
-    enviarChat
+  listarAvisos,
+  publicarAviso,
+  editarAviso,
+  fixarAviso,
+  deletarAviso,
+
+  curtirAviso,
+
+  comentarAviso,
+  listarComentarios,
+
+  listarChat,
+  enviarMensagem,
 };
