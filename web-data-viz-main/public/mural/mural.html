@@ -52,11 +52,27 @@
                     class="ativo"
                 >
 
-                    Mural
+                    Mural de Avisos
+
+                </a>
+
+                <a href="../usuarios/usuarios.html">
+
+                    Usuários
+
+                </a>
+
+                <a href="../configuracoes/configuracoes.html">
+
+                    Configurações
 
                 </a>
 
             </nav>
+
+            <button onclick="logout()" style="width: 100%; padding: 12px; margin-top: 20px; background-color: #e53e3e; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 14px;">
+                Sair
+            </button>
 
         </aside>
 
@@ -76,13 +92,29 @@
 
                 </div>
 
+                <div class="user-box" id="userBoxTopo">
+
+                    <div class="avatar" id="avatarTopo">NR</div>
+
+                    <div>
+
+                        <strong id="nomeUsuarioTopo">NewRoad</strong>
+
+                        <p id="perfilUsuarioTopo">Operacoes</p>
+
+                    </div>
+
+                    <span id="seloSessaoAtiva" class="selo-sessao" hidden>Sessao ativa</span>
+
+                </div>
+
             </header>
 
             <section class="novo-aviso">
 
                 <div class="card">
 
-                    <h2>
+                    <h2 id="tituloFormularioAviso">
                         Novo Aviso
                     </h2>
 
@@ -123,13 +155,38 @@
                         <div class="campo">
 
                             <label>
-                                Região
+                                Rodovia
                             </label>
 
-                            <input
-                                type="text"
-                                id="inputRegiao"
-                            >
+                            <select id="inputRodovia">
+
+                                <option>Rodoanel</option>
+
+                                <option>Rodovia Adhemar Pereira de Barros</option>
+
+                                <option>Rodovia Anhanguera</option>
+
+                                <option>Rodovia Ayrton Senna</option>
+
+                                <option>Rodovia Castello Branco</option>
+
+                                <option>Rodovia Dom Pedro I</option>
+
+                                <option>Rodovia dos Bandeirantes</option>
+
+                                <option>Rodovia Marechal Rondon</option>
+
+                                <option>Rodovia Presidente Dutra</option>
+
+                                <option>Rodovia Raposo Tavares</option>
+
+                                <option>Rodovia Santos Dumont</option>
+
+                                <option>Rodovia Washington Luís</option>
+
+                                <option>Sistema Anchieta-Imigrantes</option>
+
+                            </select>
 
                         </div>
 
@@ -179,6 +236,7 @@
                     </div>
 
                     <button
+                        id="btnPublicarAviso"
                         class="btn-primary"
                         onclick="publicarAviso()"
                     >

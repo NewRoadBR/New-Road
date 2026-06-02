@@ -1,4 +1,19 @@
+/*
+=========================================================
+LOGOUT
+=========================================================
+*/
+
+function logout() {
+    if (confirm("Tem certeza que deseja sair?")) {
+        sessionStorage.clear();
+        window.location.href = "../../index.html";
+    }
+}
+
 window.onload = function () {
+
+    aplicarUsuarioLogadoNaTopbar();
 
     listarAvisos();
 
@@ -12,6 +27,118 @@ window.onload = function () {
 
 };
 
+var avisoEditandoId = null;
+
+function getEmpresaAtualId() {
+
+    return Number(sessionStorage.EMPRESA_ID_USUARIO || 0);
+
+}
+
+function getEmpresaQuery() {
+
+    var empresaId = getEmpresaAtualId();
+
+    if (!Number.isInteger(empresaId) || empresaId <= 0) {
+        throw new Error("Sessao sem empresa valida");
+    }
+
+    return `empresaId=${empresaId}`;
+
+}
+
+function isGestorAtual() {
+
+    var perfil = (sessionStorage.PERFIL_USUARIO || sessionStorage.ROLE_USUARIO || "").trim();
+    return perfil === "Gestor" || /gestor/i.test(perfil);
+
+}
+
+function podeGerenciarAutor(autorId, empresaId) {
+
+    return Number(autorId) === getUsuarioAtualId() ||
+        (isGestorAtual() && empresaId > 0 && empresaId === getEmpresaAtualId());
+
+}
+
+function atualizarModoFormularioAviso() {
+
+    var titulo = document.getElementById("tituloFormularioAviso");
+    var botao = document.getElementById("btnPublicarAviso");
+
+    if (!titulo || !botao) return;
+
+    if (avisoEditandoId) {
+        titulo.textContent = "Editar Aviso";
+        botao.textContent = "Salvar Alterações";
+        return;
+    }
+
+    titulo.textContent = "Novo Aviso";
+    botao.textContent = "Publicar Aviso";
+
+}
+
+function getUsuarioAtualId() {
+
+    return Number(sessionStorage.ID_USUARIO || 1);
+
+}
+
+function criarIniciais(nome) {
+
+    if (!nome) return "??";
+
+    return nome
+        .trim()
+        .split(/\s+/)
+        .slice(0, 2)
+        .map(function (parte) { return parte.charAt(0).toUpperCase(); })
+        .join("")
+        .slice(0, 2);
+
+}
+
+function aplicarUsuarioLogadoNaTopbar() {
+
+    var userBoxTopo = document.getElementById("userBoxTopo");
+    if (!userBoxTopo) return;
+
+    var avatarTopo = document.getElementById("avatarTopo");
+    var nomeUsuarioTopo = document.getElementById("nomeUsuarioTopo");
+    var perfilUsuarioTopo = document.getElementById("perfilUsuarioTopo");
+    var seloSessaoAtiva = document.getElementById("seloSessaoAtiva");
+
+    var nome = (sessionStorage.NOME_USUARIO || "").trim();
+    var email = (sessionStorage.EMAIL_USUARIO || "").trim();
+    var perfil =
+        (sessionStorage.PERFIL_USUARIO || "").trim() ||
+        (sessionStorage.ROLE_USUARIO || "").trim();
+    var avatar = (sessionStorage.AVATAR_USUARIO || "").trim();
+
+    var temSessaoAtiva = Boolean(nome || email || perfil || avatar);
+
+    if (!temSessaoAtiva) {
+
+        userBoxTopo.classList.remove("user-box-logado");
+        avatarTopo.textContent = "NR";
+        nomeUsuarioTopo.textContent = "NewRoad";
+        perfilUsuarioTopo.textContent = "Operacoes";
+        perfilUsuarioTopo.removeAttribute("title");
+        seloSessaoAtiva.hidden = true;
+        return;
+
+    }
+
+    userBoxTopo.classList.add("user-box-logado");
+    avatarTopo.textContent = (avatar || criarIniciais(nome || email)).slice(0, 2).toUpperCase();
+    nomeUsuarioTopo.textContent = nome || "Usuario logado";
+    perfilUsuarioTopo.textContent = perfil || "Equipe NewRoad";
+    perfilUsuarioTopo.title = email;
+    seloSessaoAtiva.hidden = false;
+
+}
+
 /*
 =========================================================
 PUBLICAR AVISO
@@ -20,15 +147,24 @@ PUBLICAR AVISO
 
 function publicarAviso() {
 
+    var queryEmpresa;
+
+    try {
+        queryEmpresa = getEmpresaQuery();
+    } catch (erro) {
+        alert(erro.message);
+        return;
+    }
+
     var payload = {
 
-        fkUsuario: 1,
+        fkUsuario: getUsuarioAtualId(),
 
         tipo:
             inputTipo.value,
 
-        regiao:
-            inputRegiao.value,
+        rodovia:
+            inputRodovia.value,
 
         titulo:
             inputTitulo.value,
@@ -41,9 +177,15 @@ function publicarAviso() {
 
     };
 
-    fetch("/mural/publicar", {
+    var rota = avisoEditandoId
+        ? `/mural/editar/${avisoEditandoId}?${queryEmpresa}`
+        : `/mural/publicar?${queryEmpresa}`;
 
-        method: "POST",
+    var metodo = avisoEditandoId ? "PUT" : "POST";
+
+    fetch(rota, {
+
+        method: metodo,
 
         headers: {
 
@@ -73,8 +215,16 @@ LISTAR AVISOS
 */
 
 function listarAvisos() {
+    var queryEmpresa;
 
-    fetch("/mural/listar")
+    try {
+        queryEmpresa = getEmpresaQuery();
+    } catch (erro) {
+        console.error(erro);
+        return;
+    }
+
+    fetch(`/mural/listar?${queryEmpresa}`)
 
     .then(function (resposta) {
 
@@ -119,6 +269,8 @@ function renderizarAvisos(dados) {
             ? "aviso-pinned"
             : "";
 
+        var podeEditarAviso = podeGerenciarAutor(aviso.fkUsuario, Number(aviso.empresaId || 0));
+
         feed.innerHTML += `
 
             <div class="aviso-card ${pinnedClass}">
@@ -149,9 +301,9 @@ function renderizarAvisos(dados) {
 
                             <p>
 
-                                ${aviso.role}
+                                ${aviso.role || aviso.perfil || "Operação"}
                                 •
-                                ${aviso.regiao}
+                                ${aviso.rodovia}
 
                             </p>
 
@@ -229,6 +381,26 @@ function renderizarAvisos(dados) {
 
                         </button>
 
+                        ${podeEditarAviso ? `
+                        <button
+                            class="btn-acao secundario"
+                            onclick="iniciarEdicaoAviso(${aviso.id})"
+                        >
+
+                            Editar
+
+                        </button>
+                        ` : ""}
+
+                        ${podeEditarAviso ? `
+                        <button
+                            class="btn-acao secundario"
+                            onclick="fixarAviso(${aviso.id}, ${aviso.pinned == 1 ? 0 : 1})"
+                        >
+                            ${aviso.pinned == 1 ? "Desafixar" : "Fixar"}
+                        </button>
+                        ` : ""}
+
                         <button
                             class="btn-acao"
                             onclick="deletar(${aviso.id})"
@@ -284,7 +456,9 @@ CURTIR
 
 function curtir(idAviso) {
 
-    fetch("/mural/curtir", {
+    var queryEmpresa = getEmpresaQuery();
+
+    fetch(`/mural/curtir?${queryEmpresa}`, {
 
         method: "POST",
 
@@ -299,7 +473,7 @@ function curtir(idAviso) {
 
             fkAviso: idAviso,
 
-            fkUsuario: 1
+            fkUsuario: getUsuarioAtualId()
 
         })
 
@@ -335,7 +509,9 @@ function comentar(idAviso) {
 
     }
 
-    fetch("/mural/comentar", {
+    var queryEmpresa = getEmpresaQuery();
+
+    fetch(`/mural/comentar?${queryEmpresa}`, {
 
         method: "POST",
 
@@ -350,7 +526,7 @@ function comentar(idAviso) {
 
             fkAviso: idAviso,
 
-            fkUsuario: 1,
+            fkUsuario: getUsuarioAtualId(),
 
             texto: texto
 
@@ -378,7 +554,9 @@ LISTAR COMENTÁRIOS
 
 function listarComentarios(idAviso) {
 
-    fetch(`/mural/comentarios/${idAviso}`)
+    var queryEmpresa = getEmpresaQuery();
+
+    fetch(`/mural/comentarios/${idAviso}?${queryEmpresa}`)
 
     .then(function (resposta) {
 
@@ -462,9 +640,26 @@ DELETAR
 
 function deletar(id) {
 
-    fetch(`/mural/deletar/${id}`, {
+    var confirmar = window.confirm("Deseja realmente excluir este aviso?");
+    if (!confirmar) return;
 
-        method: "DELETE"
+    var queryEmpresa = getEmpresaQuery();
+
+    fetch(`/mural/deletar/${id}?${queryEmpresa}`, {
+
+        method: "DELETE",
+
+        headers: {
+
+            "Content-Type": "application/json"
+
+        },
+
+        body: JSON.stringify({
+
+            fkUsuario: getUsuarioAtualId()
+
+        })
 
     })
 
@@ -484,7 +679,9 @@ CHAT
 
 function listarChat() {
 
-    fetch("/mural/chat")
+    var queryEmpresa = getEmpresaQuery();
+
+    fetch(`/mural/chat?${queryEmpresa}`)
 
     .then(function (resposta) {
 
@@ -559,7 +756,9 @@ function enviarMensagem() {
 
     }
 
-    fetch("/mural/chat/enviar", {
+    var queryEmpresa = getEmpresaQuery();
+
+    fetch(`/mural/chat/enviar?${queryEmpresa}`, {
 
         method: "POST",
 
@@ -572,7 +771,7 @@ function enviarMensagem() {
 
         body: JSON.stringify({
 
-            fkUsuario: 1,
+            fkUsuario: getUsuarioAtualId(),
 
             texto
 
@@ -601,6 +800,87 @@ function limparFormulario() {
     inputTitulo.value = "";
 
     inputDescricao.value = "";
+
+    inputRodovia.value = "";
+
+    inputPinned.value = "0";
+
+    avisoEditandoId = null;
+
+    atualizarModoFormularioAviso();
+
+}
+
+function iniciarEdicaoAviso(idAviso) {
+
+    var queryEmpresa = getEmpresaQuery();
+
+    fetch(`/mural/listar?${queryEmpresa}`)
+
+    .then(function (resposta) {
+
+        return resposta.json();
+
+    })
+
+    .then(function (dados) {
+
+        var aviso = dados.find(function (item) {
+            return Number(item.id) === Number(idAviso);
+        });
+
+        if (!aviso) {
+            throw new Error("Aviso não encontrado para edição");
+        }
+
+        avisoEditandoId = idAviso;
+        inputTipo.value = aviso.tipo;
+        inputRodovia.value = aviso.rodovia;
+        inputTitulo.value = aviso.titulo;
+        inputDescricao.value = aviso.descricao || "";
+        inputPinned.value = String(aviso.pinned || 0);
+        atualizarModoFormularioAviso();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+
+    })
+
+    .catch(function (erro) {
+
+        console.error(erro);
+        alert(`Não foi possível preparar a edição: ${erro.message}`);
+
+    });
+
+}
+
+function fixarAviso(idAviso, pinned) {
+
+    var queryEmpresa = getEmpresaQuery();
+
+    fetch(`/mural/${idAviso}/pin?${queryEmpresa}`, {
+
+        method: "PUT",
+
+        headers: {
+
+            "Content-Type": "application/json"
+
+        },
+
+        body: JSON.stringify({
+
+            fkUsuario: getUsuarioAtualId(),
+            pinned: pinned
+
+        })
+
+    })
+
+    .then(function () {
+
+        listarAvisos();
+
+    });
 
 }
 

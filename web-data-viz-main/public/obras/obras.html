@@ -62,6 +62,10 @@
 
             </nav>
 
+            <button onclick="logout()" style="width: 100%; padding: 12px; margin-top: 20px; background-color: #e53e3e; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 14px;">
+                Sair
+            </button>
+
         </aside>
 
       <!-- ===================================================== -->
@@ -80,14 +84,16 @@
             <p>Controle operacional de intervenções rodoviárias</p>
           </div>
 
-          <div class="user-box">
-            <div class="avatar">NR</div>
+          <div class="user-box" id="userBoxTopo">
+            <div class="avatar" id="avatarTopo">NR</div>
 
             <div>
-              <strong> NewRoad </strong>
+              <strong id="nomeUsuarioTopo">NewRoad</strong>
 
-              <p>Operações</p>
+              <p id="perfilUsuarioTopo">Operacoes</p>
             </div>
+
+            <span id="seloSessaoAtiva" class="selo-sessao" hidden>Sessao ativa</span>
           </div>
         </header>
 
@@ -96,25 +102,25 @@
         <!-- ================================================= -->
 
         <section class="kpis">
-          <div class="kpi-card">
+          <div class="kpi-card" id="cardKpiAtivas">
             <span> Obras Ativas </span>
 
             <h2 id="kpiAtivas">0</h2>
           </div>
 
-          <div class="kpi-card">
+          <div class="kpi-card" id="cardKpiPlanejadas">
             <span> Obras Planejadas </span>
 
             <h2 id="kpiPlanejadas">0</h2>
           </div>
 
-          <div class="kpi-card">
+          <div class="kpi-card" id="cardKpiFinalizadas">
             <span> Finalizadas </span>
 
             <h2 id="kpiFinalizadas">0</h2>
           </div>
 
-          <div class="kpi-card">
+          <div class="kpi-card" id="cardKpiImpacto">
             <span> Impacto Médio </span>
 
             <h2 id="kpiImpacto">0%</h2>
@@ -130,21 +136,35 @@
             <select id="filtroRodovia">
               <option value="">Todas as Rodovias</option>
 
+              <option>Rodoanel</option>
+
+              <option>Rodovia Adhemar Pereira de Barros</option>
+
               <option>Rodovia Anhanguera</option>
 
-              <option>Rodovia dos Bandeirantes</option>
-
-              <option>Rodovia Dom Pedro I</option>
+              <option>Rodovia Ayrton Senna</option>
 
               <option>Rodovia Castello Branco</option>
 
+              <option>Rodovia Dom Pedro I</option>
+
+              <option>Rodovia dos Bandeirantes</option>
+
+              <option>Rodovia Marechal Rondon</option>
+
+              <option>Rodovia Presidente Dutra</option>
+
+              <option>Rodovia Raposo Tavares</option>
+
               <option>Rodovia Santos Dumont</option>
+
+              <option>Rodovia Washington Luís</option>
 
               <option>Sistema Anchieta-Imigrantes</option>
             </select>
           </div>
 
-          <button class="btn-nova-obra" onclick="abrirModal()">
+          <button class="btn-nova-obra" onclick="prepararNovaObra()">
             + Nova Obra
           </button>
         </section>
@@ -159,9 +179,7 @@
               <tr>
                 <th>Rodovia</th>
 
-                <th>Título</th>
-
-                <th>Tipo</th>
+                <th>Descrição</th>
 
                 <th>Status</th>
 
@@ -188,7 +206,7 @@
     <div class="modal" id="modalObra">
       <div class="modal-content">
         <div class="modal-header">
-          <h2>Nova Obra</h2>
+          <h2 id="tituloModalObra">Nova Obra</h2>
 
           <button onclick="fecharModal()">×</button>
         </div>
@@ -198,30 +216,34 @@
             <label> Rodovia </label>
 
             <select id="inputRodovia">
+
+              <option>Rodoanel</option>
+
+              <option>Rodovia Adhemar Pereira de Barros</option>
+
               <option>Rodovia Anhanguera</option>
 
-              <option>Rodovia dos Bandeirantes</option>
-
-              <option>Rodovia Dom Pedro I</option>
+              <option>Rodovia Ayrton Senna</option>
 
               <option>Rodovia Castello Branco</option>
 
+              <option>Rodovia Dom Pedro I</option>
+
+              <option>Rodovia dos Bandeirantes</option>
+
+              <option>Rodovia Marechal Rondon</option>
+
+              <option>Rodovia Presidente Dutra</option>
+
+              <option>Rodovia Raposo Tavares</option>
+
               <option>Rodovia Santos Dumont</option>
 
+              <option>Rodovia Washington Luís</option>
+
               <option>Sistema Anchieta-Imigrantes</option>
+
             </select>
-          </div>
-
-          <div class="campo">
-            <label> Título </label>
-
-            <input type="text" id="inputTitulo" />
-          </div>
-
-          <div class="campo">
-            <label> Tipo </label>
-
-            <input type="text" id="inputTipo" />
           </div>
 
           <div class="campo">
@@ -249,18 +271,6 @@
           </div>
 
           <div class="campo">
-            <label> Hora Início </label>
-
-            <input type="number" id="inputHoraInicio" />
-          </div>
-
-          <div class="campo">
-            <label> Hora Fim </label>
-
-            <input type="number" id="inputHoraFim" />
-          </div>
-
-          <div class="campo">
             <label> Impacto Previsto </label>
 
             <input type="number" step="0.01" id="inputImpacto" />
@@ -273,7 +283,7 @@
           <textarea id="inputDescricao"></textarea>
         </div>
 
-        <button class="btn-salvar" onclick="cadastrar()">Salvar Obra</button>
+        <button class="btn-salvar" id="btnSalvarObra" onclick="cadastrar()">Salvar Obra</button>
       </div>
     </div>
 

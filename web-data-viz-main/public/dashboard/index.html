@@ -70,6 +70,10 @@
 
             </nav>
 
+            <button onclick="logout()" style="width: 100%; padding: 12px; margin-top: 20px; background-color: #e53e3e; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 14px;">
+                Sair
+            </button>
+
         </aside>
 
       <!-- ===================================================== -->
@@ -88,14 +92,16 @@
             <p>Controle operacional de intervenções rodoviárias</p>
           </div>
 
-          <div class="user-box">
-            <div class="avatar">NR</div>
+                    <div class="user-box" id="userBoxTopo">
+                        <div class="avatar" id="avatarTopo">NR</div>
 
             <div>
-              <strong> NewRoad </strong>
+                            <strong id="nomeUsuarioTopo">NewRoad</strong>
 
-              <p>Operações</p>
+                            <p id="perfilUsuarioTopo">Operacoes</p>
             </div>
+
+                        <span id="seloSessaoAtiva" class="selo-sessao" hidden>Sessao ativa</span>
           </div>
         </header>
 
@@ -121,11 +127,23 @@
             >
 
                 <option>
+                    Rodoanel
+                </option>
+
+                <option>
+                    Rodovia Adhemar Pereira de Barros
+                </option>
+
+                <option>
                     Rodovia Anhanguera
                 </option>
 
                 <option>
-                    Rodovia dos Bandeirantes
+                    Rodovia Ayrton Senna
+                </option>
+
+                <option>
+                    Rodovia Castello Branco
                 </option>
 
                 <option>
@@ -133,7 +151,31 @@
                 </option>
 
                 <option>
-                    Rodovia Castello Branco
+                    Rodovia dos Bandeirantes
+                </option>
+
+                <option>
+                    Rodovia Marechal Rondon
+                </option>
+
+                <option>
+                    Rodovia Presidente Dutra
+                </option>
+
+                <option>
+                    Rodovia Raposo Tavares
+                </option>
+
+                <option>
+                    Rodovia Santos Dumont
+                </option>
+
+                <option>
+                    Rodovia Washington Luís
+                </option>
+
+                <option>
+                    Sistema Anchieta-Imigrantes
                 </option>
 
                 <option>
@@ -150,7 +192,7 @@
 
         <section class="kpis-grid">
 
-            <div class="kpi-card">
+            <div class="kpi-card" id="cardKpiFluxo">
 
                 <span>
                     Fluxo Médio
@@ -162,7 +204,7 @@
 
             </div>
 
-            <div class="kpi-card">
+            <div class="kpi-card" id="cardKpiHorarioCritico">
 
                 <span>
                     Horário Crítico
@@ -174,7 +216,7 @@
 
             </div>
 
-            <div class="kpi-card">
+            <div class="kpi-card" id="cardKpiJanelaIdeal">
 
                 <span>
                     Janela Ideal
@@ -186,7 +228,7 @@
 
             </div>
 
-            <div class="kpi-card">
+            <div class="kpi-card" id="cardKpiMelhorDia">
 
                 <span>
                     Melhor Dia
@@ -198,7 +240,7 @@
 
             </div>
 
-            <div class="kpi-card">
+            <div class="kpi-card" id="cardKpiPressaoOperacional">
 
                 <span>
                     Pressão Operacional
@@ -210,7 +252,7 @@
 
             </div>
 
-            <div class="kpi-card">
+            <div class="kpi-card" id="cardKpiPerfilPesado">
 
                 <span>
                     Perfil Pesado
@@ -275,11 +317,11 @@
                         <tr>
 
                             <th>
-                                Título
+                                Rodovia
                             </th>
 
                             <th>
-                                Tipo
+                                Descrição
                             </th>
 
                             <th>
@@ -292,6 +334,14 @@
 
                             <th>
                                 Fim
+                            </th>
+
+                            <th>
+                                Impacto
+                            </th>
+
+                            <th>
+                                Indicador
                             </th>
 
                         </tr>

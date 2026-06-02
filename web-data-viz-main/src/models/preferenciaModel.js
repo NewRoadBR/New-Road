@@ -5,7 +5,6 @@ function buscarPorUsuario(idUsuario) {
         SELECT
             fk_usuario       AS idUsuario,
             intervalo,
-            regiao_padrao    AS regiaoPadrao,
             notif_critica    AS notifCritica,
             notif_pico       AS notifPico,
             notif_relatorio  AS notifRelatorio,
@@ -20,10 +19,9 @@ function salvar(idUsuario, dados) {
     var sql = `
         INSERT INTO preferencia
             (fk_usuario, intervalo, regiao_padrao, notif_critica, notif_pico, notif_relatorio, dark_mode)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, 'SP Region (todas)', ?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE
             intervalo       = VALUES(intervalo),
-            regiao_padrao   = VALUES(regiao_padrao),
             notif_critica   = VALUES(notif_critica),
             notif_pico      = VALUES(notif_pico),
             notif_relatorio = VALUES(notif_relatorio),
@@ -32,7 +30,6 @@ function salvar(idUsuario, dados) {
     return database.executar(sql, [
         idUsuario,
         dados.intervalo,
-        dados.regiaoPadrao,
         dados.notifCritica ? 1 : 0,
         dados.notifPico ? 1 : 0,
         dados.notifRelatorio ? 1 : 0,

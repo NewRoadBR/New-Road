@@ -18,6 +18,10 @@ router.post("/publicar", function (req, res) {
   muralController.publicarAviso(req, res);
 });
 
+router.put("/editar/:id", function (req, res) {
+  muralController.editarAviso(req, res);
+});
+
 router.delete("/deletar/:id", function (req, res) {
   muralController.deletarAviso(req, res);
 });
@@ -44,6 +48,10 @@ router.get("/comentarios/:idAviso", function (req, res) {
 
 router.post("/comentar", function (req, res) {
   muralController.comentarAviso(req, res);
+});
+
+router.put("/:id/pin", function (req, res) {
+  muralController.fixarAviso(req, res);
 });
 
 /*

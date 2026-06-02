@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Configurações</title>
+
+    <link rel="stylesheet" href="../css/global.css" />
+    <link rel="stylesheet" href="../css/layout.css" />
+    <link rel="stylesheet" href="../css/components.css" />
+    <link rel="stylesheet" href="../css/configuracoes.css" />
+  </head>
+
+  <body>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="logo">New<span>Road</span></div>
+
+        <nav class="menu">
+          <a href="../dashboard/index.html">Dashboard</a>
+          <a href="../obras/obras.html">Obras</a>
+          <a href="../mural/mural.html">Mural de Avisos</a>
+          <a href="../usuarios/usuarios.html">Usuários</a>
+          <a href="../configuracoes/configuracoes.html" class="ativo">Configurações</a>
+        </nav>
+
+        <button onclick="logout()" style="width: 100%; padding: 12px; margin-top: 20px; background-color: #e53e3e; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 14px;">
+          Sair
+        </button>
+      </aside>
+
+      <main class="conteudo">
+        <header class="topbar">
+          <div>
+            <h1>Configurações</h1>
+            <p>Preferências da operação</p>
+          </div>
+
+          <div class="user-box" id="userBoxTopo">
+            <div class="avatar" id="avatarTopo">NR</div>
+
+            <div>
+              <strong id="nomeUsuarioTopo">NewRoad</strong>
+              <p id="perfilUsuarioTopo">Operacoes</p>
+            </div>
+
+            <span id="seloSessaoAtiva" class="selo-sessao" hidden>Sessao ativa</span>
+          </div>
+        </header>
+
+        <section class="config-wrapper">
+          <div class="config-card">
+            <h2>Notificações</h2>
+            <div class="config-item">
+              <label for="toggleNotifCritica">Alertas críticos em tempo real</label>
+              <button id="toggleNotifCritica" class="switch" type="button" aria-pressed="true"></button>
+            </div>
+            <div class="config-item">
+              <label for="toggleNotifPico">Alertas de pico de tráfego</label>
+              <button id="toggleNotifPico" class="switch" type="button" aria-pressed="true"></button>
+            </div>
+            <div class="config-item">
+              <label for="toggleNotifRelatorio">Resumo diário por relatório</label>
+              <button id="toggleNotifRelatorio" class="switch" type="button" aria-pressed="true"></button>
+            </div>
+          </div>
+
+          <div class="config-card">
+            <h2>Painel</h2>
+            <div class="config-inline">
+              <div class="campo">
+                <label for="selectIntervalo">Intervalo de atualização</label>
+                <select id="selectIntervalo">
+                  <option value="30 segundos">30 segundos</option>
+                  <option value="1 minuto">1 minuto</option>
+                  <option value="5 minutos">5 minutos</option>
+                  <option value="10 minutos">10 minutos</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="config-item">
+              <label for="toggleDarkMode">Modo escuro</label>
+              <button id="toggleDarkMode" class="switch off" type="button" aria-pressed="false"></button>
+            </div>
+          </div>
+
+          <div class="config-card">
+            <h2>Status</h2>
+            <div class="config-actions">
+              <button id="btnSalvarPreferencias" class="btn-nova-obra" type="button">Salvar preferências</button>
+              <span id="statusConfiguracoes">Carregando preferências...</span>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="./configuracoes.js"></script>
+  </body>
+</html>

@@ -1,5 +1,18 @@
 var obrasModel = require("../models/obrasModel");
 
+function obterEmpresaId(req, res) {
+
+    var empresaId = Number(req.query.empresaId);
+
+    if (!Number.isInteger(empresaId) || empresaId <= 0) {
+        res.status(400).send("empresaId inválido");
+        return null;
+    }
+
+    return empresaId;
+
+}
+
 /*
 =========================================================
 LISTAR
@@ -8,7 +21,10 @@ LISTAR
 
 function listar(req, res) {
 
-    obrasModel.listar()
+    var empresaId = obterEmpresaId(req, res);
+    if (!empresaId) return;
+
+    obrasModel.listar(empresaId)
 
         .then(function (resultado) {
 
@@ -36,7 +52,10 @@ function listarPorRodovia(req, res) {
 
     var rodovia = req.params.rodovia;
 
-    obrasModel.listarPorRodovia(rodovia)
+    var empresaId = obterEmpresaId(req, res);
+    if (!empresaId) return;
+
+    obrasModel.listarPorRodovia(rodovia, empresaId)
 
         .then(function (resultado) {
 
@@ -64,7 +83,10 @@ function buscarPorId(req, res) {
 
     var id = req.params.id;
 
-    obrasModel.buscarPorId(id)
+    var empresaId = obterEmpresaId(req, res);
+    if (!empresaId) return;
+
+    obrasModel.buscarPorId(id, empresaId)
 
         .then(function (resultado) {
 
@@ -106,10 +128,6 @@ function cadastrar(req, res) {
         return res.status(400).send("Rodovia é obrigatória");
     }
 
-    if (!body.titulo) {
-        return res.status(400).send("Título é obrigatório");
-    }
-
     if (!body.status) {
         return res.status(400).send("Status é obrigatório");
     }
@@ -118,18 +136,17 @@ function cadastrar(req, res) {
         return res.status(400).send("Data início é obrigatória");
     }
 
+    var empresaId = obterEmpresaId(req, res);
+    if (!empresaId) return;
+
     obrasModel.cadastrar(
         body.rodovia,
-        body.titulo,
         body.descricao,
-        body.tipo,
         body.status,
         body.data_inicio,
         body.data_fim,
-        body.hora_inicio,
-        body.hora_fim,
         body.impacto_previsto,
-        body.fk_empresa
+        empresaId
     )
 
         .then(function (resultado) {
@@ -160,18 +177,30 @@ function atualizar(req, res) {
 
     var body = req.body;
 
+    var empresaId = obterEmpresaId(req, res);
+    if (!empresaId) return;
+
+    if (!body.rodovia) {
+        return res.status(400).send("Rodovia é obrigatória");
+    }
+
+    if (!body.status) {
+        return res.status(400).send("Status é obrigatório");
+    }
+
+    if (!body.data_inicio) {
+        return res.status(400).send("Data início é obrigatória");
+    }
+
     obrasModel.atualizar(
         id,
         body.rodovia,
-        body.titulo,
         body.descricao,
-        body.tipo,
         body.status,
         body.data_inicio,
         body.data_fim,
-        body.hora_inicio,
-        body.hora_fim,
-        body.impacto_previsto
+        body.impacto_previsto,
+        empresaId
     )
 
         .then(function (resultado) {
@@ -200,7 +229,10 @@ function deletar(req, res) {
 
     var id = req.params.id;
 
-    obrasModel.deletar(id)
+    var empresaId = obterEmpresaId(req, res);
+    if (!empresaId) return;
+
+    obrasModel.deletar(id, empresaId)
 
         .then(function (resultado) {
 

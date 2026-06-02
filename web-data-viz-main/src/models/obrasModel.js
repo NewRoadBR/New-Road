@@ -6,26 +6,23 @@ LISTAR OBRAS
 =========================================================
 */
 
-function listar() {
+function listar(empresaId) {
 
     var instrucaoSql = `
         SELECT
             id,
             rodovia,
-            titulo,
             descricao,
-            tipo,
             status,
             DATE_FORMAT(data_inicio, '%Y-%m-%d') AS data_inicio,
             DATE_FORMAT(data_fim, '%Y-%m-%d') AS data_fim,
-            hora_inicio,
-            hora_fim,
             impacto_previsto
         FROM obra
+        WHERE fk_empresa = ?
         ORDER BY data_inicio DESC;
     `;
 
-    return database.executar(instrucaoSql);
+    return database.executar(instrucaoSql, [empresaId]);
 
 }
 
@@ -35,27 +32,24 @@ LISTAR POR RODOVIA
 =========================================================
 */
 
-function listarPorRodovia(rodovia) {
+function listarPorRodovia(rodovia, empresaId) {
 
     var instrucaoSql = `
         SELECT
             id,
             rodovia,
-            titulo,
             descricao,
-            tipo,
             status,
             DATE_FORMAT(data_inicio, '%Y-%m-%d') AS data_inicio,
             DATE_FORMAT(data_fim, '%Y-%m-%d') AS data_fim,
-            hora_inicio,
-            hora_fim,
             impacto_previsto
         FROM obra
-        WHERE rodovia = ?
+                WHERE rodovia = ?
+                    AND fk_empresa = ?
         ORDER BY data_inicio DESC;
     `;
 
-    return database.executar(instrucaoSql, [rodovia]);
+        return database.executar(instrucaoSql, [rodovia, empresaId]);
 
 }
 
@@ -65,15 +59,24 @@ BUSCAR POR ID
 =========================================================
 */
 
-function buscarPorId(id) {
+function buscarPorId(id, empresaId) {
 
     var instrucaoSql = `
-        SELECT *
+        SELECT
+            id,
+            rodovia,
+            descricao,
+            status,
+            DATE_FORMAT(data_inicio, '%Y-%m-%d') AS data_inicio,
+            DATE_FORMAT(data_fim, '%Y-%m-%d') AS data_fim,
+            impacto_previsto,
+            fk_empresa
         FROM obra
-        WHERE id = ?;
+                WHERE id = ?
+                    AND fk_empresa = ?;
     `;
 
-    return database.executar(instrucaoSql, [id]);
+        return database.executar(instrucaoSql, [id, empresaId]);
 
 }
 
@@ -85,14 +88,10 @@ CADASTRAR
 
 function cadastrar(
     rodovia,
-    titulo,
     descricao,
-    tipo,
     status,
     dataInicio,
     dataFim,
-    horaInicio,
-    horaFim,
     impactoPrevisto,
     fkEmpresa
 ) {
@@ -100,32 +99,24 @@ function cadastrar(
     var instrucaoSql = `
         INSERT INTO obra (
             rodovia,
-            titulo,
             descricao,
-            tipo,
             status,
             data_inicio,
             data_fim,
-            hora_inicio,
-            hora_fim,
             impacto_previsto,
             fk_empresa
         )
         VALUES (
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+            ?, ?, ?, ?, ?, ?, ?
         );
     `;
 
     return database.executar(instrucaoSql, [
         rodovia,
-        titulo,
         descricao,
-        tipo,
         status,
         dataInicio,
         dataFim,
-        horaInicio,
-        horaFim,
         impactoPrevisto,
         fkEmpresa
     ]);
@@ -141,45 +132,36 @@ ATUALIZAR
 function atualizar(
     id,
     rodovia,
-    titulo,
     descricao,
-    tipo,
     status,
     dataInicio,
     dataFim,
-    horaInicio,
-    horaFim,
-    impactoPrevisto
+    impactoPrevisto,
+    empresaId
 ) {
 
     var instrucaoSql = `
         UPDATE obra
         SET
             rodovia = ?,
-            titulo = ?,
             descricao = ?,
-            tipo = ?,
             status = ?,
             data_inicio = ?,
             data_fim = ?,
-            hora_inicio = ?,
-            hora_fim = ?,
             impacto_previsto = ?
-        WHERE id = ?;
+                WHERE id = ?
+                    AND fk_empresa = ?;
     `;
 
     return database.executar(instrucaoSql, [
         rodovia,
-        titulo,
         descricao,
-        tipo,
         status,
         dataInicio,
         dataFim,
-        horaInicio,
-        horaFim,
         impactoPrevisto,
-        id
+        id,
+        empresaId
     ]);
 
 }
@@ -190,14 +172,15 @@ DELETAR
 =========================================================
 */
 
-function deletar(id) {
+function deletar(id, empresaId) {
 
     var instrucaoSql = `
         DELETE FROM obra
-        WHERE id = ?;
+                WHERE id = ?
+                    AND fk_empresa = ?;
     `;
 
-    return database.executar(instrucaoSql, [id]);
+        return database.executar(instrucaoSql, [id, empresaId]);
 
 }
 
