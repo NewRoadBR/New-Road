@@ -2,9 +2,10 @@
 --  NewRoad — Script de banco de dados (schema + seed com mocks)
 --  Execute em ordem; recria o banco do zero.
 -- ════════════════════════════════════════════════════════════════
-SET NAMES utf8mb4;
-CREATE DATABASE newroad_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE newroad_db;
+CREATE DATABASE IF NOT EXISTS newroad_db
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
+
 
 CREATE TABLE IF NOT EXISTS registro_trafego (
     id              BIGINT       NOT NULL AUTO_INCREMENT,
