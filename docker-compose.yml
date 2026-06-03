@@ -64,7 +64,7 @@ services:
     environment:
       DB_HOST: mysql-container
       DB_PORT: 3306
-      DB_NAME: transito_sp
+      DB_NAME: newroad_db
       DB_USER: root
       DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
 
