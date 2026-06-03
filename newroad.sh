@@ -168,11 +168,11 @@ if [[ "$RESPOSTA" == "s" || "$RESPOSTA" == "S" ]]; then
     # ----------------------------------------------------------
     # TOTAL DE REGISTROS
     # ----------------------------------------------------------
-    echo -e "${YELLOW}→ Total de registros em medicao_transito:${NC}"
+    echo -e "${YELLOW}→ Total de registros em registro_trafego:${NC}"
 
     docker exec mysql-container mysql -uroot -p"${MYSQL_ROOT_PASSWORD}" -e \
-    "SELECT COUNT(*) AS total_registros FROM transito_sp.medicao_transito;" \
-    2>/dev/null
+    "SELECT COUNT(*) AS total_registros FROM newroad_db.registro_trafego;" \
+     2>/dev/null
 
     echo ""
 
@@ -182,7 +182,7 @@ if [[ "$RESPOSTA" == "s" || "$RESPOSTA" == "S" ]]; then
     echo -e "${YELLOW}→ Últimos 5 registros inseridos:${NC}"
 
     docker exec mysql-container mysql -uroot -p"${MYSQL_ROOT_PASSWORD}" -e \
-    "SELECT * FROM transito_sp.medicao_transito ORDER BY id DESC LIMIT 5;" \
+    "SELECT * FROM newroad_db.registro_trafego ORDER BY id DESC LIMIT 5;" \
     2>/dev/null
 
     echo ""
@@ -193,7 +193,7 @@ if [[ "$RESPOSTA" == "s" || "$RESPOSTA" == "S" ]]; then
     echo -e "${YELLOW}→ Logs do ETL:${NC}"
 
     docker exec mysql-container mysql -uroot -p"${MYSQL_ROOT_PASSWORD}" -e \
-    "SELECT * FROM transito_sp.log_etl ORDER BY id DESC LIMIT 10;" \
+    "SELECT * FROM newroad_db.log_etl ORDER BY id DESC LIMIT 10;" \
     2>/dev/null
 
     echo ""
