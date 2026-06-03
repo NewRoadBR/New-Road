@@ -335,3 +335,59 @@ CREATE TABLE preferencia (
     dark_mode              TINYINT(1) DEFAULT 0,
     FOREIGN KEY (fk_usuario) REFERENCES usuario(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- // pupular banco de dados 
+-- 1. Inserir uma Empresa de teste
+INSERT INTO empresa (id, nome, cnpj) 
+VALUES (1, 'NewRoad Concessionária SP', '12.345.678/0001-99');
+
+-- 2. Inserir Usuário para teste de LOGIN
+-- Nota: A senha está como 'senha123'. Se o seu backend usar criptografia (como bcrypt), 
+-- você precisará gerar o hash correspondente depois, mas para teste simples estrutural:
+INSERT INTO usuario (id, nome, email, senha, perfil, regiao, fk_empresa, is_me) 
+VALUES (1, 'Gustavo Henrique', 'gustavo@newroad.com', 'senha123', 'Gestor', 'SP Region', 1, 1);
+
+-- 3. Inserir Preferências do usuário
+INSERT INTO preferencia (fk_usuario, intervalo, regiao_padrao, dark_mode)
+VALUES (1, '1 minuto', 'SP Region (todas)', 0);
+
+-- 4. Inserir Mapeamento de Praças e Rodovias (Essencial para as Views funcionarem)
+INSERT INTO mapa_praca_rodovia (praca, rodovia) VALUES
+('Praça Jundiaí - Km 39', 'Rodovia dos Bandeirantes'),
+('Praça Itupeva - Km 77', 'Rodovia dos Bandeirantes'),
+('Praça Caieiras - Km 36', 'Rodovia Anhangüera'),
+('Praça Louveira - Km 74', 'Rodovia Anhangüera');
+
+-- 5. Popular Histórico de Tráfego (Alimenta a maior parte das suas Views de Dashboard)
+-- Dias da semana: 1=Dom, 2=Seg, 3=Ter, 4=Qua, 5=Qui, 6=Sex, 7=Sáb
+INSERT INTO trafego_rodovia_historico (rodovia, dia_semana, hora, volume_total, volume_leve, volume_pesado, volume_moto, volume_especial) VALUES
+-- Rodovia dos Bandeirantes - Segunda-feira (Dia típico com pico às 18h)
+('Rodovia dos Bandeirantes', 2, 08, 1500.00, 900.00, 400.00, 180.00, 20.00),
+('Rodovia dos Bandeirantes', 2, 12, 1800.00, 1100.00, 500.00, 170.00, 30.00),
+('Rodovia dos Bandeirantes', 2, 18, 3500.00, 2500.00, 600.00, 380.00, 20.00),
+('Rodovia dos Bandeirantes', 2, 22, 1200.00, 700.00, 450.00, 40.00, 10.00),
+-- Rodovia dos Bandeirantes - Domingo (Mais leve, pico ao meio-dia)
+('Rodovia dos Bandeirantes', 1, 12, 2800.00, 2200.00, 150.00, 430.00, 20.00),
+('Rodovia dos Bandeirantes', 1, 20, 1900.00, 1500.00, 200.00, 190.00, 10.00),
+
+-- Rodovia Anhangüera - Segunda-feira (Forte presença de pesados/caminhões)
+('Rodovia Anhangüera', 2, 06, 2200.00, 800.00, 1200.00, 150.00, 50.00),
+('Rodovia Anhangüera', 2, 12, 2400.00, 1000.00, 1100.00, 200.00, 100.00),
+('Rodovia Anhangüera', 2, 18, 3100.00, 1900.00, 900.00, 280.00, 20.00),
+-- Rodovia Anhangüera - Sábado
+('Rodovia Anhangüera', 7, 14, 1600.00, 950.00, 400.00, 210.00, 40.00);
+
+-- 6. Inserir Obras em andamento/planejadas
+INSERT INTO obra (rodovia, descricao, status, data_inicio, data_fim, impacto_previsto, fk_empresa) VALUES
+('Rodovia dos Bandeirantes', 'Recapeamento asfáltico faixa da direita Km 42', 'Em andamento', '2026-06-01', '2026-06-10', 3, 1),
+('Rodovia Anhangüera', 'Manutenção preventiva da passarela Km 72', 'Planejada', '2026-06-15', '2026-06-16', 1, 1);
+
+-- 7. Inserir Mural de Avisos (Interação da comunidade/analistas)
+INSERT INTO aviso_mural (id, fk_usuario, tipo, rodovia, titulo, descricao, pinned) VALUES
+(1, 1, 'atencao', 'Rodovia dos Bandeirantes', 'Tráfego lento devido a obras no Km 42', 'A faixa da direita está interditada para recapeamento. Lentidão de 2km estimada.', 1),
+(2, 1, 'info', 'Rodovia Anhangüera', 'Fluxo normalizado após acidente', 'O veículo que bloqueava a faixa 2 no Km 35 já foi removido pelo guincho.', 0);
+
+-- 8. Inserir um comentário fake no mural
+INSERT INTO aviso_comentario (fk_aviso, fk_usuario, texto) VALUES
+(1, 1, 'Equipe de pista já sinalizou o local com cones.');
