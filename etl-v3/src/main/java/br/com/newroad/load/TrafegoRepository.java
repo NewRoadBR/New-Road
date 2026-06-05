@@ -87,7 +87,7 @@ public class TrafegoRepository implements AutoCloseable {
                             +   "ROUND(AVG(COALESCE(r.especial,     0)),    2) AS volume_especial "
                             + "FROM registro_trafego r "
                             + "JOIN mapa_praca_rodovia m "
-                            +   "ON TRIM(LOWER(m.praca)) = TRIM(LOWER(r.praca)) "
+                            +   "ON TRIM(LOWER(m.praca)) = TRIM(LOWER(r.praca)) COLLATE utf8mb4_unicode_ci "
                             + "WHERE r.hora BETWEEN 0 AND 23 "
                             + "GROUP BY m.rodovia, DAYOFWEEK(r.data), r.hora"
             );
