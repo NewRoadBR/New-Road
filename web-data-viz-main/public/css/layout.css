@@ -1,0 +1,159 @@
+/* ============================================
+   LAYOUT — Sidebar, conteúdo, topbar, grids
+============================================ */
+
+.layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+}
+
+/* ---------- SIDEBAR ---------- */
+.sidebar {
+  background: var(--sidebar-bg);
+  color: var(--text-on-dark);
+  padding: 28px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.sidebar .logo {
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.02em;
+  padding: 0 8px;
+}
+.sidebar .logo span { color: var(--brand-blue); }
+
+.sidebar .menu {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar .menu a {
+  display: block;
+  padding: 11px 14px;
+  border-radius: 10px;
+  color: var(--text-on-dark-muted);
+  font-size: 14px;
+  font-weight: 500;
+  transition: background .15s ease, color .15s ease;
+}
+
+.sidebar .menu a:hover {
+  background: var(--sidebar-hover);
+  color: #fff;
+}
+
+.sidebar .menu a.ativo {
+  background: var(--brand-blue);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+}
+
+/* ---------- CONTEÚDO ---------- */
+.conteudo {
+  padding: 28px 32px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  min-width: 0;
+  animation: fadeInUp .35s ease;
+}
+
+/* extra wrapper que aparece no dashboard */
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+/* ---------- TOPBAR ---------- */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 6px 0 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.topbar h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  text-transform: capitalize;
+}
+
+.topbar p {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ---------- GRIDS ---------- */
+.kpis,
+.kpis-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--gap);
+}
+
+.kpis-grid {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.graficos-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap);
+}
+
+.acoes-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.filtros { display: flex; gap: 10px; }
+
+.tabela-section,
+.obras-section {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+  box-shadow: var(--shadow-sm);
+}
+
+.section-header {
+  margin-bottom: 14px;
+}
+.section-header h2 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.table-container { overflow-x: auto; }
+
+/* Responsivo */
+@media (max-width: 1100px) {
+  .kpis, .kpis-grid { grid-template-columns: repeat(2, 1fr); }
+  .graficos-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 720px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar { position: relative; height: auto; flex-direction: row; flex-wrap: wrap; }
+  .sidebar .menu { flex-direction: row; flex-wrap: wrap; }
+  .conteudo { padding: 18px; }
+  .kpis, .kpis-grid { grid-template-columns: 1fr; }
+}
