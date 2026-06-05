@@ -16,7 +16,7 @@ function listarAvisos(empresaId) {
 
             aviso.tipo,
 
-            aviso.rodovia,
+            aviso.regiao AS rodovia,
 
             aviso.titulo,
 
@@ -72,7 +72,7 @@ function publicarAviso(fkUsuario, tipo, rodovia, titulo, descricao, pinned, empr
 
             fk_usuario,
             tipo,
-            rodovia,
+            regiao,
             titulo,
             descricao,
             pinned
@@ -148,7 +148,7 @@ function editarAviso(idAviso, fkUsuarioSolicitante, dados) {
             UPDATE aviso_mural
             SET
                 tipo = ?,
-                rodovia = ?,
+                regiao = ?,
                 titulo = ?,
                 descricao = ?,
                 pinned = ?

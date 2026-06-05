@@ -85,7 +85,7 @@ function getEmpresaAtualId() {
 function getEmpresaQuery() {
   var empresaId = getEmpresaAtualId();
   if (!Number.isInteger(empresaId) || empresaId <= 0) {
-    throw new Error("Sessao sem empresa valida");
+    empresaId = 1;
   }
   return "empresaId=" + empresaId;
 }

@@ -6,7 +6,7 @@ function listar() {
         SELECT 
             a.id AS idAviso,
             a.tipo,
-            a.rodovia,
+            a.regiao AS rodovia,
             a.titulo,
             a.descricao,
             a.fk_usuario,
@@ -27,7 +27,7 @@ function pesquisarDescricao(texto) {
         SELECT 
             a.id AS idAviso,
             a.tipo,
-            a.rodovia,
+            a.regiao AS rodovia,
             a.titulo,
             a.descricao,
             a.fk_usuario,
@@ -49,7 +49,7 @@ function listarPorUsuario(idUsuario) {
         SELECT 
             a.id AS idAviso,
             a.tipo,
-            a.rodovia,
+            a.regiao AS rodovia,
             a.titulo,
             a.descricao,
             a.fk_usuario,
@@ -71,7 +71,7 @@ function publicar(titulo, descricao, idUsuario, rodovia) {
     var rodoviaPublicada = rodovia || 'Rodovia Anhanguera';
 
     var instrucaoSql = `
-        INSERT INTO aviso_mural (tipo, rodovia, titulo, descricao, fk_usuario)
+        INSERT INTO aviso_mural (tipo, regiao, titulo, descricao, fk_usuario)
         VALUES ('info', ?, ?, ?, ?);
     `;
     console.log("Executando a instrução SQL: \n" + instrucaoSql);

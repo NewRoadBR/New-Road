@@ -242,7 +242,12 @@ async function carregarPressaoOperacional() {
     );
  
     const dados = await resposta.json();
- 
+
+    if (!dados.length) {
+        document.getElementById("kpiPressaoOperacional").innerText = "—";
+        return;
+    }
+
     const media = dados.reduce((acc, item) => {
  
         return acc + Number(item.pressao_operacional);
@@ -458,7 +463,13 @@ async function carregarObras() {
 
     try {
 
-        var queryEmpresa = obterQueryEmpresa();
+        var queryEmpresa = "empresaId=1";
+
+        try {
+            queryEmpresa = obterQueryEmpresa();
+        } catch (sessaoErro) {
+            console.warn("[dashboard] sessao sem empresa, usando fallback:", sessaoErro.message);
+        }
 
         const resposta = await fetch(`/obras?${queryEmpresa}`);
 

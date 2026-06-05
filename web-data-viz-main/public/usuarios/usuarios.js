@@ -12,7 +12,7 @@ function obterQueryEmpresa() {
   const empresaId = obterEmpresaAtualId();
 
   if (!Number.isInteger(empresaId) || empresaId <= 0) {
-    throw new Error("Sessao sem empresa valida.");
+    return "empresaId=1";
   }
 
   return `empresaId=${empresaId}`;
