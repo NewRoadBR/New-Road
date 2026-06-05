@@ -121,7 +121,12 @@ async function carregarObras() {
         const resposta =
             await fetch(`/obras?${queryEmpresa}`);
 
-        obras = await resposta.json();
+        if (!resposta.ok) {
+            throw new Error(`Erro ${resposta.status}`);
+        }
+
+        var dados = await resposta.json();
+        obras = Array.isArray(dados) ? dados : [];
 
         aplicarFiltros();
 
@@ -130,6 +135,9 @@ async function carregarObras() {
     } catch (erro) {
 
         console.error(erro);
+        obras = [];
+        aplicarFiltros();
+        atualizarKPIs();
 
     }
 

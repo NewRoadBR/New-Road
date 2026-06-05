@@ -12,9 +12,10 @@ function obterEmpresaId(req, res) {
 }
 
 function listar(req, res) {
-    if (!obterEmpresaId(req, res)) return;
+    var empresaId = obterEmpresaId(req, res);
+    if (!empresaId) return;
 
-    obrasModel.listar()
+    obrasModel.listar(empresaId)
         .then(function (resultado) {
             res.status(200).json(resultado);
         })
@@ -26,10 +27,10 @@ function listar(req, res) {
 
 function listarPorRodovia(req, res) {
     var rodovia = req.params.rodovia;
+    var empresaId = obterEmpresaId(req, res);
+    if (!empresaId) return;
 
-    if (!obterEmpresaId(req, res)) return;
-
-    obrasModel.listarPorRodovia(rodovia)
+    obrasModel.listarPorRodovia(rodovia, empresaId)
         .then(function (resultado) {
             res.status(200).json(resultado);
         })
@@ -41,10 +42,10 @@ function listarPorRodovia(req, res) {
 
 function buscarPorId(req, res) {
     var id = req.params.id;
+    var empresaId = obterEmpresaId(req, res);
+    if (!empresaId) return;
 
-    if (!obterEmpresaId(req, res)) return;
-
-    obrasModel.buscarPorId(id)
+    obrasModel.buscarPorId(id, empresaId)
         .then(function (resultado) {
             if (resultado.length > 0) {
                 res.status(200).json(resultado[0]);
@@ -60,11 +61,12 @@ function buscarPorId(req, res) {
 
 function cadastrar(req, res) {
     var body = req.body;
+    var empresaId = obterEmpresaId(req, res);
 
     if (!body.rodovia) return res.status(400).send("Rodovia é obrigatória");
     if (!body.status) return res.status(400).send("Status é obrigatório");
     if (!body.data_inicio) return res.status(400).send("Data início é obrigatória");
-    if (!obterEmpresaId(req, res)) return;
+    if (!empresaId) return;
 
     obrasModel.cadastrar(
         body.rodovia,
@@ -72,7 +74,8 @@ function cadastrar(req, res) {
         body.status,
         body.data_inicio,
         body.data_fim,
-        body.impacto_previsto
+        body.impacto_previsto,
+        empresaId
     )
         .then(function (resultado) {
             res.status(201).json(resultado);
@@ -86,8 +89,9 @@ function cadastrar(req, res) {
 function atualizar(req, res) {
     var id = req.params.id;
     var body = req.body;
+    var empresaId = obterEmpresaId(req, res);
 
-    if (!obterEmpresaId(req, res)) return;
+    if (!empresaId) return;
     if (!body.rodovia) return res.status(400).send("Rodovia é obrigatória");
     if (!body.status) return res.status(400).send("Status é obrigatório");
     if (!body.data_inicio) return res.status(400).send("Data início é obrigatória");
@@ -99,7 +103,8 @@ function atualizar(req, res) {
         body.status,
         body.data_inicio,
         body.data_fim,
-        body.impacto_previsto
+        body.impacto_previsto,
+        empresaId
     )
         .then(function (resultado) {
             res.status(200).json(resultado);
@@ -112,10 +117,10 @@ function atualizar(req, res) {
 
 function deletar(req, res) {
     var id = req.params.id;
+    var empresaId = obterEmpresaId(req, res);
+    if (!empresaId) return;
 
-    if (!obterEmpresaId(req, res)) return;
-
-    obrasModel.deletar(id)
+    obrasModel.deletar(id, empresaId)
         .then(function (resultado) {
             res.status(200).json(resultado);
         })

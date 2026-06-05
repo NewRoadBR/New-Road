@@ -25,6 +25,32 @@ var SELECT_OBRA = `
     FROM obra
 `;
 
+var temFkEmpresaObra = null;
+
+function colunaEmpresaDisponivel() {
+    if (temFkEmpresaObra !== null) {
+        return Promise.resolve(temFkEmpresaObra);
+    }
+
+    return database
+        .executar("SHOW COLUMNS FROM obra LIKE 'fk_empresa'")
+        .then(function (resultado) {
+            temFkEmpresaObra = resultado.length > 0;
+            return temFkEmpresaObra;
+        });
+}
+
+function clausulaEmpresa(temColuna, empresaId) {
+    if (temColuna) {
+        return {
+            sql: " WHERE fk_empresa = ?",
+            params: [empresaId]
+        };
+    }
+
+    return { sql: "", params: [] };
+}
+
 function normalizarStatusEntrada(status) {
     var valor = String(status || "").toLowerCase();
 
@@ -46,27 +72,52 @@ function calcularDuracao(dataInicio, dataFim) {
     return diff > 0 ? diff : 1;
 }
 
-function listar() {
-    var instrucaoSql = SELECT_OBRA + " ORDER BY data_inicio DESC;";
-    return database.executar(instrucaoSql);
+function listar(empresaId) {
+    return colunaEmpresaDisponivel().then(function (temColuna) {
+        var filtro = clausulaEmpresa(temColuna, empresaId);
+        var instrucaoSql = SELECT_OBRA + filtro.sql + " ORDER BY data_inicio DESC;";
+        return database.executar(instrucaoSql, filtro.params);
+    });
 }
 
-function listarPorRodovia(rodovia) {
-    var instrucaoSql = SELECT_OBRA + `
-        WHERE local LIKE ?
+function listarPorRodovia(rodovia, empresaId) {
+    return colunaEmpresaDisponivel().then(function (temColuna) {
+        var filtro = clausulaEmpresa(temColuna, empresaId);
+        var whereEmpresa = filtro.sql ? filtro.sql + " AND (" : " WHERE (";
+        var instrucaoSql = SELECT_OBRA + whereEmpresa + `
+            local LIKE ?
            OR bairro LIKE ?
            OR tipo LIKE ?
            OR descricao LIKE ?
+          )
         ORDER BY data_inicio DESC;
-    `;
+        `;
 
-    var filtro = "%" + rodovia + "%";
-    return database.executar(instrucaoSql, [filtro, filtro, filtro, filtro]);
+        var params = filtro.params.concat([
+            "%" + rodovia + "%",
+            "%" + rodovia + "%",
+            "%" + rodovia + "%",
+            "%" + rodovia + "%"
+        ]);
+
+        return database.executar(instrucaoSql, params);
+    });
 }
 
-function buscarPorId(id) {
-    var instrucaoSql = SELECT_OBRA + " WHERE id = ?;";
-    return database.executar(instrucaoSql, [id]);
+function buscarPorId(id, empresaId) {
+    return colunaEmpresaDisponivel().then(function (temColuna) {
+        var filtro = clausulaEmpresa(temColuna, empresaId);
+        var whereExtra = filtro.sql ? filtro.sql + " AND id = ?" : " WHERE id = ?";
+        var params = filtro.params.concat([id]);
+
+        if (temColuna) {
+            params = [id, empresaId];
+            whereExtra = " WHERE id = ? AND fk_empresa = ?";
+        }
+
+        var instrucaoSql = SELECT_OBRA + whereExtra + ";";
+        return database.executar(instrucaoSql, params);
+    });
 }
 
 function cadastrar(
@@ -75,46 +126,62 @@ function cadastrar(
     status,
     dataInicio,
     dataFim,
-    impactoPrevisto
+    impactoPrevisto,
+    empresaId
 ) {
-    var instrucaoSql = `
-        INSERT INTO obra (
-            local,
-            bairro,
-            tipo,
-            descricao,
-            status,
-            data_inicio,
-            duracao,
+    return colunaEmpresaDisponivel().then(function (temColuna) {
+        var impacto = Number(impactoPrevisto || 0);
+        var marcador = impacto >= 70 ? "red" : impacto >= 40 ? "yellow" : "green";
+        var urgencia = impacto >= 70 ? "alta" : impacto >= 40 ? "media" : "baixa";
+        var grauUrgencia = Math.max(1, Math.min(20, Math.round(impacto / 5)));
+
+        var colunas = [
+            "local",
+            "bairro",
+            "tipo",
+            "descricao",
+            "status",
+            "data_inicio",
+            "duracao",
+            "impacto",
+            "lat",
+            "lng",
+            "marcador",
+            "urgencia",
+            "grau_urgencia"
+        ];
+        var valores = [
+            rodovia,
+            "SP Region",
+            "Intervenção viária",
+            descricao || "",
+            normalizarStatusEntrada(status),
+            dataInicio,
+            calcularDuracao(dataInicio, dataFim),
             impacto,
-            lat,
-            lng,
+            -23.5505,
+            -46.6333,
             marcador,
             urgencia,
-            grau_urgencia
-        )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-    `;
+            grauUrgencia
+        ];
 
-    var impacto = Number(impactoPrevisto || 0);
-    var marcador = impacto >= 70 ? "red" : impacto >= 40 ? "yellow" : "green";
-    var urgencia = impacto >= 70 ? "alta" : impacto >= 40 ? "media" : "baixa";
+        if (temColuna) {
+            colunas.push("fk_empresa");
+            valores.push(empresaId);
+        }
 
-    return database.executar(instrucaoSql, [
-        rodovia,
-        "SP Region",
-        "Intervenção viária",
-        descricao || "",
-        normalizarStatusEntrada(status),
-        dataInicio,
-        calcularDuracao(dataInicio, dataFim),
-        impacto,
-        -23.5505,
-        -46.6333,
-        marcador,
-        urgencia,
-        Math.max(1, Math.min(20, Math.round(impacto / 5)))
-    ]);
+        var placeholders = colunas.map(function () {
+            return "?";
+        }).join(", ");
+
+        var instrucaoSql = `
+            INSERT INTO obra (${colunas.join(", ")})
+            VALUES (${placeholders});
+        `;
+
+        return database.executar(instrucaoSql, valores);
+    });
 }
 
 function atualizar(
@@ -124,42 +191,64 @@ function atualizar(
     status,
     dataInicio,
     dataFim,
-    impactoPrevisto
+    impactoPrevisto,
+    empresaId
 ) {
-    var instrucaoSql = `
-        UPDATE obra
-        SET
-            local = ?,
-            descricao = ?,
-            status = ?,
-            data_inicio = ?,
-            duracao = ?,
-            impacto = ?,
-            marcador = ?,
-            urgencia = ?
-        WHERE id = ?;
-    `;
+    return colunaEmpresaDisponivel().then(function (temColuna) {
+        var impacto = Number(impactoPrevisto || 0);
+        var marcador = impacto >= 70 ? "red" : impacto >= 40 ? "yellow" : "green";
+        var urgencia = impacto >= 70 ? "alta" : impacto >= 40 ? "media" : "baixa";
 
-    var impacto = Number(impactoPrevisto || 0);
-    var marcador = impacto >= 70 ? "red" : impacto >= 40 ? "yellow" : "green";
-    var urgencia = impacto >= 70 ? "alta" : impacto >= 40 ? "media" : "baixa";
+        var instrucaoSql = `
+            UPDATE obra
+            SET
+                local = ?,
+                descricao = ?,
+                status = ?,
+                data_inicio = ?,
+                duracao = ?,
+                impacto = ?,
+                marcador = ?,
+                urgencia = ?
+            WHERE id = ?
+        `;
+        var params = [
+            rodovia,
+            descricao || "",
+            normalizarStatusEntrada(status),
+            dataInicio,
+            calcularDuracao(dataInicio, dataFim),
+            impacto,
+            marcador,
+            urgencia,
+            id
+        ];
 
-    return database.executar(instrucaoSql, [
-        rodovia,
-        descricao || "",
-        normalizarStatusEntrada(status),
-        dataInicio,
-        calcularDuracao(dataInicio, dataFim),
-        impacto,
-        marcador,
-        urgencia,
-        id
-    ]);
+        if (temColuna) {
+            instrucaoSql += " AND fk_empresa = ?";
+            params.push(empresaId);
+        }
+
+        instrucaoSql += ";";
+
+        return database.executar(instrucaoSql, params);
+    });
 }
 
-function deletar(id) {
-    var instrucaoSql = "DELETE FROM obra WHERE id = ?;";
-    return database.executar(instrucaoSql, [id]);
+function deletar(id, empresaId) {
+    return colunaEmpresaDisponivel().then(function (temColuna) {
+        var instrucaoSql = "DELETE FROM obra WHERE id = ?";
+        var params = [id];
+
+        if (temColuna) {
+            instrucaoSql += " AND fk_empresa = ?";
+            params.push(empresaId);
+        }
+
+        instrucaoSql += ";";
+
+        return database.executar(instrucaoSql, params);
+    });
 }
 
 module.exports = {
