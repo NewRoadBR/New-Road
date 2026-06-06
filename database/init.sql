@@ -337,60 +337,146 @@ CREATE TABLE preferencia (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
--- // pupular banco de dados 
--- 1. Inserir uma Empresa de teste
-INSERT INTO empresa (id, nome, cnpj) 
-VALUES (1, 'NewRoad Concessionária SP', '12.345.678/0001-99');
+INSERT INTO mapa_praca_rodovia (praca, rodovia)
+	VALUES
 
--- 2. Inserir Usuário para teste de LOGIN
--- Nota: A senha está como 'senha123'. Se o seu backend usar criptografia (como bcrypt), 
--- você precisará gerar o hash correspondente depois, mas para teste simples estrutural:
-INSERT INTO usuario (id, nome, email, senha, perfil, regiao, fk_empresa, is_me) 
-VALUES (1, 'Gustavo Henrique', 'gustavo@newroad.com', 'senha123', 'Gestor', 'SP Region', 1, 1);
+	-- Rodovia dos Bandeirantes
+	('CAIEIRAS', 'Rodovia dos Bandeirantes'),
+	('CAMPO LIMPO', 'Rodovia dos Bandeirantes'),
+	('ITUPEVA NORTE', 'Rodovia dos Bandeirantes'),
+	('ITUPEVA SUL', 'Rodovia dos Bandeirantes'),
+	('NOVA ODESSA NORTE', 'Rodovia dos Bandeirantes'),
+	('NOVA ODESSA SUL', 'Rodovia dos Bandeirantes'),
+	('SUMARÉ NORTE', 'Rodovia dos Bandeirantes'),
+	('SUMARÉ - SUL', 'Rodovia dos Bandeirantes'),
 
--- 3. Inserir Preferências do usuário
-INSERT INTO preferencia (fk_usuario, intervalo, regiao_padrao, dark_mode)
-VALUES (1, '1 minuto', 'SP Region (todas)', 0);
+	-- Rodovia Anhanguera
+	('LIMEIRA A NORTE', 'Rodovia Anhanguera'),
+	('LIMEIRA A SUL', 'Rodovia Anhanguera'),
+	('LIMEIRA B NORTE', 'Rodovia Anhanguera'),
+	('LIMEIRA B SUL', 'Rodovia Anhanguera'),
+	('PERUS - NORTE', 'Rodovia Anhanguera'),
+	('PERUS - SUL', 'Rodovia Anhanguera'),
+	('VALINHOS NORTE', 'Rodovia Anhanguera'),
+	('VALINHOS SUL', 'Rodovia Anhanguera'),
 
--- 4. Inserir Mapeamento de Praças e Rodovias (Essencial para as Views funcionarem)
-INSERT INTO mapa_praca_rodovia (praca, rodovia) VALUES
-('Praça Jundiaí - Km 39', 'Rodovia dos Bandeirantes'),
-('Praça Itupeva - Km 77', 'Rodovia dos Bandeirantes'),
-('Praça Caieiras - Km 36', 'Rodovia Anhangüera'),
-('Praça Louveira - Km 74', 'Rodovia Anhangüera');
+	-- Rodovia Dom Pedro I
+	('ATIBAIA', 'Rodovia Dom Pedro I'),
+	('IGARATÁ NORTE', 'Rodovia Dom Pedro I'),
+	('IGARATÁ SUL', 'Rodovia Dom Pedro I'),
+	('ITATIBA', 'Rodovia Dom Pedro I'),
+	('JUNDIAÍ', 'Rodovia Dom Pedro I'),
+	('LOUVEIRA', 'Rodovia Dom Pedro I'),
+	('PAULINIA A', 'Rodovia Dom Pedro I'),
+	('PAULINIA B', 'Rodovia Dom Pedro I'),
+	('PÓRTICO COSMOPOLIS', 'Rodovia Dom Pedro I'),
+	('PÓRTICO KM 74', 'Rodovia Dom Pedro I'),
+	('PÓRTICO PAULÍNIA JD. BETEL', 'Rodovia Dom Pedro I'),
 
--- 5. Popular Histórico de Tráfego (Alimenta a maior parte das suas Views de Dashboard)
--- Dias da semana: 1=Dom, 2=Seg, 3=Ter, 4=Qua, 5=Qui, 6=Sex, 7=Sáb
-INSERT INTO trafego_rodovia_historico (rodovia, dia_semana, hora, volume_total, volume_leve, volume_pesado, volume_moto, volume_especial) VALUES
--- Rodovia dos Bandeirantes - Segunda-feira (Dia típico com pico às 18h)
-('Rodovia dos Bandeirantes', 2, 08, 1500.00, 900.00, 400.00, 180.00, 20.00),
-('Rodovia dos Bandeirantes', 2, 12, 1800.00, 1100.00, 500.00, 170.00, 30.00),
-('Rodovia dos Bandeirantes', 2, 18, 3500.00, 2500.00, 600.00, 380.00, 20.00),
-('Rodovia dos Bandeirantes', 2, 22, 1200.00, 700.00, 450.00, 40.00, 10.00),
--- Rodovia dos Bandeirantes - Domingo (Mais leve, pico ao meio-dia)
-('Rodovia dos Bandeirantes', 1, 12, 2800.00, 2200.00, 150.00, 430.00, 20.00),
-('Rodovia dos Bandeirantes', 1, 20, 1900.00, 1500.00, 200.00, 190.00, 10.00),
+	-- Rodovia Washington Luís
+	('ARARAQUARA', 'Rodovia Washington Luís'),
+	('CATIGUÁ', 'Rodovia Washington Luís'),
+	('DOBRADA', 'Rodovia Washington Luís'),
+	('ITÁPOLIS', 'Rodovia Washington Luís'),
+	('JABOTICABAL', 'Rodovia Washington Luís'),
+	('TAIÚVA', 'Rodovia Washington Luís'),
 
--- Rodovia Anhangüera - Segunda-feira (Forte presença de pesados/caminhões)
-('Rodovia Anhangüera', 2, 06, 2200.00, 800.00, 1200.00, 150.00, 50.00),
-('Rodovia Anhangüera', 2, 12, 2400.00, 1000.00, 1100.00, 200.00, 100.00),
-('Rodovia Anhangüera', 2, 18, 3100.00, 1900.00, 900.00, 280.00, 20.00),
--- Rodovia Anhangüera - Sábado
-('Rodovia Anhangüera', 7, 14, 1600.00, 950.00, 400.00, 210.00, 40.00);
+	-- Rodovia Adhemar Pereira de Barros
+	('AGUAÍ', 'Rodovia Adhemar Pereira de Barros'),
+	('AGUAS DA PRATA', 'Rodovia Adhemar Pereira de Barros'),
+	('CASA BRANCA', 'Rodovia Adhemar Pereira de Barros'),
+	('ESTIVA GERBI', 'Rodovia Adhemar Pereira de Barros'),
+	('ITOBI', 'Rodovia Adhemar Pereira de Barros'),
+	('JAGUARIÚNA', 'Rodovia Adhemar Pereira de Barros'),
+	('MOCOCA', 'Rodovia Adhemar Pereira de Barros'),
+	('PINHAL', 'Rodovia Adhemar Pereira de Barros'),
+	('PÓRTICO STO. ANT. DE POSSE', 'Rodovia Adhemar Pereira de Barros'),
+	('SÃO JOÃO DA BOA VISTA', 'Rodovia Adhemar Pereira de Barros'),
 
--- 6. Inserir Obras em andamento/planejadas
-INSERT INTO obra (rodovia, descricao, status, data_inicio, data_fim, impacto_previsto, fk_empresa) VALUES
-('Rodovia dos Bandeirantes', 'Recapeamento asfáltico faixa da direita Km 42', 'Em andamento', '2026-06-01', '2026-06-10', 3, 1),
-('Rodovia Anhangüera', 'Manutenção preventiva da passarela Km 72', 'Planejada', '2026-06-15', '2026-06-16', 1, 1);
+	-- Rodovia Castello Branco
+	('ALUMINIO', 'Rodovia Castello Branco'),
+	('ARAÇOIABA LESTE', 'Rodovia Castello Branco'),
+	('ARAÇOIABA OESTE', 'Rodovia Castello Branco'),
+	('BARUERI', 'Rodovia Castello Branco'),
+	('ITAPEVI', 'Rodovia Castello Branco'),
+	('ITÚ', 'Rodovia Castello Branco'),
+	('OSASCO', 'Rodovia Castello Branco'),
+	('SÃO ROQUE', 'Rodovia Castello Branco'),
+	('SOROCABA', 'Rodovia Castello Branco'),
 
--- 7. Inserir Mural de Avisos (Interação da comunidade/analistas)
-INSERT INTO aviso_mural (id, fk_usuario, tipo, rodovia, titulo, descricao, pinned) VALUES
-(1, 1, 'atencao', 'Rodovia dos Bandeirantes', 'Tráfego lento devido a obras no Km 42', 'A faixa da direita está interditada para recapeamento. Lentidão de 2km estimada.', 1),
-(2, 1, 'info', 'Rodovia Anhangüera', 'Fluxo normalizado após acidente', 'O veículo que bloqueava a faixa 2 no Km 35 já foi removido pelo guincho.', 0);
+	-- Rodovia Santos Dumont
+	('BLOQUEIO DE BOITUVA', 'Rodovia Santos Dumont'),
+	('BLOQUEIO DE INDAIATUBA', 'Rodovia Santos Dumont'),
+	('BOITUVA', 'Rodovia Santos Dumont'),
+	('INDAIATUBA', 'Rodovia Santos Dumont'),
+	('ITUPEVA', 'Rodovia Santos Dumont'),
+	('PÓRTICO AEROPORTO', 'Rodovia Santos Dumont'),
+	('PÓRTICO CAMPINAS', 'Rodovia Santos Dumont'),
+	('PÓRTICO ITU - 1', 'Rodovia Santos Dumont'),
+	('PÓRTICO ITU - 2', 'Rodovia Santos Dumont'),
+	('PÓRTICO SALTO - 1', 'Rodovia Santos Dumont'),
+	('PÓRTICO SALTO - 2', 'Rodovia Santos Dumont'),
+	('PÓRTICO SALTO - 3', 'Rodovia Santos Dumont'),
+	('PORTO FELIZ', 'Rodovia Santos Dumont'),
+	('RIO DAS PEDRAS', 'Rodovia Santos Dumont'),
 
--- 8. Inserir um comentário fake no mural
-INSERT INTO aviso_comentario (fk_aviso, fk_usuario, texto) VALUES
-(1, 1, 'Equipe de pista já sinalizou o local com cones.');
+	-- Rodovia Raposo Tavares
+	('ASSIS', 'Rodovia Raposo Tavares'),
+	('CAIUÁ', 'Rodovia Raposo Tavares'),
+	('OURINHOS', 'Rodovia Raposo Tavares'),
+	('PALMITAL', 'Rodovia Raposo Tavares'),
+	('PIRATININGA', 'Rodovia Raposo Tavares'),
+	('PRES. BERNARDES', 'Rodovia Raposo Tavares'),
+	('RANCHARIA', 'Rodovia Raposo Tavares'),
+	('REGENTE FEIJÓ', 'Rodovia Raposo Tavares'),
+	('STA. CRUZ R. PARDO', 'Rodovia Raposo Tavares'),
+
+	-- Rodovia Marechal Rondon
+	('AVAÍ', 'Rodovia Marechal Rondon'),
+	('CASTILHO', 'Rodovia Marechal Rondon'),
+	('GLICÉRIO', 'Rodovia Marechal Rondon'),
+	('GUARAÇAÍ', 'Rodovia Marechal Rondon'),
+	('LAVÍNIA', 'Rodovia Marechal Rondon'),
+	('PIRAJUÍ', 'Rodovia Marechal Rondon'),
+	('PROMISSÃO', 'Rodovia Marechal Rondon'),
+	('RUBIÁCEA', 'Rodovia Marechal Rondon'),
+
+	-- Sistema Anchieta-Imigrantes
+	('BATISTINI', 'Sistema Anchieta-Imigrantes'),
+	('DIADEMA', 'Sistema Anchieta-Imigrantes'),
+	('ELDORADO', 'Sistema Anchieta-Imigrantes'),
+	('RIACHO GRANDE', 'Sistema Anchieta-Imigrantes'),
+	('SANTOS', 'Sistema Anchieta-Imigrantes'),
+	('SÃO VICENTE', 'Sistema Anchieta-Imigrantes'),
+	('ANCHIETA', 'Sistema Anchieta-Imigrantes'),
+	('IMIGRANTES', 'Sistema Anchieta-Imigrantes'),
+	('IMIGRANTES - CAPITAL', 'Sistema Anchieta-Imigrantes'),
+	('IMIGRANTES - LITORAL', 'Sistema Anchieta-Imigrantes'),
+
+	-- Rodovia Presidente Dutra
+	('CAÇAPAVA', 'Rodovia Presidente Dutra'),
+	('GUARAREMA', 'Rodovia Presidente Dutra'),
+	('ITAQUAQUECETUBA', 'Rodovia Presidente Dutra'),
+	('SÃO JOSÉ DOS CAMPOS', 'Rodovia Presidente Dutra'),
+	('DUTRA', 'Rodovia Presidente Dutra'),
+
+	-- Rodovia Ayrton Senna
+	('AYRTON SENNA', 'Rodovia Ayrton Senna'),
+
+	-- Rodoanel
+	('ANHANGUERA EXTERNA', 'Rodoanel'),
+	('ANHANGUERA INTERNA NORTE', 'Rodoanel'),
+	('ANHANGUERA INTERNA SUL', 'Rodoanel'),
+	('BANDEIRANTES EXTERNA', 'Rodoanel'),
+	('BANDEIRANTES INTERNA', 'Rodoanel'),
+	('CASTELLO BRANCO EXTERNA', 'Rodoanel'),
+	('CASTELLO BRANCO INTERNA', 'Rodoanel'),
+	('PADROEIRA EXTERNA', 'Rodoanel'),
+	('PADROEIRA INTERNA', 'Rodoanel'),
+	('RAIMUNDO MAGALHÃES', 'Rodoanel'),
+	('RAPOSO TAVARES EXTERNA', 'Rodoanel'),
+	('RAPOSO TAVARES INTERNA', 'Rodoanel'),
+	('REGIS BITTENCOURT', 'Rodoanel');
 
 INSERT INTO empresa (nome,cnpj) VALUES
 ('CCR AutoBAn','02.846.056/0001-97'),
@@ -485,7 +571,3 @@ INSERT INTO preferencia (fk_usuario,intervalo,regiao_padrao,notif_critica,notif_
 (7,'30 segundos','Interior SP',1,1,1,1),
 (8,'1 minuto','Ribeirão Preto',1,1,0,0),
 (9,'5 minutos','São Carlos',1,0,0,1);
-
-select * from usuario;
-SELECT * from obra;
-
