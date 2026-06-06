@@ -1,158 +1,140 @@
-<!doctype html>
-<html lang="pt-br">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NewRoad — Usuários</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/app-pages.css" />
+  <link rel="stylesheet" href="../css/usuarios.css" />
+</head>
+<body>
 
-    <title>Gestao de Usuarios</title>
-
-    <link rel="stylesheet" href="../css/global.css" />
-    <link rel="stylesheet" href="../css/layout.css" />
-    <link rel="stylesheet" href="../css/components.css" />
-    <link rel="stylesheet" href="../css/usuarios.css" />
-  </head>
-
-  <body>
-    <div class="layout usuarios-page">
-      <aside class="sidebar">
-        <div class="logo">New<span>Road</span></div>
-
-        <nav class="menu">
-          <a href="../dashboard/index.html">Dashboard</a>
-          <a href="../obras/obras.html">Obras</a>
-          <a href="../mural/mural.html">Mural de Avisos</a>
-          <a href="../usuarios/usuarios.html" class="ativo">Usuários</a>
-          <a href="../configuracoes/configuracoes.html">Configurações</a>
-        </nav>
-
-        <button onclick="logout()" style="width: 100%; padding: 12px; margin-top: 20px; background-color: #e53e3e; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 14px;">
-          Sair
-        </button>
-      </aside>
-
-      <main class="conteudo">
-        <header class="topbar">
-          <div>
-            <h1>Gestao de Usuarios</h1>
-            <p>Controle de acessos e perfis da operacao</p>
-          </div>
-
-          <div class="user-box" id="userBoxTopo">
-            <div class="avatar" id="avatarTopo">NR</div>
-            <div>
-              <strong id="nomeUsuarioTopo">NewRoad</strong>
-              <p id="perfilUsuarioTopo">Operacoes</p>
-            </div>
-            <span id="seloSessaoAtiva" class="selo-sessao" hidden>Sessao ativa</span>
-          </div>
-        </header>
-
-        <section class="kpis">
-          <div class="kpi-card">
-            <span>Total de usuarios</span>
-            <h2 id="kpiTotalUsuarios">0</h2>
-          </div>
-
-          <div class="kpi-card">
-            <span>Gestores</span>
-            <h2 id="kpiGestores">0</h2>
-          </div>
-
-          <div class="kpi-card">
-            <span>Analistas</span>
-            <h2 id="kpiAnalistas">0</h2>
-          </div>
-
-          <div class="kpi-card">
-            <span>Operadores</span>
-            <h2 id="kpiOperadores">0</h2>
-          </div>
-        </section>
-
-        <section class="acoes-topo">
-          <div class="filtros usuarios-filtros">
-            <input id="filtroBusca" type="text" placeholder="Buscar por nome, email ou perfil" />
-
-            <select id="filtroPerfil">
-              <option value="">Todos os perfis</option>
-              <option value="Gestor">Gestor</option>
-              <option value="Analista">Analista</option>
-              <option value="Operador">Operador</option>
-            </select>
-          </div>
-
-          <button class="btn-nova-obra" id="btnNovoUsuario">+ Novo Usuario</button>
-        </section>
-
-        <section class="tabela-section">
-          <div class="table-container">
-            <table class="tabela-obras tabela-usuarios">
-              <thead>
-                <tr>
-                  <th>Usuario</th>
-                  <th>Perfil</th>
-                  <th>Ultimo Acesso</th>
-                  <th>Acoes</th>
-                </tr>
-              </thead>
-              <tbody id="tbodyUsuarios"></tbody>
-            </table>
-          </div>
-
-          <p id="listaVazia" class="lista-vazia" hidden>Nenhum usuario encontrado com os filtros atuais.</p>
-        </section>
-      </main>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon" style="background:none;padding:0;overflow:hidden;">
+      <img src="../assets/imgs/Logov2.png" alt="NewRoad" onerror="this.style.display='none';this.parentElement.innerHTML='<i class=\'fa-solid fa-road\' style=\'color:#60a5fa;font-size:18px;\'></i>';">
     </div>
+    <span class="logo-text">New<strong>Road</strong></span>
+  </div>
+  <nav class="sidebar-nav">
+    <p class="nav-label">PRINCIPAL</p>
+    <a href="../dashboard/index.html" class="nav-item"><i class="fa-solid fa-chart-pie"></i><span>Dashboard</span></a>
+    <a href="../obras/obras.html" class="nav-item"><i class="fa-solid fa-helmet-safety"></i><span>Planejamento de Obras</span></a>
+    <p class="nav-label">GESTÃO</p>
+    <a href="../mural/mural.html" class="nav-item"><i class="fa-solid fa-bullhorn"></i><span>Mural de Avisos</span></a>
+    <a href="../usuarios/usuarios.html" class="nav-item active"><i class="fa-solid fa-users"></i><span>Usuários</span></a>
+    <a href="../configuracoes/configuracoes.html" class="nav-item"><i class="fa-solid fa-gear"></i><span>Configurações</span></a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="system-status"><span class="status-dot pulse"></span><span>Sistema online</span></div>
+    <p class="version-tag">SP Region</p>
+    <button type="button" class="sidebar-exit-btn" onclick="handleExitToLanding()"><i class="fa-solid fa-arrow-left"></i><span>Voltar à página inicial</span></button>
+  </div>
+</aside>
 
-    <div class="modal" id="modalUsuario">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2 id="tituloModal">Novo Usuario</h2>
-          <button id="btnFecharModal">x</button>
+<div class="main-wrapper" id="mainWrapper">
+  <header class="top-header">
+    <div class="header-left">
+      <button type="button" class="burger-btn" id="burgerBtn" aria-label="Menu"><i class="fa-solid fa-bars"></i></button>
+      <div class="search-box"><i class="fa-solid fa-magnifying-glass"></i><input type="text" placeholder="Buscar usuários…" id="searchInput" /></div>
+    </div>
+    <div class="header-right">
+      <button type="button" class="icon-btn notif-btn" id="notifBtn"><i class="fa-solid fa-bell"></i><span class="badge">3</span></button>
+      <div class="user-menu" id="userBoxTopo">
+        <div class="user-avatar" id="avatarTopo">NR</div>
+        <div class="user-info">
+          <span class="user-name" id="nomeUsuarioTopo">NewRoad</span>
+          <span class="user-role" id="perfilUsuarioTopo">Operações</span>
         </div>
-
-        <div class="form-grid">
-          <div class="campo">
-            <label for="inputNome">Nome</label>
-            <input id="inputNome" type="text" maxlength="120" />
-          </div>
-
-          <div class="campo">
-            <label for="inputEmail">Email</label>
-            <input id="inputEmail" type="email" maxlength="120" autocomplete="email" placeholder="nome@empresa.com" />
-          </div>
-
-          <div class="campo" id="campoSenha">
-            <label for="inputSenha">Senha</label>
-            <input id="inputSenha" type="password" maxlength="60" minlength="8" autocomplete="new-password" placeholder="Minimo de 8 caracteres" />
-          </div>
-
-          <div class="campo">
-            <label for="inputTelefone">Telefone</label>
-            <input id="inputTelefone" type="text" maxlength="20" placeholder="(11) 99999-9999" />
-          </div>
-
-          <div class="campo">
-            <label for="inputPerfil">Perfil</label>
-            <select id="inputPerfil">
-              <option value="Gestor">Gestor</option>
-              <option value="Analista" selected>Analista</option>
-              <option value="Operador">Operador</option>
-            </select>
-          </div>
-
-          <div class="campo">
-            <label for="inputAvatar">Iniciais do avatar</label>
-            <input id="inputAvatar" type="text" maxlength="2" placeholder="Opcional" />
-          </div>
-        </div>
-
-        <p class="mensagem-form" id="mensagemForm" hidden></p>
-
-        <button class="btn-salvar" id="btnSalvarUsuario">Salvar Usuario</button>
+        <span id="seloSessaoAtiva" hidden>Sessão ativa</span>
       </div>
     </div>
+  </header>
 
-    <script src="./usuarios.js"></script>
-  </body>
+  <main class="content usuarios-page">
+    <div class="page-title">
+      <div>
+        <h1>Gestão de Usuários</h1>
+        <p class="subtitle">Controle de acessos e perfis da operação</p>
+      </div>
+      <button type="button" class="btn-primary" id="btnNovoUsuario"><i class="fa-solid fa-user-plus"></i> Novo Usuário</button>
+    </div>
+
+    <section class="kpi-grid page-kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon flow"><i class="fa-solid fa-users"></i></div>
+        <div class="kpi-info"><span class="kpi-label">Total de usuários</span><span class="kpi-value" id="kpiTotalUsuarios">0</span></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon peak"><i class="fa-solid fa-user-tie"></i></div>
+        <div class="kpi-info"><span class="kpi-label">Gestores</span><span class="kpi-value" id="kpiGestores">0</span></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon window"><i class="fa-solid fa-user-gear"></i></div>
+        <div class="kpi-info"><span class="kpi-label">Analistas</span><span class="kpi-value" id="kpiAnalistas">0</span></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon cong"><i class="fa-solid fa-user-check"></i></div>
+        <div class="kpi-info"><span class="kpi-label">Operadores</span><span class="kpi-value" id="kpiOperadores">0</span></div>
+      </div>
+    </section>
+
+    <section class="page-actions">
+      <div class="page-filtros usuarios-filtros">
+        <input id="filtroBusca" type="text" placeholder="Buscar por nome, email ou perfil" />
+        <select id="filtroPerfil" class="filter-select">
+          <option value="">Todos os perfis</option>
+          <option value="Gestor">Gestor</option>
+          <option value="Analista">Analista</option>
+          <option value="Operador">Operador</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="table-section">
+      <div class="section-header"><div><h2>Usuários cadastrados</h2><p>Equipe com acesso à plataforma</p></div></div>
+      <div class="table-wrapper">
+        <table class="data-table tabela-obras tabela-usuarios">
+          <thead>
+            <tr><th>Usuário</th><th>Perfil</th><th>Último Acesso</th><th>Ações</th></tr>
+          </thead>
+          <tbody id="tbodyUsuarios"></tbody>
+        </table>
+      </div>
+      <p id="listaVazia" class="lista-vazia" hidden>Nenhum usuário encontrado com os filtros atuais.</p>
+    </section>
+  </main>
+</div>
+
+<div class="modal" id="modalUsuario">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="tituloModal">Novo Usuário</h2>
+      <button type="button" id="btnFecharModal">×</button>
+    </div>
+    <div class="form-grid">
+      <div class="campo"><label for="inputNome">Nome</label><input id="inputNome" type="text" maxlength="120" /></div>
+      <div class="campo"><label for="inputEmail">Email</label><input id="inputEmail" type="email" maxlength="120" autocomplete="email" placeholder="nome@empresa.com" /></div>
+      <div class="campo" id="campoSenha"><label for="inputSenha">Senha</label><input id="inputSenha" type="password" maxlength="60" minlength="8" autocomplete="new-password" placeholder="Mínimo de 8 caracteres" /></div>
+      <div class="campo"><label for="inputTelefone">Telefone</label><input id="inputTelefone" type="text" maxlength="20" placeholder="(11) 99999-9999" /></div>
+      <div class="campo"><label for="inputPerfil">Perfil</label><select id="inputPerfil"><option value="Gestor">Gestor</option><option value="Analista" selected>Analista</option><option value="Operador">Operador</option></select></div>
+      <div class="campo"><label for="inputAvatar">Iniciais do avatar</label><input id="inputAvatar" type="text" maxlength="2" placeholder="Opcional" /></div>
+    </div>
+    <p class="mensagem-form" id="mensagemForm" hidden></p>
+    <button type="button" class="btn-salvar" id="btnSalvarUsuario">Salvar Usuário</button>
+  </div>
+</div>
+
+<div class="notif-panel" id="notifPanel">
+  <div class="notif-header"><h4>Notificações</h4><button type="button" id="closeNotif"><i class="fa-solid fa-xmark"></i></button></div>
+  <div class="notif-list" id="notifList"></div>
+</div>
+<div class="overlay" id="overlay"></div>
+
+<script src="../js/app-shell.js"></script>
+<script src="./usuarios.js"></script>
+</body>
 </html>

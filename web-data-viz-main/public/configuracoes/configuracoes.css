@@ -1,0 +1,48 @@
+.configuracoes-page .settings-lean {
+  max-width: 760px;
+}
+
+.cfg-status {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: -8px 0 16px;
+}
+
+.cfg-status.ok { color: #047857; }
+.cfg-status.erro { color: #b91c1c; }
+
+.cfg-sessao-pill {
+  margin-left: auto;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.cfg-security-actions {
+  margin-top: 14px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cfg-btn-sm {
+  font-size: 12px;
+  padding: 8px 14px;
+}
+
+.cfg-btn-danger {
+  color: var(--red);
+  border-color: #fecaca;
+}
+
+.cfg-btn-danger:hover {
+  border-color: var(--red);
+  color: var(--red);
+  background: var(--red-bg);
+}
+
+.form-input[readonly],
+.form-input:disabled {
+  background: #f8fafc;
+  color: var(--text-secondary);
+  cursor: default;
+}

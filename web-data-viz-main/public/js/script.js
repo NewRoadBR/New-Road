@@ -1,5 +1,6 @@
 let rodoviaSelecionada = "Rodovia Anhanguera";
- 
+let obrasCadastradas = [];
+
 let graficoFluxoHorario;
 let graficoDiaSemana;
  
@@ -10,15 +11,25 @@ function obterEmpresaAtualId() {
 }
  
 function obterQueryEmpresa() {
- 
+
     var empresaId = obterEmpresaAtualId();
- 
+
     if (!Number.isInteger(empresaId) || empresaId <= 0) {
         throw new Error("Sessao sem empresa valida");
     }
- 
+
     return `empresaId=${empresaId}`;
- 
+
+}
+
+async function executarSeguro(nome, fn) {
+
+    try {
+        await fn();
+    } catch (erro) {
+        console.error(`[dashboard] ${nome}:`, erro);
+    }
+
 }
  
 function obterContextoPorPercentual(valor) {
@@ -231,7 +242,12 @@ async function carregarPressaoOperacional() {
     );
  
     const dados = await resposta.json();
- 
+
+    if (!dados.length) {
+        document.getElementById("kpiPressaoOperacional").innerText = "—";
+        return;
+    }
+
     const media = dados.reduce((acc, item) => {
  
         return acc + Number(item.pressao_operacional);
@@ -441,25 +457,71 @@ OBRAS
 */
  
 async function carregarObras() {
- 
-    var queryEmpresa = obterQueryEmpresa();
- 
-    const resposta = await fetch(
-        `/obras/rodovia/${encodeURIComponent(rodoviaSelecionada)}?${queryEmpresa}`
-    );
- 
-    const dados = await resposta.json();
- 
-    renderizarTabelaObras(dados);
- 
+
+    var tbody = document.getElementById("tbodyObras");
+    if (!tbody) return;
+
+    try {
+
+        var queryEmpresa = obterQueryEmpresa();
+
+        const resposta = await fetch(`/obras?${queryEmpresa}`);
+
+        if (!resposta.ok) {
+            throw new Error(`Erro ${resposta.status}`);
+        }
+
+        var dados = await resposta.json();
+        obrasCadastradas = Array.isArray(dados) ? dados : [];
+
+        renderizarTabelaObras(obrasCadastradas);
+        atualizarContadorObras(obrasCadastradas.length);
+        renderizarMapaObras(obrasCadastradas);
+
+    } catch (erro) {
+
+        console.error(erro);
+        obrasCadastradas = [];
+        renderizarTabelaObras([]);
+        renderizarMapaObras([]);
+
+        var msg = erro.message && erro.message.indexOf("empresa") >= 0
+            ? "Faça login para visualizar as obras cadastradas."
+            : "Não foi possível carregar as obras cadastradas.";
+
+        atualizarContadorObras(0, msg);
+
+    }
+
+}
+
+function atualizarContadorObras(total, mensagem) {
+
+    var el = document.getElementById("obrasTotalCount");
+    if (!el) return;
+
+    if (mensagem) {
+        el.textContent = mensagem;
+        return;
+    }
+
+    el.textContent = total + " obra" + (total !== 1 ? "s" : "") + " cadastrada" + (total !== 1 ? "s" : "") + " · todas exibidas abaixo";
+
 }
  
 function renderizarTabelaObras(obras) {
- 
+
     const tbody = document.getElementById("tbodyObras");
- 
+
+    if (!tbody) return;
+
     tbody.innerHTML = "";
- 
+
+    if (!obras.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px;">Nenhuma obra cadastrada.</td></tr>';
+        return;
+    }
+
     obras.forEach(obra => {
  
         var impacto = Number(obra.impacto_previsto || 0);
@@ -472,7 +534,7 @@ function renderizarTabelaObras(obras) {
         if (status.includes("planejada")) statusContexto = "ruim";
  
         tbody.innerHTML += `
-            <tr>
+            <tr data-obra-id="${obra.id}">
                 <td>${obra.rodovia}</td>
                 <td>${obra.descricao || "-"}</td>
                 <td><span class="badge ${statusContexto === "bom" ? "green" : statusContexto === "medio" ? "yellow" : "red"}">${obra.status}</span></td>
@@ -494,6 +556,215 @@ function renderizarTabelaObras(obras) {
  
 }
  
+/*
+=========================================================
+MAPA DE OBRAS
+=========================================================
+*/
+
+var mapaObras = null;
+var camadaMarcadoresObras = null;
+
+var RODOVIA_COORDS = {
+    "Rodoanel": [-23.450, -46.732],
+    "Rodovia Adhemar Pereira de Barros": [-22.728, -47.649],
+    "Rodovia Anhanguera": [-23.468, -46.801],
+    "Rodovia Ayrton Senna": [-23.425, -46.512],
+    "Rodovia Castello Branco": [-23.522, -46.875],
+    "Rodovia Dom Pedro I": [-23.348, -46.718],
+    "Rodovia dos Bandeirantes": [-23.428, -46.708],
+    "Rodovia Marechal Rondon": [-23.558, -46.928],
+    "Rodovia Presidente Dutra": [-23.528, -46.615],
+    "Rodovia Raposo Tavares": [-23.568, -46.788],
+    "Rodovia Santos Dumont": [-23.415, -46.752],
+    "Rodovia Washington Luís": [-22.985, -47.142],
+    "Sistema Anchieta-Imigrantes": [-23.782, -46.365]
+};
+
+function normalizarImpactoObra(valor) {
+    var n = Number(valor || 0);
+    if (n <= 10) return n * 10;
+    return Math.min(n, 100);
+}
+
+function obterCorMarcadorObra(obra) {
+    var status = (obra.status || "").toLowerCase();
+    var impacto = normalizarImpactoObra(obra.impacto_previsto);
+
+    if (status.includes("crit") || impacto >= 70) return "red";
+    if (status.includes("andamento") || impacto >= 40) return "yellow";
+    if (status.includes("final")) return "green";
+    return impacto >= 40 ? "yellow" : "green";
+}
+
+function obterCoordenadasObra(obra) {
+    if (obra.latitude != null && obra.longitude != null) {
+        return [Number(obra.latitude), Number(obra.longitude)];
+    }
+
+    var base = RODOVIA_COORDS[obra.rodovia] || [-23.5505, -46.6333];
+    var seed = Number(obra.id) || 1;
+    var angulo = (seed * 137.508) * Math.PI / 180;
+    var raio = 0.012 + (seed % 5) * 0.004;
+
+    return [
+        base[0] + Math.cos(angulo) * raio,
+        base[1] + Math.sin(angulo) * raio
+    ];
+}
+
+function formatarDataObra(data) {
+    if (!data) return "—";
+    var partes = String(data).split("-");
+    if (partes.length === 3) return partes[2] + "/" + partes[1] + "/" + partes[0];
+    return data;
+}
+
+function escaparHtml(texto) {
+    return String(texto == null ? "" : texto)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+}
+
+function montarTooltipObra(obra) {
+    var impacto = normalizarImpactoObra(obra.impacto_previsto);
+    var cor = obterCorMarcadorObra(obra);
+
+    return (
+        '<div class="obra-tooltip">' +
+            '<table class="obra-tooltip-table">' +
+                "<tr><th>Rodovia</th><td>" + escaparHtml(obra.rodovia || "—") + "</td></tr>" +
+                "<tr><th>Descrição</th><td>" + escaparHtml(obra.descricao || "—") + "</td></tr>" +
+                "<tr><th>Status</th><td><span class=\"obra-tooltip-badge badge-" + cor + "\">" + escaparHtml(obra.status || "—") + "</span></td></tr>" +
+                "<tr><th>Início</th><td>" + escaparHtml(formatarDataObra(obra.data_inicio)) + "</td></tr>" +
+                "<tr><th>Fim</th><td>" + escaparHtml(formatarDataObra(obra.data_fim)) + "</td></tr>" +
+                "<tr><th>Impacto</th><td><strong>" + impacto + "%</strong></td></tr>" +
+            "</table>" +
+        "</div>"
+    );
+}
+
+function montarPopupObra(obra) {
+    return montarTooltipObra(obra);
+}
+
+function criarIconeMarcadorObra(cor) {
+    var cores = { green: "#10b981", yellow: "#f59e0b", red: "#ef4444" };
+    var hex = cores[cor] || "#3b82f6";
+
+    return L.divIcon({
+        className: "nr-obra-marker",
+        html:
+            '<div style="' +
+                "width:30px;height:30px;background:" + hex + ";" +
+                "border-radius:50% 50% 50% 0;transform:rotate(-45deg);" +
+                "display:flex;align-items:center;justify-content:center;" +
+                "box-shadow:0 3px 10px rgba(0,0,0,0.25);border:2px solid rgba(255,255,255,0.85);" +
+            '">' +
+                '<i class="fa-solid fa-helmet-safety" style="transform:rotate(45deg);font-size:11px;color:#fff;"></i>' +
+            "</div>",
+        iconSize: [30, 30],
+        iconAnchor: [15, 30],
+        popupAnchor: [0, -32]
+    });
+}
+
+function destacarLinhaObra(id) {
+    document.querySelectorAll("#tbodyObras tr[data-obra-id]").forEach(function (row) {
+        row.classList.remove("obra-row-highlight");
+    });
+
+    var linha = document.querySelector('#tbodyObras tr[data-obra-id="' + id + '"]');
+    if (!linha) return;
+
+    linha.classList.add("obra-row-highlight");
+    linha.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function initMapaObras() {
+    var mapEl = document.getElementById("map");
+    if (!mapEl || typeof L === "undefined") return;
+
+    if (mapaObras) {
+        mapaObras.invalidateSize();
+        return;
+    }
+
+    mapaObras = L.map("map", {
+        center: [-23.5505, -46.6333],
+        zoom: 10,
+        zoomControl: true,
+        attributionControl: false
+    });
+
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+        maxZoom: 19,
+        attribution: "&copy; OpenStreetMap &copy; CARTO"
+    }).addTo(mapaObras);
+
+    camadaMarcadoresObras = L.layerGroup().addTo(mapaObras);
+
+    window.addEventListener("resize", function () {
+        if (mapaObras) mapaObras.invalidateSize();
+    });
+
+    setTimeout(function () {
+        if (mapaObras) mapaObras.invalidateSize();
+    }, 300);
+}
+
+function renderizarMapaObras(obras) {
+    initMapaObras();
+
+    var contador = document.getElementById("mapObrasCount");
+    if (contador) {
+        contador.textContent = obras.length
+            ? obras.length + " obra" + (obras.length !== 1 ? "s" : "") + " no mapa · clique no marcador para detalhes"
+            : "Nenhuma obra cadastrada para exibir no mapa";
+    }
+
+    if (!camadaMarcadoresObras) return;
+
+    camadaMarcadoresObras.clearLayers();
+
+    if (!obras.length) return;
+
+    var bounds = [];
+
+    obras.forEach(function (obra) {
+        var coords = obterCoordenadasObra(obra);
+        var cor = obterCorMarcadorObra(obra);
+        var marker = L.marker(coords, { icon: criarIconeMarcadorObra(cor) }).addTo(camadaMarcadoresObras);
+
+        marker.bindPopup(montarPopupObra(obra), {
+            maxWidth: 340,
+            minWidth: 280,
+            className: "nr-popup",
+            autoPan: true,
+            autoPanPadding: [48, 48],
+            closeButton: true
+        });
+
+        marker.on("click", function () {
+            destacarLinhaObra(obra.id);
+        });
+
+        bounds.push(coords);
+    });
+
+    if (bounds.length === 1) {
+        mapaObras.setView(bounds[0], 11);
+    } else if (bounds.length > 1) {
+        mapaObras.fitBounds(bounds, { padding: [40, 40], maxZoom: 11 });
+    }
+
+    setTimeout(function () {
+        if (mapaObras) mapaObras.invalidateSize();
+    }, 200);
+}
+
 /*
 =========================================================
 RODOVIA
@@ -531,21 +802,16 @@ INIT
 
 async function iniciarDashboard() {
 
-    await carregarFluxoMedio();
+    initMapaObras();
 
-    await carregarHorarioCritico();
-
-    await carregarJanelaIdeal();
-
-    await carregarMelhorDia();
-
-    await carregarPressaoOperacional();
-
-    await carregarPerfilRodovia();
-
-    await carregarFluxoHorario();
-
-    await carregarVolumeDiaSemana();
+    await executarSeguro("fluxoMedio", carregarFluxoMedio);
+    await executarSeguro("horarioCritico", carregarHorarioCritico);
+    await executarSeguro("janelaIdeal", carregarJanelaIdeal);
+    await executarSeguro("melhorDia", carregarMelhorDia);
+    await executarSeguro("pressaoOperacional", carregarPressaoOperacional);
+    await executarSeguro("perfilRodovia", carregarPerfilRodovia);
+    await executarSeguro("fluxoHorario", carregarFluxoHorario);
+    await executarSeguro("volumeDiaSemana", carregarVolumeDiaSemana);
 
     await carregarObras();
 
