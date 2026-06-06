@@ -4,12 +4,22 @@ const nomeUsuarioTopo = document.getElementById("nomeUsuarioTopo");
 const perfilUsuarioTopo = document.getElementById("perfilUsuarioTopo");
 const seloSessaoAtiva = document.getElementById("seloSessaoAtiva");
 
+const cfgAvatar = document.getElementById("cfgAvatar");
+const cfgNomeDisplay = document.getElementById("cfgNomeDisplay");
+const cfgEmailDisplay = document.getElementById("cfgEmailDisplay");
+const cfgNome = document.getElementById("cfgNome");
+const cfgEmail = document.getElementById("cfgEmail");
+const cfgSessaoPill = document.getElementById("cfgSessaoPill");
+const cfgPerfil = document.getElementById("cfgPerfil");
+const cfgUsuarioId = document.getElementById("cfgUsuarioId");
+
 const selectIntervalo = document.getElementById("selectIntervalo");
 const toggleNotifCritica = document.getElementById("toggleNotifCritica");
 const toggleNotifPico = document.getElementById("toggleNotifPico");
 const toggleNotifRelatorio = document.getElementById("toggleNotifRelatorio");
 const toggleDarkMode = document.getElementById("toggleDarkMode");
 const btnSalvarPreferencias = document.getElementById("btnSalvarPreferencias");
+const btnEncerrarSessao = document.getElementById("btnEncerrarSessao");
 const statusConfiguracoes = document.getElementById("statusConfiguracoes");
 
 const toggles = [
@@ -20,6 +30,7 @@ const toggles = [
 ];
 
 let idUsuarioSessao = Number(sessionStorage.ID_USUARIO || 1);
+let usuarioAtual = null;
 
 function criarIniciais(nome) {
   if (!nome) return "??";
@@ -61,26 +72,113 @@ function aplicarUsuarioLogadoNaTopbar() {
   seloSessaoAtiva.hidden = false;
 }
 
+function aplicarPerfilNaPagina(dados) {
+  const nome = (dados?.nome || sessionStorage.NOME_USUARIO || "").trim();
+  const email = (dados?.email || sessionStorage.EMAIL_USUARIO || "").trim();
+  const perfil =
+    (dados?.perfil || sessionStorage.PERFIL_USUARIO || "").trim() ||
+    (dados?.role || sessionStorage.ROLE_USUARIO || "").trim();
+  const avatar = (dados?.avatar || sessionStorage.AVATAR_USUARIO || "").trim();
+  const temSessao = Boolean(nome || email || perfil);
+
+  const iniciais = (avatar || criarIniciais(nome || email)).slice(0, 2).toUpperCase();
+
+  if (cfgAvatar) cfgAvatar.textContent = iniciais;
+  if (cfgNomeDisplay) cfgNomeDisplay.textContent = nome || "NewRoad";
+  if (cfgNome) cfgNome.value = nome || "";
+  if (cfgEmail) cfgEmail.value = email || "";
+  if (cfgEmailDisplay) {
+    cfgEmailDisplay.textContent = temSessao
+      ? [perfil || "Equipe", email].filter(Boolean).join(" · ")
+      : "Faça login para personalizar o perfil";
+  }
+  if (cfgPerfil) cfgPerfil.value = perfil || "—";
+  if (cfgUsuarioId) cfgUsuarioId.value = String(dados?.id || idUsuarioSessao);
+  if (cfgSessaoPill) cfgSessaoPill.hidden = !temSessao;
+}
+
+function sincronizarSessaoUsuario(dados) {
+  if (!dados) return;
+
+  usuarioAtual = dados;
+
+  if (dados.id != null) sessionStorage.ID_USUARIO = dados.id;
+  if (dados.nome) sessionStorage.NOME_USUARIO = dados.nome;
+  if (dados.email) sessionStorage.EMAIL_USUARIO = dados.email;
+  if (dados.perfil) sessionStorage.PERFIL_USUARIO = dados.perfil;
+  if (dados.role) sessionStorage.ROLE_USUARIO = dados.role;
+  if (dados.avatar) sessionStorage.AVATAR_USUARIO = dados.avatar;
+  if (dados.empresaId != null) sessionStorage.EMPRESA_ID_USUARIO = dados.empresaId;
+
+  idUsuarioSessao = Number(dados.id || idUsuarioSessao || 1);
+}
+
+function obterEmpresaId() {
+  const empresaId = Number(sessionStorage.EMPRESA_ID_USUARIO || 0);
+
+  if (!Number.isInteger(empresaId) || empresaId <= 0) {
+    throw new Error("Sessao sem empresa valida.");
+  }
+
+  return empresaId;
+}
+
+async function carregarPerfilUsuario() {
+  const empresaId = obterEmpresaId();
+
+  try {
+    const usuario = await requestJson(
+      `/usuarios/${idUsuarioSessao}?empresaId=${empresaId}`
+    );
+    sincronizarSessaoUsuario(usuario);
+    aplicarPerfilNaPagina(usuario);
+    aplicarUsuarioLogadoNaTopbar();
+  } catch (erro) {
+    aplicarPerfilNaPagina();
+    setStatus(`Perfil não carregado: ${erro.message}`, "erro");
+  }
+}
+
+async function salvarPerfilUsuario() {
+  const nome = (cfgNome?.value || "").trim();
+  const email = (cfgEmail?.value || sessionStorage.EMAIL_USUARIO || "").trim();
+
+  if (!nome) throw new Error("Informe o nome.");
+  if (!email) throw new Error("E-mail não encontrado na sessão.");
+
+  const payload = {
+    nome,
+    email,
+    telefone: usuarioAtual?.telefone || "",
+    perfil: usuarioAtual?.perfil || sessionStorage.PERFIL_USUARIO || "Analista",
+    avatar: usuarioAtual?.avatar || sessionStorage.AVATAR_USUARIO || criarIniciais(nome)
+  };
+
+  const atualizado = await requestJson(
+    `/usuarios/${idUsuarioSessao}?empresaId=${obterEmpresaId()}`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    }
+  );
+
+  sincronizarSessaoUsuario(Object.assign({}, usuarioAtual, atualizado, payload));
+  aplicarPerfilNaPagina(atualizado);
+  aplicarUsuarioLogadoNaTopbar();
+}
+
 function setStatus(texto, tipo) {
   statusConfiguracoes.textContent = texto;
-  statusConfiguracoes.className = tipo ? tipo : "";
+  statusConfiguracoes.className = tipo ? "cfg-status " + tipo : "cfg-status";
 }
 
-function isOn(botao) {
-  return botao.getAttribute("aria-pressed") === "true";
+function isOn(input) {
+  return Boolean(input && input.checked);
 }
 
-function setToggleState(botao, ligado) {
-  botao.setAttribute("aria-pressed", ligado ? "true" : "false");
-  botao.classList.toggle("off", !ligado);
-}
-
-function prepararToggles() {
-  toggles.forEach((botao) => {
-    botao.addEventListener("click", () => {
-      setToggleState(botao, !isOn(botao));
-    });
-  });
+function setToggleState(input, ligado) {
+  if (input) input.checked = Boolean(ligado);
 }
 
 function preencherFormulario(preferencias) {
@@ -137,10 +235,15 @@ function coletarPayload() {
 }
 
 async function salvarPreferencias() {
+  const btnOriginal = btnSalvarPreferencias.innerHTML;
+
   try {
     setStatus("Salvando preferências...", "");
+    btnSalvarPreferencias.disabled = true;
 
     const payload = coletarPayload();
+
+    await salvarPerfilUsuario();
 
     await requestJson(`/preferencias/${idUsuarioSessao}`, {
       method: "PUT",
@@ -148,27 +251,30 @@ async function salvarPreferencias() {
       body: JSON.stringify(payload)
     });
 
-    setStatus("Preferências salvas com sucesso.", "ok");
+    setStatus("Perfil e preferências salvos com sucesso.", "ok");
+    btnSalvarPreferencias.innerHTML = '<i class="fa-solid fa-check"></i> Salvo!';
+    btnSalvarPreferencias.style.background = "#10b981";
+
+    setTimeout(function () {
+      btnSalvarPreferencias.innerHTML = btnOriginal;
+      btnSalvarPreferencias.style.background = "";
+    }, 2000);
   } catch (erro) {
     setStatus(`Falha ao salvar preferências: ${erro.message}`, "erro");
+  } finally {
+    btnSalvarPreferencias.disabled = false;
   }
 }
 
-/*
-=========================================================
-LOGOUT
-=========================================================
-*/
-
-function logout() {
-  if (confirm("Tem certeza que deseja sair?")) {
-    sessionStorage.clear();
-    window.location.href = "../../index.html";
-  }
+function encerrarSessao() {
+  if (!confirm("Deseja encerrar a sessão atual?")) return;
+  sessionStorage.clear();
+  window.location.href = "../index.html";
 }
 
 btnSalvarPreferencias.addEventListener("click", salvarPreferencias);
+btnEncerrarSessao.addEventListener("click", encerrarSessao);
 
 aplicarUsuarioLogadoNaTopbar();
-prepararToggles();
+carregarPerfilUsuario();
 carregarPreferencias();

@@ -121,15 +121,23 @@ async function carregarObras() {
         const resposta =
             await fetch(`/obras?${queryEmpresa}`);
 
-        obras = await resposta.json();
+        if (!resposta.ok) {
+            throw new Error(`Erro ${resposta.status}`);
+        }
 
-        renderizarTabela(obras);
+        var dados = await resposta.json();
+        obras = Array.isArray(dados) ? dados : [];
+
+        aplicarFiltros();
 
         atualizarKPIs();
 
     } catch (erro) {
 
         console.error(erro);
+        obras = [];
+        aplicarFiltros();
+        atualizarKPIs();
 
     }
 
@@ -189,6 +197,12 @@ function renderizarTabela(lista) {
         document.getElementById("tbodyObras");
 
     tbody.innerHTML = "";
+
+    if (!lista.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px;">Nenhuma obra encontrada.</td></tr>';
+        atualizarContadorLista(0);
+        return;
+    }
 
     lista.forEach(obra => {
 
@@ -272,6 +286,44 @@ function renderizarTabela(lista) {
 
     });
 
+    atualizarContadorLista(lista.length);
+
+}
+
+function atualizarContadorLista(visiveis) {
+
+    var el = document.getElementById("obrasListaCount");
+    if (!el) return;
+
+    if (visiveis === obras.length) {
+        el.textContent = obras.length + " obra" + (obras.length !== 1 ? "s" : "") + " cadastrada" + (obras.length !== 1 ? "s" : "");
+        return;
+    }
+
+    el.textContent = visiveis + " de " + obras.length + " obras exibidas";
+
+}
+
+function obterListaFiltrada() {
+
+    var rodovia = document.getElementById("filtroRodovia").value;
+    var busca = (document.getElementById("searchInput")?.value || "").trim().toLowerCase();
+
+    return obras.filter(function (obra) {
+        var rodoviaOk = !rodovia || obra.rodovia === rodovia;
+        var buscaOk = !busca ||
+            (obra.rodovia || "").toLowerCase().indexOf(busca) >= 0 ||
+            (obra.descricao || "").toLowerCase().indexOf(busca) >= 0 ||
+            (obra.status || "").toLowerCase().indexOf(busca) >= 0;
+        return rodoviaOk && buscaOk;
+    });
+
+}
+
+function aplicarFiltros() {
+
+    renderizarTabela(obterListaFiltrada());
+
 }
 
 /*
@@ -281,6 +333,8 @@ KPIs
 */
 
 function atualizarKPIs() {
+
+    const total = obras.length;
 
     const ativas =
         obras.filter(
@@ -297,20 +351,8 @@ function atualizarKPIs() {
             obra => obra.status === "Finalizada"
         ).length;
 
-    const impactoMedio = obras.length > 0
-
-        ? (
-            obras.reduce((acc, obra) => {
-
-                return acc + Number(
-                    obra.impacto_previsto || 0
-                );
-
-            }, 0) / obras.length
-
-        ).toFixed(1)
-
-        : 0;
+    document.getElementById("kpiTotal")
+        .innerText = total;
 
     document.getElementById("kpiAtivas")
         .innerText = ativas;
@@ -321,17 +363,14 @@ function atualizarKPIs() {
     document.getElementById("kpiFinalizadas")
         .innerText = finalizadas;
 
-    document.getElementById("kpiImpacto")
-        .innerText = `${impactoMedio}%`;
+    var percentualAtivas = total > 0 ? (ativas / total) * 100 : 0;
+    var percentualPlanejadas = total > 0 ? (planejadas / total) * 100 : 0;
+    var percentualFinalizadas = total > 0 ? (finalizadas / total) * 100 : 0;
 
-    var percentualAtivas = obras.length > 0 ? (ativas / obras.length) * 100 : 0;
-    var percentualPlanejadas = obras.length > 0 ? (planejadas / obras.length) * 100 : 0;
-    var percentualFinalizadas = obras.length > 0 ? (finalizadas / obras.length) * 100 : 0;
-
+    aplicarContextoCard("cardKpiTotal", { classe: "bom", label: "Total" });
     aplicarContextoCard("cardKpiAtivas", obterContextoPorPercentual(percentualAtivas));
     aplicarContextoCard("cardKpiPlanejadas", obterContextoPorPercentual(percentualPlanejadas));
     aplicarContextoCard("cardKpiFinalizadas", obterContextoPorPercentual(100 - percentualFinalizadas));
-    aplicarContextoCard("cardKpiImpacto", obterContextoPorPercentual(Number(impactoMedio)));
 
 }
 
@@ -502,44 +541,11 @@ FILTRO
 
 document
     .getElementById("filtroRodovia")
-    .addEventListener("change", filtrarRodovia);
+    .addEventListener("change", aplicarFiltros);
 
-async function filtrarRodovia() {
-
-    const rodovia =
-        document.getElementById("filtroRodovia").value;
-
-    try {
-
-        var queryEmpresa = obterQueryEmpresa();
-
-        let resposta;
-
-        if (rodovia === "") {
-
-            resposta =
-                await fetch(`/obras?${queryEmpresa}`);
-
-        } else {
-
-            resposta =
-                await fetch(
-                    `/obras/rodovia/${encodeURIComponent(rodovia)}?${queryEmpresa}`
-                );
-
-        }
-
-        const resultado =
-            await resposta.json();
-
-        renderizarTabela(resultado);
-
-    } catch (erro) {
-
-        console.error(erro);
-
-    }
-
+var searchInputObras = document.getElementById("searchInput");
+if (searchInputObras) {
+    searchInputObras.addEventListener("input", aplicarFiltros);
 }
 
 /*

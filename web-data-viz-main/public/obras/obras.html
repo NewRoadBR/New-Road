@@ -1,292 +1,155 @@
-<!doctype html>
-<html lang="pt-br">
-  <head>
-    <meta charset="UTF-8" />
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-    <title>Gestão de Obras</title>
-
-    <link rel="stylesheet" href="../css/global.css" />
-    <link rel="stylesheet" href="../css/layout.css" />
-    <link rel="stylesheet" href="../css/components.css" />
-  </head>
-
-  <body>
-    <div class="layout">
-      <!-- ===================================================== -->
-      <!-- SIDEBAR -->
-      <!-- ===================================================== -->
-
-        <aside class="sidebar">
-
-            <div class="logo">
-
-                New<span>Road</span>
-
-            </div>
-
-            <nav class="menu">
-
-                <a href="../dashboard/index.html">
-
-                    Dashboard
-
-                </a>
-
-                <a href="../obras/obras.html" class="ativo">
-
-                    Obras
-
-                </a>
-
-                <a
-                    href="../mural/mural.html"
-                >
-
-                    Mural de Avisos
-
-                </a>
-
-                <a href="../usuarios/usuarios.html">
-
-                    Usuários
-
-                </a>
-
-                <a href="../configuracoes/configuracoes.html">
-
-                    Configurações
-
-                </a>
-
-            </nav>
-
-            <button onclick="logout()" style="width: 100%; padding: 12px; margin-top: 20px; background-color: #e53e3e; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 14px;">
-                Sair
-            </button>
-
-        </aside>
-
-      <!-- ===================================================== -->
-      <!-- CONTEÚDO -->
-      <!-- ===================================================== -->
-
-      <main class="conteudo">
-        <!-- ================================================= -->
-        <!-- TOPBAR -->
-        <!-- ================================================= -->
-
-        <header class="topbar">
-          <div>
-            <h1>Gestão de Obras</h1>
-
-            <p>Controle operacional de intervenções rodoviárias</p>
-          </div>
-
-          <div class="user-box" id="userBoxTopo">
-            <div class="avatar" id="avatarTopo">NR</div>
-
-            <div>
-              <strong id="nomeUsuarioTopo">NewRoad</strong>
-
-              <p id="perfilUsuarioTopo">Operacoes</p>
-            </div>
-
-            <span id="seloSessaoAtiva" class="selo-sessao" hidden>Sessao ativa</span>
-          </div>
-        </header>
-
-        <!-- ================================================= -->
-        <!-- KPIs -->
-        <!-- ================================================= -->
-
-        <section class="kpis">
-          <div class="kpi-card" id="cardKpiAtivas">
-            <span> Obras Ativas </span>
-
-            <h2 id="kpiAtivas">0</h2>
-          </div>
-
-          <div class="kpi-card" id="cardKpiPlanejadas">
-            <span> Obras Planejadas </span>
-
-            <h2 id="kpiPlanejadas">0</h2>
-          </div>
-
-          <div class="kpi-card" id="cardKpiFinalizadas">
-            <span> Finalizadas </span>
-
-            <h2 id="kpiFinalizadas">0</h2>
-          </div>
-
-          <div class="kpi-card" id="cardKpiImpacto">
-            <span> Impacto Médio </span>
-
-            <h2 id="kpiImpacto">0%</h2>
-          </div>
-        </section>
-
-        <!-- ================================================= -->
-        <!-- AÇÕES -->
-        <!-- ================================================= -->
-
-        <section class="acoes-topo">
-          <div class="filtros">
-            <select id="filtroRodovia">
-              <option value="">Todas as Rodovias</option>
-
-              <option>Rodoanel</option>
-
-              <option>Rodovia Adhemar Pereira de Barros</option>
-
-              <option>Rodovia Anhanguera</option>
-
-              <option>Rodovia Ayrton Senna</option>
-
-              <option>Rodovia Castello Branco</option>
-
-              <option>Rodovia Dom Pedro I</option>
-
-              <option>Rodovia dos Bandeirantes</option>
-
-              <option>Rodovia Marechal Rondon</option>
-
-              <option>Rodovia Presidente Dutra</option>
-
-              <option>Rodovia Raposo Tavares</option>
-
-              <option>Rodovia Santos Dumont</option>
-
-              <option>Rodovia Washington Luís</option>
-
-              <option>Sistema Anchieta-Imigrantes</option>
-            </select>
-          </div>
-
-          <button class="btn-nova-obra" onclick="prepararNovaObra()">
-            + Nova Obra
-          </button>
-        </section>
-
-        <!-- ================================================= -->
-        <!-- TABELA -->
-        <!-- ================================================= -->
-
-        <section class="tabela-section">
-          <table class="tabela-obras">
-            <thead>
-              <tr>
-                <th>Rodovia</th>
-
-                <th>Descrição</th>
-
-                <th>Status</th>
-
-                <th>Início</th>
-
-                <th>Fim</th>
-
-                <th>Impacto</th>
-
-                <th>Ações</th>
-              </tr>
-            </thead>
-
-            <tbody id="tbodyObras"></tbody>
-          </table>
-        </section>
-      </main>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NewRoad — Planejamento de Obras</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/app-pages.css" />
+  <link rel="stylesheet" href="../css/obras.css" />
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon" style="background:none;padding:0;overflow:hidden;">
+      <img src="../assets/imgs/Logov2.png" alt="NewRoad" onerror="this.style.display='none';this.parentElement.innerHTML='<i class=\'fa-solid fa-road\' style=\'color:#60a5fa;font-size:18px;\'></i>';">
     </div>
+    <span class="logo-text">New<strong>Road</strong></span>
+  </div>
+  <nav class="sidebar-nav">
+    <p class="nav-label">PRINCIPAL</p>
+    <a href="../dashboard/index.html" class="nav-item"><i class="fa-solid fa-chart-pie"></i><span>Dashboard</span></a>
+    <a href="../obras/obras.html" class="nav-item active"><i class="fa-solid fa-helmet-safety"></i><span>Planejamento de Obras</span></a>
+    <p class="nav-label">GESTÃO</p>
+    <a href="../mural/mural.html" class="nav-item"><i class="fa-solid fa-bullhorn"></i><span>Mural de Avisos</span></a>
+    <a href="../usuarios/usuarios.html" class="nav-item"><i class="fa-solid fa-users"></i><span>Usuários</span></a>
+    <a href="../configuracoes/configuracoes.html" class="nav-item"><i class="fa-solid fa-gear"></i><span>Configurações</span></a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="system-status"><span class="status-dot pulse"></span><span>Sistema online</span></div>
+    <p class="version-tag">SP Region</p>
+    <button type="button" class="sidebar-exit-btn" onclick="handleExitToLanding()"><i class="fa-solid fa-arrow-left"></i><span>Voltar à página inicial</span></button>
+  </div>
+</aside>
 
-    <!-- ===================================================== -->
-    <!-- MODAL -->
-    <!-- ===================================================== -->
-
-    <div class="modal" id="modalObra">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2 id="tituloModalObra">Nova Obra</h2>
-
-          <button onclick="fecharModal()">×</button>
+<div class="main-wrapper" id="mainWrapper">
+  <header class="top-header">
+    <div class="header-left">
+      <button type="button" class="burger-btn" id="burgerBtn" aria-label="Menu"><i class="fa-solid fa-bars"></i></button>
+      <div class="search-box"><i class="fa-solid fa-magnifying-glass"></i><input type="text" placeholder="Buscar via, região ou obra…" id="searchInput" /></div>
+    </div>
+    <div class="header-right">
+      <button type="button" class="icon-btn notif-btn" id="notifBtn"><i class="fa-solid fa-bell"></i><span class="badge">3</span></button>
+      <div class="user-menu" id="userBoxTopo">
+        <div class="user-avatar" id="avatarTopo">NR</div>
+        <div class="user-info">
+          <span class="user-name" id="nomeUsuarioTopo">NewRoad</span>
+          <span class="user-role" id="perfilUsuarioTopo">Operações</span>
         </div>
-
-        <div class="form-grid">
-          <div class="campo">
-            <label> Rodovia </label>
-
-            <select id="inputRodovia">
-
-              <option>Rodoanel</option>
-
-              <option>Rodovia Adhemar Pereira de Barros</option>
-
-              <option>Rodovia Anhanguera</option>
-
-              <option>Rodovia Ayrton Senna</option>
-
-              <option>Rodovia Castello Branco</option>
-
-              <option>Rodovia Dom Pedro I</option>
-
-              <option>Rodovia dos Bandeirantes</option>
-
-              <option>Rodovia Marechal Rondon</option>
-
-              <option>Rodovia Presidente Dutra</option>
-
-              <option>Rodovia Raposo Tavares</option>
-
-              <option>Rodovia Santos Dumont</option>
-
-              <option>Rodovia Washington Luís</option>
-
-              <option>Sistema Anchieta-Imigrantes</option>
-
-            </select>
-          </div>
-
-          <div class="campo">
-            <label> Status </label>
-
-            <select id="inputStatus">
-              <option>Planejada</option>
-
-              <option>Em andamento</option>
-
-              <option>Finalizada</option>
-            </select>
-          </div>
-
-          <div class="campo">
-            <label> Data Início </label>
-
-            <input type="date" id="inputDataInicio" />
-          </div>
-
-          <div class="campo">
-            <label> Data Fim </label>
-
-            <input type="date" id="inputDataFim" />
-          </div>
-
-          <div class="campo">
-            <label> Impacto Previsto </label>
-
-            <input type="number" step="0.01" id="inputImpacto" />
-          </div>
-        </div>
-
-        <div class="campo descricao">
-          <label> Descrição </label>
-
-          <textarea id="inputDescricao"></textarea>
-        </div>
-
-        <button class="btn-salvar" id="btnSalvarObra" onclick="cadastrar()">Salvar Obra</button>
+        <span id="seloSessaoAtiva" hidden>Sessão ativa</span>
       </div>
     </div>
+  </header>
 
-    <script src="./obras.js"></script>
-  </body>
+  <main class="content">
+    <div class="page-title">
+      <div>
+        <h1>Planejamento de Obras</h1>
+        <p class="subtitle">Controle operacional de intervenções rodoviárias</p>
+      </div>
+      <button type="button" class="btn-primary" onclick="prepararNovaObra()"><i class="fa-solid fa-plus"></i> Nova Obra</button>
+    </div>
+
+    <section class="kpi-grid page-kpi-grid">
+      <div class="kpi-card" id="cardKpiTotal">
+        <div class="kpi-icon flow"><i class="fa-solid fa-list-check"></i></div>
+        <div class="kpi-info"><span class="kpi-label">Total cadastradas</span><span class="kpi-value" id="kpiTotal">0</span></div>
+      </div>
+      <div class="kpi-card" id="cardKpiAtivas">
+        <div class="kpi-icon peak"><i class="fa-solid fa-hard-hat"></i></div>
+        <div class="kpi-info"><span class="kpi-label">Em andamento</span><span class="kpi-value" id="kpiAtivas">0</span></div>
+      </div>
+      <div class="kpi-card" id="cardKpiPlanejadas">
+        <div class="kpi-icon window"><i class="fa-solid fa-calendar-plus"></i></div>
+        <div class="kpi-info"><span class="kpi-label">Planejadas</span><span class="kpi-value" id="kpiPlanejadas">0</span></div>
+      </div>
+      <div class="kpi-card" id="cardKpiFinalizadas">
+        <div class="kpi-icon cong"><i class="fa-solid fa-circle-check"></i></div>
+        <div class="kpi-info"><span class="kpi-label">Finalizadas</span><span class="kpi-value" id="kpiFinalizadas">0</span></div>
+      </div>
+    </section>
+
+    <section class="page-actions">
+      <div class="page-filtros">
+        <select id="filtroRodovia" class="filter-select">
+          <option value="">Todas as Rodovias</option>
+          <option>Rodoanel</option>
+          <option>Rodovia Adhemar Pereira de Barros</option>
+          <option>Rodovia Anhanguera</option>
+          <option>Rodovia Ayrton Senna</option>
+          <option>Rodovia Castello Branco</option>
+          <option>Rodovia Dom Pedro I</option>
+          <option>Rodovia dos Bandeirantes</option>
+          <option>Rodovia Marechal Rondon</option>
+          <option>Rodovia Presidente Dutra</option>
+          <option>Rodovia Raposo Tavares</option>
+          <option>Rodovia Santos Dumont</option>
+          <option>Rodovia Washington Luís</option>
+          <option>Sistema Anchieta-Imigrantes</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="table-section">
+      <div class="section-header"><div><h2>Obras cadastradas</h2><p id="obrasListaCount">Todas as intervenções viárias</p></div></div>
+      <div class="table-wrapper">
+        <table class="data-table tabela-obras">
+          <thead>
+            <tr>
+              <th>Rodovia</th><th>Descrição</th><th>Status</th><th>Início</th><th>Fim</th><th>Impacto</th><th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyObras"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="modal" id="modalObra">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="tituloModalObra">Nova Obra</h2>
+      <button type="button" onclick="fecharModal()">×</button>
+    </div>
+    <div class="form-grid">
+      <div class="campo"><label>Rodovia</label><select id="inputRodovia">
+        <option>Rodoanel</option><option>Rodovia Adhemar Pereira de Barros</option><option>Rodovia Anhanguera</option>
+        <option>Rodovia Ayrton Senna</option><option>Rodovia Castello Branco</option><option>Rodovia Dom Pedro I</option>
+        <option>Rodovia dos Bandeirantes</option><option>Rodovia Marechal Rondon</option><option>Rodovia Presidente Dutra</option>
+        <option>Rodovia Raposo Tavares</option><option>Rodovia Santos Dumont</option><option>Rodovia Washington Luís</option>
+        <option>Sistema Anchieta-Imigrantes</option>
+      </select></div>
+      <div class="campo"><label>Status</label><select id="inputStatus"><option>Planejada</option><option>Em andamento</option><option>Finalizada</option></select></div>
+      <div class="campo"><label>Data Início</label><input type="date" id="inputDataInicio" /></div>
+      <div class="campo"><label>Data Fim</label><input type="date" id="inputDataFim" /></div>
+      <div class="campo"><label>Impacto Previsto</label><input type="number" step="0.01" id="inputImpacto" /></div>
+    </div>
+    <div class="campo descricao"><label>Descrição</label><textarea id="inputDescricao"></textarea></div>
+    <button type="button" class="btn-salvar" id="btnSalvarObra" onclick="cadastrar()">Salvar Obra</button>
+  </div>
+</div>
+
+<div class="notif-panel" id="notifPanel">
+  <div class="notif-header"><h4>Notificações</h4><button type="button" id="closeNotif"><i class="fa-solid fa-xmark"></i></button></div>
+  <div class="notif-list" id="notifList"></div>
+</div>
+<div class="overlay" id="overlay"></div>
+
+<script src="../js/app-shell.js"></script>
+<script src="./obras.js"></script>
+</body>
 </html>

@@ -1,310 +1,248 @@
 <!DOCTYPE html>
-<html lang="pt-br">
-
+<html lang="pt-BR">
 <head>
-
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>
-        Mural Operacional
-    </title>
-
-    <link rel="stylesheet" href="../css/global.css">
-    <link rel="stylesheet" href="../css/layout.css">
-    <link rel="stylesheet" href="../css/components.css">
-    <link rel="stylesheet" href="./mural.css">
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NewRoad — Mural de Avisos</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/app-pages.css" />
+  <link rel="stylesheet" href="./mural.css" />
 </head>
-
 <body>
 
-    <div class="layout">
-
-        <aside class="sidebar">
-
-            <div class="logo">
-
-                New<span>Road</span>
-
-            </div>
-
-            <nav class="menu">
-
-                <a href="../dashboard/index.html">
-
-                    Dashboard
-
-                </a>
-
-                <a href="../obras/obras.html">
-
-                    Obras
-
-                </a>
-
-                <a
-                    href="../mural/mural.html"
-                    class="ativo"
-                >
-
-                    Mural de Avisos
-
-                </a>
-
-                <a href="../usuarios/usuarios.html">
-
-                    Usuários
-
-                </a>
-
-                <a href="../configuracoes/configuracoes.html">
-
-                    Configurações
-
-                </a>
-
-            </nav>
-
-            <button onclick="logout()" style="width: 100%; padding: 12px; margin-top: 20px; background-color: #e53e3e; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 14px;">
-                Sair
-            </button>
-
-        </aside>
-
-        <main class="conteudo">
-
-            <header class="topbar">
-
-                <div>
-
-                    <h1>
-                        Mural Operacional
-                    </h1>
-
-                    <p>
-                        Comunicação interna da operação
-                    </p>
-
-                </div>
-
-                <div class="user-box" id="userBoxTopo">
-
-                    <div class="avatar" id="avatarTopo">NR</div>
-
-                    <div>
-
-                        <strong id="nomeUsuarioTopo">NewRoad</strong>
-
-                        <p id="perfilUsuarioTopo">Operacoes</p>
-
-                    </div>
-
-                    <span id="seloSessaoAtiva" class="selo-sessao" hidden>Sessao ativa</span>
-
-                </div>
-
-            </header>
-
-            <section class="novo-aviso">
-
-                <div class="card">
-
-                    <h2 id="tituloFormularioAviso">
-                        Novo Aviso
-                    </h2>
-
-                    <div class="form-grid">
-
-                        <div class="campo">
-
-                            <label>
-                                Tipo
-                            </label>
-
-                            <select id="inputTipo">
-
-                                <option value="urgente">
-                                    Urgente
-                                </option>
-
-                                <option value="atencao">
-                                    Atenção
-                                </option>
-
-                                <option value="info">
-                                    Informação
-                                </option>
-
-                                <option value="planejado">
-                                    Planejado
-                                </option>
-
-                                <option value="concluido">
-                                    Concluído
-                                </option>
-
-                            </select>
-
-                        </div>
-
-                        <div class="campo">
-
-                            <label>
-                                Rodovia
-                            </label>
-
-                            <select id="inputRodovia">
-
-                                <option>Rodoanel</option>
-
-                                <option>Rodovia Adhemar Pereira de Barros</option>
-
-                                <option>Rodovia Anhanguera</option>
-
-                                <option>Rodovia Ayrton Senna</option>
-
-                                <option>Rodovia Castello Branco</option>
-
-                                <option>Rodovia Dom Pedro I</option>
-
-                                <option>Rodovia dos Bandeirantes</option>
-
-                                <option>Rodovia Marechal Rondon</option>
-
-                                <option>Rodovia Presidente Dutra</option>
-
-                                <option>Rodovia Raposo Tavares</option>
-
-                                <option>Rodovia Santos Dumont</option>
-
-                                <option>Rodovia Washington Luís</option>
-
-                                <option>Sistema Anchieta-Imigrantes</option>
-
-                            </select>
-
-                        </div>
-
-                        <div class="campo">
-
-                            <label>
-                                Pinado
-                            </label>
-
-                            <select id="inputPinned">
-
-                                <option value="0">
-                                    Não
-                                </option>
-
-                                <option value="1">
-                                    Sim
-                                </option>
-
-                            </select>
-
-                        </div>
-
-                    </div>
-
-                    <div class="campo">
-
-                        <label>
-                            Título
-                        </label>
-
-                        <input
-                            type="text"
-                            id="inputTitulo"
-                        >
-
-                    </div>
-
-                    <div class="campo">
-
-                        <label>
-                            Descrição
-                        </label>
-
-                        <textarea id="inputDescricao"></textarea>
-
-                    </div>
-
-                    <button
-                        id="btnPublicarAviso"
-                        class="btn-primary"
-                        onclick="publicarAviso()"
-                    >
-
-                        Publicar Aviso
-
-                    </button>
-
-                </div>
-
-            </section>
-
-            <section class="mural-grid">
-
-                <div
-                    class="feed-container"
-                    id="feedAvisos"
-                >
-
-                </div>
-
-                <aside class="chat-container">
-
-                    <div class="chat-card">
-
-                        <div class="chat-header">
-
-                            <h3>
-                                Chat Operacional
-                            </h3>
-
-                        </div>
-
-                        <div
-                            class="chat-mensagens"
-                            id="chatMensagens"
-                        >
-
-                        </div>
-
-                        <div class="chat-input">
-
-                            <input
-                                type="text"
-                                id="inputChat"
-                                placeholder="Mensagem..."
-                            >
-
-                            <button onclick="enviarMensagem()">
-
-                                Enviar
-
-                            </button>
-
-                        </div>
-
-                    </div>
-
-                </aside>
-
-            </section>
-
-        </main>
-
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon" style="background:none;padding:0;overflow:hidden;">
+      <img src="../assets/imgs/Logov2.png" alt="NewRoad" onerror="this.style.display='none';this.parentElement.innerHTML='<i class=\'fa-solid fa-road\' style=\'color:#60a5fa;font-size:18px;\'></i>';">
+    </div>
+    <span class="logo-text">New<strong>Road</strong></span>
+  </div>
+  <nav class="sidebar-nav">
+    <p class="nav-label">PRINCIPAL</p>
+    <a href="../dashboard/index.html" class="nav-item"><i class="fa-solid fa-chart-pie"></i><span>Dashboard</span></a>
+    <a href="../obras/obras.html" class="nav-item"><i class="fa-solid fa-helmet-safety"></i><span>Planejamento de Obras</span></a>
+    <p class="nav-label">GESTÃO</p>
+    <a href="../mural/mural.html" class="nav-item active"><i class="fa-solid fa-bullhorn"></i><span>Mural de Avisos</span></a>
+    <a href="../usuarios/usuarios.html" class="nav-item"><i class="fa-solid fa-users"></i><span>Usuários</span></a>
+    <a href="../configuracoes/configuracoes.html" class="nav-item"><i class="fa-solid fa-gear"></i><span>Configurações</span></a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="system-status"><span class="status-dot pulse"></span><span>Sistema online</span></div>
+    <p class="version-tag">SP Region</p>
+    <button type="button" class="sidebar-exit-btn" onclick="handleExitToLanding()"><i class="fa-solid fa-arrow-left"></i><span>Voltar à página inicial</span></button>
+  </div>
+</aside>
+
+<div class="main-wrapper" id="mainWrapper">
+  <header class="top-header">
+    <div class="header-left">
+      <button type="button" class="burger-btn" id="burgerBtn" aria-label="Menu"><i class="fa-solid fa-bars"></i></button>
+      <div class="search-box"><i class="fa-solid fa-magnifying-glass"></i><input type="text" placeholder="Buscar aviso, rodovia ou autor…" id="searchInput" /></div>
+    </div>
+    <div class="header-right">
+      <button type="button" class="icon-btn notif-btn" id="notifBtn"><i class="fa-solid fa-bell"></i><span class="badge">3</span></button>
+      <div class="user-menu" id="userBoxTopo">
+        <div class="user-avatar" id="avatarTopo">NR</div>
+        <div class="user-info">
+          <span class="user-name" id="nomeUsuarioTopo">NewRoad</span>
+          <span class="user-role" id="perfilUsuarioTopo">Operações</span>
+        </div>
+        <span id="seloSessaoAtiva" hidden>Sessão ativa</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="content">
+    <div class="mural-page-head">
+      <div class="page-title" style="margin-bottom:0;">
+        <div>
+          <h1>Mural de Avisos</h1>
+          <p class="subtitle">Comunicação interna da operação viária</p>
+        </div>
+      </div>
     </div>
 
-    <script src="./mural.js"></script>
+    <div class="mural-stats-row">
+      <div class="mural-stat-card">
+        <div class="mural-stat-icon" style="background:var(--red-bg);color:var(--red);">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div>
+          <div class="mural-stat-value" id="mStatUrgente">0</div>
+          <div class="mural-stat-label">Avisos urgentes</div>
+        </div>
+      </div>
+      <div class="mural-stat-card">
+        <div class="mural-stat-icon" style="background:var(--yellow-bg);color:var(--yellow);">
+          <i class="fa-solid fa-eye"></i>
+        </div>
+        <div>
+          <div class="mural-stat-value" id="mStatAtencao">0</div>
+          <div class="mural-stat-label">Atenção necessária</div>
+        </div>
+      </div>
+      <div class="mural-stat-card">
+        <div class="mural-stat-icon" style="background:var(--green-bg);color:var(--green);">
+          <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <div>
+          <div class="mural-stat-value" id="mStatResolvido">0</div>
+          <div class="mural-stat-label">Concluídos</div>
+        </div>
+      </div>
+      <div class="mural-stat-card">
+        <div class="mural-stat-icon" style="background:var(--blue-bg);color:var(--blue);">
+          <i class="fa-solid fa-comments"></i>
+        </div>
+        <div>
+          <div class="mural-stat-value" id="mStatComents">0</div>
+          <div class="mural-stat-label">Comentários</div>
+        </div>
+      </div>
+    </div>
 
+    <div class="mural-toolbar">
+      <div class="mural-filter-bar">
+        <button type="button" class="mural-chip active" data-mtype="all" onclick="muralSetFilter('all', this)"><i class="fa-solid fa-th-large"></i> Todos</button>
+        <button type="button" class="mural-chip chip-red" data-mtype="urgente" onclick="muralSetFilter('urgente', this)"><i class="fa-solid fa-triangle-exclamation"></i> Urgente</button>
+        <button type="button" class="mural-chip chip-yellow" data-mtype="atencao" onclick="muralSetFilter('atencao', this)"><i class="fa-solid fa-eye"></i> Atenção</button>
+        <button type="button" class="mural-chip chip-blue" data-mtype="info" onclick="muralSetFilter('info', this)"><i class="fa-solid fa-circle-info"></i> Informativo</button>
+        <button type="button" class="mural-chip chip-green" data-mtype="concluido" onclick="muralSetFilter('concluido', this)"><i class="fa-solid fa-circle-check"></i> Concluído</button>
+        <div class="mural-filter-sep"></div>
+        <select class="mural-region-sel" id="mRegionFilter" onchange="muralApplyFilters()">
+          <option value="all">Todas as rodovias</option>
+        </select>
+      </div>
+      <button type="button" class="btn-primary" onclick="muralOpenModal()">
+        <i class="fa-solid fa-plus"></i> Novo Aviso
+      </button>
+    </div>
+
+    <div class="mural-layout">
+      <div>
+        <div class="mural-section-title">
+          <i class="fa-solid fa-list-ul" style="color:var(--brand-blue-light);"></i>
+          Feed de Avisos
+          <span id="mFeedCount">0 avisos</span>
+        </div>
+        <div id="feedAvisos"></div>
+      </div>
+
+      <div class="mural-right">
+        <div class="mural-chat-card">
+          <div class="mural-chat-header">
+            <div class="mural-chat-header-icon"><i class="fa-solid fa-comments"></i></div>
+            <div style="flex:1;">
+              <div class="mural-chat-title">Chat da Equipe</div>
+              <div class="mural-chat-sub">Comunicação em tempo real</div>
+            </div>
+            <div class="mural-online-dot"></div>
+          </div>
+          <div class="mural-chat-messages" id="chatMensagens"></div>
+          <div class="mural-chat-input-area">
+            <input class="mural-chat-input" type="text" id="inputChat" placeholder="Mensagem para a equipe…" onkeydown="if(event.key==='Enter')enviarMensagem()" />
+            <button type="button" class="mural-chat-send" onclick="enviarMensagem()"><i class="fa-solid fa-paper-plane"></i></button>
+          </div>
+        </div>
+
+        <div class="mural-active-card">
+          <div class="mural-active-title">
+            <i class="fa-solid fa-users" style="color:var(--green);"></i>
+            Equipe
+          </div>
+          <div id="muralActiveUsers"></div>
+        </div>
+
+        <div class="mural-quick-card">
+          <div class="mural-quick-title">
+            <i class="fa-solid fa-bolt" style="color:var(--yellow);"></i>
+            Aviso Rápido
+          </div>
+          <div class="mural-form-group">
+            <label class="mural-form-label">TÍTULO</label>
+            <input class="mural-form-input" id="mQuickTitle" placeholder="Ex: Interdição na Anhanguera…" maxlength="60" oninput="muralCharCount(this, 'mQuickTitleCount', 60)" />
+            <div class="mural-char-count" id="mQuickTitleCount">0/60</div>
+          </div>
+          <div class="mural-form-row">
+            <div class="mural-form-group">
+              <label class="mural-form-label">TIPO</label>
+              <select class="mural-form-select" id="mQuickTipo">
+                <option value="urgente">Urgente</option>
+                <option value="atencao" selected>Atenção</option>
+                <option value="info">Informativo</option>
+              </select>
+            </div>
+            <div class="mural-form-group">
+              <label class="mural-form-label">RODOVIA</label>
+              <select class="mural-form-select" id="mQuickRodovia"></select>
+            </div>
+          </div>
+          <button type="button" class="btn-primary" style="width:100%;justify-content:center;" onclick="publicarAvisoRapido()">
+            <i class="fa-solid fa-bullhorn"></i> Publicar Aviso
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="mural-modal-overlay" id="muralModal">
+  <div class="mural-modal-box">
+    <div class="mural-modal-header">
+      <h3 id="tituloFormularioAviso"><i class="fa-solid fa-plus" style="color:var(--brand-blue-light);margin-right:8px;"></i>Novo Aviso</h3>
+      <button type="button" class="mural-modal-close" onclick="muralCloseModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="mural-modal-body">
+      <div class="mural-form-group">
+        <label class="mural-form-label">TÍTULO DO AVISO *</label>
+        <input class="mural-form-input" type="text" id="inputTitulo" placeholder="Descreva brevemente o aviso…" maxlength="80" oninput="muralCharCount(this, 'mModalTitleCount', 80)" />
+        <div class="mural-char-count" id="mModalTitleCount">0/80</div>
+      </div>
+      <div class="mural-form-group">
+        <label class="mural-form-label">DESCRIÇÃO</label>
+        <textarea class="mural-form-textarea" id="inputDescricao" placeholder="Detalhe o aviso: localização, impacto, medidas…" maxlength="400" oninput="muralCharCount(this, 'mModalDescCount', 400)"></textarea>
+        <div class="mural-char-count" id="mModalDescCount">0/400</div>
+      </div>
+      <div class="mural-form-row">
+        <div class="mural-form-group">
+          <label class="mural-form-label">TIPO *</label>
+          <select class="mural-form-select" id="inputTipo">
+            <option value="urgente">Urgente</option>
+            <option value="atencao" selected>Atenção</option>
+            <option value="info">Informativo</option>
+            <option value="concluido">Concluído</option>
+            <option value="planejado">Planejado</option>
+          </select>
+        </div>
+        <div class="mural-form-group">
+          <label class="mural-form-label">RODOVIA *</label>
+          <select class="mural-form-select" id="inputRodovia"></select>
+        </div>
+      </div>
+      <div class="mural-form-group">
+        <label class="mural-form-label">FIXAR NO TOPO</label>
+        <select class="mural-form-select" id="inputPinned">
+          <option value="0">Não</option>
+          <option value="1">Sim</option>
+        </select>
+      </div>
+    </div>
+    <div class="mural-modal-footer">
+      <button type="button" class="mural-btn-secondary" onclick="muralCloseModal()">Cancelar</button>
+      <button type="button" class="btn-primary" id="btnPublicarAviso" onclick="publicarAviso()"><i class="fa-solid fa-bullhorn"></i> Publicar</button>
+    </div>
+  </div>
+</div>
+
+<div class="notif-panel" id="notifPanel">
+  <div class="notif-header"><h4>Notificações</h4><button type="button" id="closeNotif"><i class="fa-solid fa-xmark"></i></button></div>
+  <div class="notif-list" id="notifList"></div>
+</div>
+<div class="overlay" id="overlay"></div>
+
+<script src="../js/app-shell.js"></script>
+<script src="./mural.js"></script>
 </body>
-
 </html>

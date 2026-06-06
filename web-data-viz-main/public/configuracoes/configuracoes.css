@@ -1,0 +1,85 @@
+.configuracoes-page .settings-lean {
+  max-width: 760px;
+}
+
+.cfg-status {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: -8px 0 16px;
+}
+
+.cfg-status.ok { color: #047857; }
+.cfg-status.erro { color: #b91c1c; }
+
+.cfg-sessao-pill {
+  margin-left: auto;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.cfg-security-actions {
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cfg-security-actions .btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
+  transition: border-color 0.15s, color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+
+.cfg-security-actions .btn-outline i {
+  font-size: 12px;
+}
+
+.cfg-security-actions .btn-outline:not(.cfg-btn-danger) {
+  color: var(--text-secondary);
+  border-color: #e2e8f0;
+  background: #fff;
+}
+
+.cfg-security-actions .btn-outline:not(.cfg-btn-danger):hover {
+  color: var(--brand-blue);
+  border-color: var(--brand-blue-light);
+  background: #f8fafc;
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.08);
+}
+
+.cfg-btn-danger {
+  color: #b91c1c;
+  border-color: #fecaca;
+  background: #fff5f5;
+}
+
+.cfg-btn-danger:hover {
+  color: #991b1b;
+  border-color: #f87171;
+  background: var(--red-bg);
+  box-shadow: 0 1px 3px rgba(239, 68, 68, 0.12);
+}
+
+.form-input[readonly],
+.form-input:disabled {
+  background: #f8fafc;
+  color: var(--text-secondary);
+  cursor: default;
+}
+
+@media (max-width: 480px) {
+  .cfg-security-actions {
+    flex-direction: column;
+  }
+
+  .cfg-security-actions .btn-outline {
+    width: 100%;
+  }
+}
