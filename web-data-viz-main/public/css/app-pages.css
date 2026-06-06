@@ -2,6 +2,12 @@
 
 #seloSessaoAtiva { display: none !important; }
 
+.logo-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 .user-menu.user-box-logado {
   padding: 4px 12px 4px 4px;
   border-radius: 999px;
@@ -10,8 +16,24 @@
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.06);
 }
 
+/* KPIs das páginas internas (4 cards em linha) */
 .page-kpi-grid {
   grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.page-kpi-grid .kpi-card {
+  min-height: 96px;
+  padding: 18px 20px;
+  align-items: center;
+}
+
+.page-kpi-grid .kpi-label {
+  margin-top: 0;
+}
+
+.page-kpi-grid .kpi-value {
+  font-size: 22px;
 }
 
 .page-actions {
@@ -20,6 +42,11 @@
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  border: 1px solid #f1f5f9;
+  box-shadow: var(--shadow-sm);
+  padding: 14px 18px;
 }
 
 .page-filtros {
@@ -27,6 +54,7 @@
   gap: 10px;
   flex-wrap: wrap;
   flex: 1;
+  align-items: center;
 }
 
 .page-filtros select,
@@ -40,11 +68,23 @@
   font-size: 13px;
   color: var(--text-primary);
   background: #fff;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.page-filtros select:focus,
+.page-filtros input[type="text"]:focus {
+  outline: none;
+  border-color: var(--brand-blue-light);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
 .page-filtros input[type="text"] {
   flex: 1;
   max-width: 360px;
+}
+
+.page-filtros .filter-select {
+  min-width: 260px;
 }
 
 /* Formulários e modais */
@@ -112,6 +152,7 @@
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: var(--shadow-lg);
+  animation: fadeInUp 0.25s ease;
 }
 
 .modal-header {
@@ -138,6 +179,7 @@
   width: 32px;
   height: 32px;
   border-radius: 8px;
+  line-height: 1;
 }
 
 .modal-header button:hover {
@@ -157,6 +199,7 @@
   font-weight: 600;
   margin-top: 16px;
   cursor: pointer;
+  transition: background 0.15s;
 }
 
 .btn-salvar:hover { background: var(--brand-blue); }
@@ -274,6 +317,7 @@
   border: 1px solid #e2e8f0;
   background: #fff;
   color: var(--text-secondary);
+  transition: border-color 0.15s, color 0.15s;
 }
 
 .btn-editar:hover {
@@ -372,4 +416,5 @@
   .page-kpi-grid { grid-template-columns: 1fr; }
   .form-grid { grid-template-columns: 1fr; }
   .page-actions { flex-direction: column; align-items: stretch; }
+  .page-filtros .filter-select { min-width: 100%; width: 100%; }
 }

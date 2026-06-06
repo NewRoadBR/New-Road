@@ -2,6 +2,27 @@
 
 .kpi-grid {
   grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.kpi-grid .kpi-card {
+  min-height: 104px;
+  padding: 18px 20px;
+  align-items: center;
+}
+
+.kpi-grid .kpi-label {
+  margin-top: 0;
+}
+
+.kpi-grid .kpi-value {
+  font-size: 20px;
+}
+
+.kpi-grid .kpi-icon {
+  width: 42px;
+  height: 42px;
+  font-size: 16px;
 }
 
 .kpi-card.kpi-bom {
@@ -175,6 +196,10 @@
 
 @media (max-width: 600px) {
   .kpi-grid { grid-template-columns: 1fr; }
+
+  .kpi-grid .kpi-card {
+    min-height: auto;
+  }
 }
 
 .content .map-container {
