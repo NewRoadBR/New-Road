@@ -11,9 +11,7 @@ const cfgNome = document.getElementById("cfgNome");
 const cfgEmail = document.getElementById("cfgEmail");
 const cfgSessaoPill = document.getElementById("cfgSessaoPill");
 const cfgPerfil = document.getElementById("cfgPerfil");
-const cfgUsuarioId = document.getElementById("cfgUsuarioId");
 
-const selectIntervalo = document.getElementById("selectIntervalo");
 const toggleNotifCritica = document.getElementById("toggleNotifCritica");
 const toggleNotifPico = document.getElementById("toggleNotifPico");
 const toggleNotifRelatorio = document.getElementById("toggleNotifRelatorio");
@@ -31,6 +29,7 @@ const toggles = [
 
 let idUsuarioSessao = Number(sessionStorage.ID_USUARIO || 1);
 let usuarioAtual = null;
+let intervaloPreferido = "1 minuto";
 
 function criarIniciais(nome) {
   if (!nome) return "??";
@@ -93,7 +92,6 @@ function aplicarPerfilNaPagina(dados) {
       : "Faça login para personalizar o perfil";
   }
   if (cfgPerfil) cfgPerfil.value = perfil || "—";
-  if (cfgUsuarioId) cfgUsuarioId.value = String(dados?.id || idUsuarioSessao);
   if (cfgSessaoPill) cfgSessaoPill.hidden = !temSessao;
 }
 
@@ -182,7 +180,7 @@ function setToggleState(input, ligado) {
 }
 
 function preencherFormulario(preferencias) {
-  selectIntervalo.value = preferencias.intervalo || "1 minuto";
+  intervaloPreferido = preferencias.intervalo || "1 minuto";
   setToggleState(toggleNotifCritica, Boolean(preferencias.notifCritica));
   setToggleState(toggleNotifPico, Boolean(preferencias.notifPico));
   setToggleState(toggleNotifRelatorio, Boolean(preferencias.notifRelatorio));
@@ -229,7 +227,7 @@ async function carregarPreferencias() {
 
 function coletarPayload() {
   return {
-    intervalo: selectIntervalo.value,
+    intervalo: intervaloPreferido,
     notifCritica: isOn(toggleNotifCritica),
     notifPico: isOn(toggleNotifPico),
     notifRelatorio: isOn(toggleNotifRelatorio),
