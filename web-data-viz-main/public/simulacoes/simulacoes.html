@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="../js/theme.js"></script>
+  <title>NewRoad — Simulações</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/app-pages.css" />
+  <link rel="stylesheet" href="../css/simulacoes.css" />
+  <link rel="stylesheet" href="../css/dark-theme.css" />
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon" style="background:none;padding:0;overflow:hidden;">
+      <img src="../assets/imgs/Logov2.png" alt="NewRoad" onerror="this.style.display='none';this.parentElement.innerHTML='<i class=\'fa-solid fa-road\' style=\'color:#60a5fa;font-size:18px;\'></i>';">
+    </div>
+    <span class="logo-text">New<strong>Road</strong></span>
+  </div>
+  <nav class="sidebar-nav">
+    <p class="nav-label">PRINCIPAL</p>
+    <a href="../dashboard/index.html" class="nav-item"><i class="fa-solid fa-chart-pie"></i><span>Dashboard</span></a>
+    <a href="../obras/obras.html" class="nav-item"><i class="fa-solid fa-helmet-safety"></i><span>Planejamento de Obras</span></a>
+    <a href="../simulacoes/simulacoes.html" class="nav-item active"><i class="fa-solid fa-flask"></i><span>Simulações</span></a>
+    <p class="nav-label">GESTÃO</p>
+    <a href="../mural/mural.html" class="nav-item"><i class="fa-solid fa-bullhorn"></i><span>Mural de Avisos</span></a>
+    <a href="../usuarios/usuarios.html" class="nav-item"><i class="fa-solid fa-users"></i><span>Usuários</span></a>
+    <a href="../configuracoes/configuracoes.html" class="nav-item"><i class="fa-solid fa-gear"></i><span>Configurações</span></a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="system-status"><span class="status-dot pulse"></span><span>Sistema online</span></div>
+    <p class="version-tag">SP Region</p>
+    <button type="button" class="sidebar-exit-btn" onclick="handleExitToLanding()"><i class="fa-solid fa-arrow-left"></i><span>Voltar à página inicial</span></button>
+  </div>
+</aside>
+
+<div class="main-wrapper" id="mainWrapper">
+  <header class="top-header">
+    <div class="header-left">
+      <button type="button" class="burger-btn" id="burgerBtn" aria-label="Menu"><i class="fa-solid fa-bars"></i></button>
+      <div class="search-box"><i class="fa-solid fa-magnifying-glass"></i><input type="text" placeholder="Buscar rodovia ou cenário…" id="searchInput" /></div>
+    </div>
+    <div class="header-right">
+      <button type="button" class="icon-btn notif-btn" id="notifBtn"><i class="fa-solid fa-bell"></i><span class="badge">3</span></button>
+      <div class="user-menu" id="userBoxTopo">
+        <div class="user-avatar" id="avatarTopo">NR</div>
+        <div class="user-info">
+          <span class="user-name" id="nomeUsuarioTopo">NewRoad</span>
+          <span class="user-role" id="perfilUsuarioTopo">Operações</span>
+        </div>
+        <span id="seloSessaoAtiva" hidden>Sessão ativa</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="content sim-page">
+    <section class="sim-hero">
+      <div class="sim-hero-text">
+        <span class="sim-hero-badge"><i class="fa-solid fa-flask"></i> Laboratório operacional</span>
+        <h1>Simulações</h1>
+        <p>Antes de autorizar uma intervenção, simule o impacto no tráfego e identifique a melhor janela de execução.</p>
+      </div>
+      <div class="sim-hero-steps">
+        <div class="sim-step"><span>1</span> Configure</div>
+        <div class="sim-step-line"></div>
+        <div class="sim-step"><span>2</span> Simule</div>
+        <div class="sim-step-line"></div>
+        <div class="sim-step"><span>3</span> Analise</div>
+      </div>
+    </section>
+
+    <div id="simStatus" class="sim-status">
+      <i class="fa-solid fa-circle-info"></i>
+      <span>Preencha todos os parâmetros abaixo e clique em <strong>Executar simulação</strong>.</span>
+    </div>
+
+    <div class="sim-layout">
+      <section class="sim-form-card">
+        <div class="sim-form-head">
+          <div class="sim-form-icon"><i class="fa-solid fa-sliders"></i></div>
+          <div>
+            <h2>Parâmetros da simulação</h2>
+            <p>Defina rodovia, tipo de obra e janela operacional</p>
+          </div>
+        </div>
+
+        <div class="sim-fields">
+          <div class="sim-field">
+            <label for="simRodovia"><i class="fa-solid fa-road"></i> Rodovia</label>
+            <select class="form-input sim-select" id="simRodovia">
+              <option value="" selected disabled>Selecione</option>
+              <option>Rodoanel</option>
+              <option>Rodovia Adhemar Pereira de Barros</option>
+              <option>Rodovia Anhanguera</option>
+              <option>Rodovia Ayrton Senna</option>
+              <option>Rodovia Castello Branco</option>
+              <option>Rodovia Dom Pedro I</option>
+              <option>Rodovia dos Bandeirantes</option>
+              <option>Rodovia Marechal Rondon</option>
+              <option>Rodovia Presidente Dutra</option>
+              <option>Rodovia Raposo Tavares</option>
+              <option>Rodovia Santos Dumont</option>
+              <option>Rodovia Washington Luís</option>
+              <option>Sistema Anchieta-Imigrantes</option>
+            </select>
+          </div>
+
+          <div class="sim-field">
+            <label for="simTipo"><i class="fa-solid fa-screwdriver-wrench"></i> Tipo de intervenção</label>
+            <select class="form-input sim-select" id="simTipo">
+              <option value="" selected disabled>Selecione</option>
+              <option value="1">Recapeamento</option>
+              <option value="1.1">Manutenção de pista</option>
+              <option value="1.25">Interdição parcial</option>
+              <option value="1.4">Obra estrutural</option>
+            </select>
+          </div>
+
+          <div class="sim-field">
+            <label for="simPeriodo"><i class="fa-solid fa-clock"></i> Período analisado</label>
+            <select class="form-input sim-select" id="simPeriodo">
+              <option value="" selected disabled>Selecione</option>
+              <option value="madrugada">Madrugada (00h–05h)</option>
+              <option value="manha">Manhã (06h–10h)</option>
+              <option value="almoco">Almoço (11h–14h)</option>
+              <option value="tarde">Tarde (15h–18h)</option>
+              <option value="noite">Noite (19h–23h)</option>
+            </select>
+          </div>
+
+          <div class="sim-field">
+            <label for="simDuracao"><i class="fa-solid fa-hourglass-half"></i> Duração estimada (horas)</label>
+            <input class="form-input" type="number" id="simDuracao" min="1" max="72" placeholder="Selecione" />
+          </div>
+        </div>
+
+        <div class="sim-form-actions">
+          <button type="button" class="btn-outline" id="btnLimparSimulacao"><i class="fa-solid fa-rotate-left"></i> Limpar</button>
+          <button type="button" class="btn-primary sim-run-btn" id="btnExecutarSimulacao" disabled>
+            <i class="fa-solid fa-play"></i> Executar simulação
+          </button>
+        </div>
+      </section>
+
+      <div class="sim-results sim-results--empty" id="simResults">
+        <section class="kpi-grid sim-kpi-grid">
+          <div class="kpi-card sim-kpi-idle" id="cardSimImpacto">
+            <div class="kpi-icon cong"><i class="fa-solid fa-gauge-high"></i></div>
+            <div class="kpi-info">
+              <span class="kpi-label">Impacto simulado</span>
+              <span class="kpi-value" id="simImpactoValor">—</span>
+              <span class="kpi-unit">No período selecionado</span>
+            </div>
+          </div>
+          <div class="kpi-card sim-kpi-idle" id="cardSimJanela">
+            <div class="kpi-icon window"><i class="fa-solid fa-calendar-check"></i></div>
+            <div class="kpi-info">
+              <span class="kpi-label">Melhor janela</span>
+              <span class="kpi-value" id="simJanelaValor">—</span>
+              <span class="kpi-unit">Menor impacto histórico</span>
+            </div>
+          </div>
+          <div class="kpi-card sim-kpi-idle" id="cardSimRecomendacao">
+            <div class="kpi-icon flow"><i class="fa-solid fa-lightbulb"></i></div>
+            <div class="kpi-info">
+              <span class="kpi-label">Recomendação</span>
+              <span class="kpi-value sim-rec-value" id="simRecomendacaoValor">—</span>
+              <span class="kpi-unit" id="simRecomendacaoDetalhe">Aguardando simulação</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="chart-card sim-chart-card">
+          <div class="chart-header">
+            <div>
+              <h3>Impacto por período do dia</h3>
+              <p>Comparativo de impacto ao tráfego · dados históricos da rodovia</p>
+            </div>
+          </div>
+          <div class="chart-body sim-chart-body">
+            <div class="sim-chart-empty" id="simChartEmpty">
+              <i class="fa-solid fa-chart-bar"></i>
+              <p>O gráfico será exibido após a simulação</p>
+            </div>
+            <canvas id="graficoSimImpacto" hidden></canvas>
+          </div>
+        </section>
+
+        <section class="table-section sim-periodos-table">
+          <div class="section-header">
+            <div>
+              <h2>Detalhamento por período</h2>
+              <p id="simPeriodosCount">Nenhum cenário calculado ainda</p>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Período</th>
+                  <th>Impacto</th>
+                  <th>Volume médio</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="tbodySimPeriodos">
+                <tr class="sim-table-empty">
+                  <td colspan="4">
+                    <i class="fa-solid fa-table-list"></i>
+                    Preencha os parâmetros e execute a simulação para ver o detalhamento
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="notif-panel" id="notifPanel">
+  <div class="notif-header"><h4>Notificações</h4><button type="button" id="closeNotif"><i class="fa-solid fa-xmark"></i></button></div>
+  <div class="notif-list" id="notifList"></div>
+</div>
+<div class="overlay" id="overlay"></div>
+
+<script src="../js/app-shell.js"></script>
+<script src="./simulacoes.js"></script>
+</body>
+</html>

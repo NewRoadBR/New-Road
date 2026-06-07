@@ -18,9 +18,9 @@ const path = require("path");
 
 const app = express();
 
-const PORTA_APP = process.env.APP_PORT;
+const PORTA_APP = process.env.APP_PORT || 3333;
 
-const HOST_APP = process.env.APP_HOST;
+const HOST_APP = process.env.APP_HOST || "0.0.0.0";
 
 /*
 =========================================================

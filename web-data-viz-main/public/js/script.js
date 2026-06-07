@@ -292,6 +292,32 @@ async function carregarPerfilRodovia() {
 FLUXO HORÁRIO
 =========================================================
 */
+
+function obterEstiloChart() {
+  var s = getComputedStyle(document.documentElement);
+  return {
+    grid: s.getPropertyValue("--chart-grid").trim() || "rgba(148,163,184,0.15)",
+    text: s.getPropertyValue("--chart-text").trim() || "#94a3b8"
+  };
+}
+
+function opcoesScalesChart() {
+  var c = obterEstiloChart();
+  return {
+    x: { ticks: { color: c.text }, grid: { color: c.grid } },
+    y: { ticks: { color: c.text }, grid: { color: c.grid } }
+  };
+}
+
+function opcoesBaseChart() {
+  var c = obterEstiloChart();
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: opcoesScalesChart(),
+    plugins: { legend: { labels: { color: c.text } } }
+  };
+}
  
 async function carregarFluxoHorario() {
  
@@ -362,13 +388,7 @@ function atualizarGraficoFluxo(labels, volumes) {
  
         },
  
-        options: {
- 
-            responsive: true,
- 
-            maintainAspectRatio: false
- 
-        }
+        options: opcoesBaseChart()
  
     });
  
@@ -438,13 +458,7 @@ function atualizarGraficoDiaSemana(labels, volumes) {
  
         },
  
-        options: {
- 
-            responsive: true,
- 
-            maintainAspectRatio: false
- 
-        }
+        options: opcoesBaseChart()
  
     });
  
@@ -589,12 +603,12 @@ function normalizarImpactoObra(valor) {
 
 function obterCorMarcadorObra(obra) {
     var status = (obra.status || "").toLowerCase();
-    var impacto = normalizarImpactoObra(obra.impacto_previsto);
 
-    if (status.includes("crit") || impacto >= 70) return "red";
-    if (status.includes("andamento") || impacto >= 40) return "yellow";
     if (status.includes("final")) return "green";
-    return impacto >= 40 ? "yellow" : "green";
+    if (status.includes("andamento")) return "yellow";
+    if (status.includes("planejada")) return "red";
+
+    return "red";
 }
 
 function obterCoordenadasObra(obra) {
@@ -699,7 +713,11 @@ function initMapaObras() {
         attributionControl: false
     });
 
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+    L.tileLayer(
+        window.NewRoadTheme && NewRoadTheme.isDark()
+            ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+            : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+        {
         maxZoom: 19,
         attribution: "&copy; OpenStreetMap &copy; CARTO"
     }).addTo(mapaObras);
@@ -819,3 +837,9 @@ async function iniciarDashboard() {
 
 aplicarUsuarioLogadoNaTopbar();
 iniciarDashboard();
+
+window.addEventListener("nr-theme-change", function () {
+    if (!document.getElementById("graficoFluxoHorario")) return;
+    executarSeguro("fluxoHorario", carregarFluxoHorario);
+    executarSeguro("volumeDiaSemana", carregarVolumeDiaSemana);
+});

@@ -3,25 +3,50 @@
     {
       color: "#ef4444",
       icon: "fa-triangle-exclamation",
-      title: "Alerta operacional",
-      desc: "Revise o planejamento de obras e avisos críticos.",
+      title: "Horário de pico detectado",
+      desc: "Volume acima da média histórica na rodovia selecionada.",
       time: "Agora"
     },
     {
       color: "#f59e0b",
       icon: "fa-chart-bar",
-      title: "Pico de tráfego",
-      desc: "Volume acima da média histórica na região SP.",
+      title: "Pressão operacional elevada",
+      desc: "Revise o planejamento de obras para a região SP.",
       time: "Há 20 min"
     },
     {
       color: "#3b82f6",
       icon: "fa-file-chart-column",
-      title: "Sistema sincronizado",
-      desc: "Dados atualizados com o banco NewRoad.",
+      title: "Dashboard atualizado",
+      desc: "KPIs e gráficos sincronizados com o banco de dados.",
       time: "Há 1 hora"
     }
   ];
+
+  function initTimestamp() {
+    var el = document.getElementById("lastUpdate");
+    if (!el) return;
+
+    function tick() {
+      var now = new Date();
+      var dia = now.toLocaleDateString("pt-BR", { weekday: "long" });
+      dia = dia.charAt(0).toUpperCase() + dia.slice(1);
+      var data = now.toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+      });
+      var hora = now.toLocaleTimeString("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+      });
+      el.textContent = dia + " · " + data + " · " + hora;
+    }
+
+    tick();
+    setInterval(tick, 1000);
+  }
 
   function initNotifications() {
     var list = document.getElementById("notifList");
@@ -62,13 +87,28 @@
       });
     }
 
-    if (closeNotif) closeNotif.addEventListener("click", closePanels);
-    if (overlay) overlay.addEventListener("click", closePanels);
+    if (closeNotif) {
+      closeNotif.addEventListener("click", closePanels);
+    }
+
+    if (overlay) {
+      overlay.addEventListener("click", closePanels);
+    }
 
     if (burger && sidebar && overlay) {
       burger.addEventListener("click", function () {
         sidebar.classList.toggle("mobile-open");
         overlay.classList.toggle("visible");
+      });
+    }
+
+    var tableSearch = document.getElementById("tableSearch");
+    if (tableSearch) {
+      tableSearch.addEventListener("input", function (e) {
+        var q = e.target.value.toLowerCase();
+        document.querySelectorAll("#tbodyObras tr").forEach(function (row) {
+          row.style.display = row.textContent.toLowerCase().includes(q) ? "" : "none";
+        });
       });
     }
   }
@@ -104,6 +144,7 @@
   };
 
   document.addEventListener("DOMContentLoaded", function () {
+    initTimestamp();
     initNotifications();
     initInteractions();
     if (window.NewRoadTheme) NewRoadTheme.syncFromApi();

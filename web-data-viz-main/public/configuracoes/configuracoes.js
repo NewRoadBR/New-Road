@@ -187,6 +187,9 @@ function preencherFormulario(preferencias) {
   setToggleState(toggleNotifPico, Boolean(preferencias.notifPico));
   setToggleState(toggleNotifRelatorio, Boolean(preferencias.notifRelatorio));
   setToggleState(toggleDarkMode, Boolean(preferencias.darkMode));
+  if (window.NewRoadTheme) {
+    NewRoadTheme.apply(Boolean(preferencias.darkMode));
+  }
 }
 
 async function requestJson(url, options) {
@@ -274,6 +277,10 @@ function encerrarSessao() {
 
 btnSalvarPreferencias.addEventListener("click", salvarPreferencias);
 btnEncerrarSessao.addEventListener("click", encerrarSessao);
+
+if (window.NewRoadTheme) {
+  NewRoadTheme.bindToggle(toggleDarkMode);
+}
 
 aplicarUsuarioLogadoNaTopbar();
 carregarPerfilUsuario();
