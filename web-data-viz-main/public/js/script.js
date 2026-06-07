@@ -152,9 +152,7 @@ async function carregarHorarioCritico() {
  
         document.getElementById("kpiHorarioCritico").innerText =
             dados[0].periodo;
- 
-        aplicarContextoCard("cardKpiHorarioCritico", { classe: "ruim", label: "Pico" });
- 
+
     }
  
 }
@@ -177,9 +175,7 @@ async function carregarJanelaIdeal() {
  
         document.getElementById("kpiJanelaIdeal").innerText =
             dados[0].periodo;
- 
-        aplicarContextoCard("cardKpiJanelaIdeal", { classe: "bom", label: "Recomendado" });
- 
+
     }
  
 }
@@ -214,9 +210,7 @@ async function carregarMelhorDia() {
  
         document.getElementById("kpiMelhorDia").innerText =
             dias[dados[0].dia_semana];
- 
-        aplicarContextoCard("cardKpiMelhorDia", { classe: "bom", label: "Melhor cenário" });
- 
+
     }
  
 }
