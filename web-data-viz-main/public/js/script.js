@@ -553,6 +553,7 @@ MAPA DE OBRAS
 
 var mapaObras = null;
 var camadaMarcadoresObras = null;
+var camadasTilesMapaObras = { base: null, labels: null };
 
 var RODOVIA_COORDS = {
     "Rodoanel": [-23.450, -46.732],
@@ -634,24 +635,59 @@ function montarPopupObra(obra) {
 }
 
 function criarIconeMarcadorObra(cor) {
-    var cores = { green: "#10b981", yellow: "#f59e0b", red: "#ef4444" };
-    var hex = cores[cor] || "#3b82f6";
-
     return L.divIcon({
         className: "nr-obra-marker",
         html:
-            '<div style="' +
-                "width:30px;height:30px;background:" + hex + ";" +
-                "border-radius:50% 50% 50% 0;transform:rotate(-45deg);" +
-                "display:flex;align-items:center;justify-content:center;" +
-                "box-shadow:0 3px 10px rgba(0,0,0,0.25);border:2px solid rgba(255,255,255,0.85);" +
-            '">' +
-                '<i class="fa-solid fa-helmet-safety" style="transform:rotate(45deg);font-size:11px;color:#fff;"></i>' +
+            '<div class="nr-marker-pin nr-marker-pin--' + cor + '">' +
+                '<span class="nr-marker-pin__glow"></span>' +
+                '<span class="nr-marker-pin__body">' +
+                    '<i class="fa-solid fa-helmet-safety"></i>' +
+                "</span>" +
             "</div>",
-        iconSize: [30, 30],
-        iconAnchor: [15, 30],
-        popupAnchor: [0, -32]
+        iconSize: [36, 44],
+        iconAnchor: [18, 44],
+        popupAnchor: [0, -44]
     });
+}
+
+function removerCamadasTilesMapa() {
+    if (!mapaObras) return;
+
+    if (camadasTilesMapaObras.labels) {
+        mapaObras.removeLayer(camadasTilesMapaObras.labels);
+        camadasTilesMapaObras.labels = null;
+    }
+
+    if (camadasTilesMapaObras.base) {
+        mapaObras.removeLayer(camadasTilesMapaObras.base);
+        camadasTilesMapaObras.base = null;
+    }
+}
+
+function aplicarTilesMapaObras() {
+    if (!mapaObras) return;
+
+    removerCamadasTilesMapa();
+
+    var isDark = window.NewRoadTheme && NewRoadTheme.isDark();
+    var opts = { maxZoom: 19, subdomains: "abcd" };
+
+    if (isDark) {
+        camadasTilesMapaObras.base = L.tileLayer(
+            "https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png",
+            opts
+        ).addTo(mapaObras);
+
+        camadasTilesMapaObras.labels = L.tileLayer(
+            "https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png",
+            opts
+        ).addTo(mapaObras);
+    } else {
+        camadasTilesMapaObras.base = L.tileLayer(
+            "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+            opts
+        ).addTo(mapaObras);
+    }
 }
 
 function destacarLinhaObra(id) {
@@ -682,14 +718,8 @@ function initMapaObras() {
         attributionControl: false
     });
 
-    L.tileLayer(
-        window.NewRoadTheme && NewRoadTheme.isDark()
-            ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-            : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-        {
-        maxZoom: 19,
-        attribution: "&copy; OpenStreetMap &copy; CARTO"
-    }).addTo(mapaObras);
+    mapaObras.zoomControl.setPosition("topright");
+    aplicarTilesMapaObras();
 
     camadaMarcadoresObras = L.layerGroup().addTo(mapaObras);
 
@@ -811,4 +841,5 @@ window.addEventListener("nr-theme-change", function () {
     if (!document.getElementById("graficoFluxoHorario")) return;
     executarSeguro("fluxoHorario", carregarFluxoHorario);
     executarSeguro("volumeDiaSemana", carregarVolumeDiaSemana);
+    aplicarTilesMapaObras();
 });

@@ -205,11 +205,81 @@
 .content .map-container {
   height: 440px;
   position: relative;
+  isolation: isolate;
 }
 
 .content .map-container .leaflet-container {
   height: 100%;
   width: 100%;
+  background: #e2e8f0;
+  font-family: "DM Sans", sans-serif;
+}
+
+/* Marcadores de obra */
+.nr-obra-marker {
+  background: transparent;
+  border: none;
+}
+
+.nr-marker-pin {
+  position: relative;
+  width: 36px;
+  height: 44px;
+  cursor: pointer;
+}
+
+.nr-marker-pin__glow {
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  width: 28px;
+  height: 28px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  opacity: 0.35;
+  filter: blur(6px);
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.nr-marker-pin__body {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 32px;
+  height: 32px;
+  transform: translateX(-50%) rotate(-45deg);
+  border-radius: 50% 50% 50% 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2.5px solid rgba(255, 255, 255, 0.92);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.28);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.nr-marker-pin__body i {
+  transform: rotate(45deg);
+  font-size: 12px;
+  color: #fff;
+}
+
+.nr-marker-pin--green .nr-marker-pin__body { background: linear-gradient(145deg, #34d399, #059669); }
+.nr-marker-pin--green .nr-marker-pin__glow { background: #10b981; }
+
+.nr-marker-pin--yellow .nr-marker-pin__body { background: linear-gradient(145deg, #fbbf24, #d97706); }
+.nr-marker-pin--yellow .nr-marker-pin__glow { background: #f59e0b; }
+
+.nr-marker-pin--red .nr-marker-pin__body { background: linear-gradient(145deg, #f87171, #dc2626); }
+.nr-marker-pin--red .nr-marker-pin__glow { background: #ef4444; }
+
+.nr-marker-pin:hover .nr-marker-pin__body {
+  transform: translateX(-50%) rotate(-45deg) scale(1.08);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.35);
+}
+
+.nr-marker-pin:hover .nr-marker-pin__glow {
+  opacity: 0.55;
+  transform: translateX(-50%) scale(1.15);
 }
 
 .nr-obra-tooltip,
@@ -284,9 +354,4 @@
   background: #eff6ff !important;
   outline: 2px solid #2563eb;
   outline-offset: -2px;
-}
-
-.nr-obra-marker {
-  background: transparent;
-  border: none;
 }
