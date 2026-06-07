@@ -1,4 +1,5 @@
 var obrasModel = require("../models/obrasModel");
+var impactoUtil = require("../utils/impacto");
 
 function obterEmpresaId(req, res) {
 
@@ -28,7 +29,7 @@ function listar(req, res) {
 
         .then(function (resultado) {
 
-            res.status(200).json(resultado);
+            res.status(200).json(impactoUtil.formatarListaObrasImpacto(resultado));
 
         })
 
@@ -59,7 +60,7 @@ function listarPorRodovia(req, res) {
 
         .then(function (resultado) {
 
-            res.status(200).json(resultado);
+            res.status(200).json(impactoUtil.formatarListaObrasImpacto(resultado));
 
         })
 
@@ -92,7 +93,7 @@ function buscarPorId(req, res) {
 
             if (resultado.length > 0) {
 
-                res.status(200).json(resultado[0]);
+                res.status(200).json(impactoUtil.formatarObraImpacto(resultado[0]));
 
             } else {
 
@@ -136,6 +137,10 @@ function cadastrar(req, res) {
         return res.status(400).send("Data início é obrigatória");
     }
 
+    if (!body.impacto_previsto) {
+        return res.status(400).send("Impacto previsto é obrigatório");
+    }
+
     var empresaId = obterEmpresaId(req, res);
     if (!empresaId) return;
 
@@ -145,7 +150,7 @@ function cadastrar(req, res) {
         body.status,
         body.data_inicio,
         body.data_fim,
-        body.impacto_previsto,
+        impactoUtil.impactoParaCodigo(body.impacto_previsto),
         empresaId
     )
 
@@ -192,6 +197,10 @@ function atualizar(req, res) {
         return res.status(400).send("Data início é obrigatória");
     }
 
+    if (!body.impacto_previsto) {
+        return res.status(400).send("Impacto previsto é obrigatório");
+    }
+
     obrasModel.atualizar(
         id,
         body.rodovia,
@@ -199,7 +208,7 @@ function atualizar(req, res) {
         body.status,
         body.data_inicio,
         body.data_fim,
-        body.impacto_previsto,
+        impactoUtil.impactoParaCodigo(body.impacto_previsto),
         empresaId
     )
 

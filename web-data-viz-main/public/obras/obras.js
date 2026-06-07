@@ -23,14 +23,6 @@ function obterQueryEmpresa() {
 
 }
 
-function obterContextoPorPercentual(valor) {
-
-    if (valor >= 70) return { classe: "ruim", label: "Ruim" };
-    if (valor >= 40) return { classe: "medio", label: "Médio" };
-    return { classe: "bom", label: "Bom" };
-
-}
-
 function aplicarContextoCard(cardId, contexto) {
 
     var card = document.getElementById(cardId);
@@ -212,8 +204,7 @@ function renderizarTabela(lista) {
         if (status.includes("andamento")) badgeClass = "yellow";
         if (status.includes("final")) badgeClass = "green";
 
-        var impacto = Number(obra.impacto_previsto || 0);
-        var contexto = obterContextoPorPercentual(impacto);
+        var impactoNivel = obterNivelImpacto(obra.impacto_previsto);
 
         tbody.innerHTML += `
 
@@ -245,14 +236,7 @@ function renderizarTabela(lista) {
                     ${obra.data_fim || "-"}
                 </td>
 
-                <td>
-                    <div class="impacto-wrap">
-                        <div class="impacto-barra">
-                            <span class="impacto-fill ${contexto.classe}" style="width:${Math.min(impacto, 100)}%"></span>
-                        </div>
-                        <strong>${impacto}%</strong>
-                    </div>
-                </td>
+                <td>${pillImpactoHtml(obra.impacto_previsto)}</td>
 
                 <td>
 
@@ -608,7 +592,7 @@ function preencherFormulario(obra) {
         obra.data_fim;
 
     document.getElementById("inputImpacto").value =
-        obra.impacto_previsto;
+        resolverNivelImpacto(obra.impacto_previsto);
 
 }
 
@@ -624,7 +608,7 @@ function limparFormulario() {
 
     document.getElementById("inputDataFim").value = "";
 
-    document.getElementById("inputImpacto").value = "";
+    document.getElementById("inputImpacto").selectedIndex = 0;
 
 }
 
