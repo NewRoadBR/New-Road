@@ -276,6 +276,10 @@
   font-weight: 600;
 }
 
+.obra-tooltip-badge.badge-red { background: var(--red-bg); color: #b91c1c; }
+.obra-tooltip-badge.badge-yellow { background: var(--yellow-bg); color: #b45309; }
+.obra-tooltip-badge.badge-green { background: var(--green-bg); color: #047857; }
+
 .obra-row-highlight {
   background: #eff6ff !important;
   outline: 2px solid #2563eb;

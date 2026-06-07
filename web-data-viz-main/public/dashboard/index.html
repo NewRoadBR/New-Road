@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <script src="../js/theme.js"></script>
   <title>NewRoad — Plataforma de Obras Viárias</title>
 
   <!-- Fonts -->
@@ -20,6 +21,7 @@
 
   <link rel="stylesheet" href="../css/style.css"/>
   <link rel="stylesheet" href="../css/dashboard-operacional.css"/>
+  <link rel="stylesheet" href="../css/dark-theme.css"/>
 </head>
 <body>
 
@@ -42,6 +44,11 @@
     <a href="../obras/obras.html" class="nav-item">
       <i class="fa-solid fa-helmet-safety"></i>
       <span>Planejamento de Obras</span>
+    </a>
+
+    <a href="../simulacoes/simulacoes.html" class="nav-item">
+      <i class="fa-solid fa-flask"></i>
+      <span>Simulações</span>
     </a>
 
     <p class="nav-label">GESTÃO</p>
@@ -133,9 +140,6 @@
         <h1>Visão Geral — São Paulo</h1>
         <p class="subtitle">Dados atualizados em tempo real · <span id="lastUpdate" style="white-space:nowrap;"></span></p>
       </div>
-      <button type="button" class="btn-primary" id="refreshBtn">
-        <i class="fa-solid fa-rotate-right"></i> Atualizar
-      </button>
     </div>
 
     <section class="kpi-grid">
@@ -201,11 +205,6 @@
       <div class="chart-card wide">
         <div class="chart-header">
           <div><h3>Fluxo de Veículos por Horário</h3><p>Volume médio histórico</p></div>
-          <div class="chart-actions">
-            <button type="button" class="chart-btn active" data-chart-filter="today">Hoje</button>
-            <button type="button" class="chart-btn" data-chart-filter="week">Semana</button>
-            <button type="button" class="chart-btn" data-chart-filter="month">Mês</button>
-          </div>
         </div>
         <div class="chart-body"><canvas id="graficoFluxoHorario"></canvas></div>
       </div>
@@ -225,9 +224,9 @@
           <p id="mapObrasCount">Obras cadastradas na região metropolitana de SP</p>
         </div>
         <div class="map-legend">
-          <span class="legend-item"><span class="dot green"></span>Baixo impacto</span>
-          <span class="legend-item"><span class="dot yellow"></span>Médio impacto</span>
-          <span class="legend-item"><span class="dot red"></span>Alto impacto / Crítica</span>
+          <span class="legend-item"><span class="dot red"></span>Planejada</span>
+          <span class="legend-item"><span class="dot yellow"></span>Em andamento</span>
+          <span class="legend-item"><span class="dot green"></span>Finalizada</span>
         </div>
       </div>
       <div class="map-container" id="map"></div>
@@ -238,7 +237,6 @@
         <div><h2>Obras Planejadas e em Andamento</h2><p id="obrasTotalCount">Carregando todas as obras cadastradas…</p></div>
         <div class="table-controls">
           <input class="table-search" type="text" placeholder="Filtrar obras…" id="tableSearch"/>
-          <button type="button" class="btn-outline"><i class="fa-solid fa-download"></i> Exportar</button>
         </div>
       </div>
       <div class="table-wrapper">

@@ -45,6 +45,12 @@
   --header-h: 64px;
   --radius: 12px;
   --radius-sm: 8px;
+
+  /* Charts */
+  --chart-grid: rgba(148, 163, 184, 0.2);
+  --chart-text: #64748b;
+  --border-subtle: #f1f5f9;
+  --input-bg: #ffffff;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }

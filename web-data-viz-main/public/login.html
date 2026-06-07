@@ -4,12 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="js/theme.js"></script>
     <title>New Road | Login</title>
     <link rel="stylesheet" href="css/login.css">
+    <link rel="stylesheet" href="css/dark-theme.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 
-<body>
+<body class="login-page">
 
     <div class="container" id="container">
 
@@ -119,7 +121,17 @@
         sessionStorage.AVATAR_USUARIO = json.avatar || '';
         sessionStorage.EMPRESA_ID_USUARIO = json.empresaId || '';
 
-        window.location = "./dashboard/index.html";
+        fetch('/preferencias/' + json.id)
+            .then(function (res) { return res.ok ? res.json() : null; })
+            .then(function (prefs) {
+                if (prefs && window.NewRoadTheme) {
+                    NewRoadTheme.apply(Boolean(prefs.darkMode));
+                }
+                window.location = "./dashboard/index.html";
+            })
+            .catch(function () {
+                window.location = "./dashboard/index.html";
+            });
     })
     .catch(erro => {
         if (erro.message === "USUARIO_NAO_ENCONTRADO") {
