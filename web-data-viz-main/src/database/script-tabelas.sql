@@ -278,7 +278,7 @@ CREATE TABLE obra (
    status          ENUM('Planejada','Em andamento','Finalizada','Critica') DEFAULT 'Planejada',
    data_inicio     DATE NOT NULL,
    data_fim        DATE,
-   impacto_previsto TINYINT UNSIGNED DEFAULT 0,
+   impacto_previsto TINYINT UNSIGNED DEFAULT 1 COMMENT '1=baixo 2=medio 3=alto',
    fk_empresa      INT UNSIGNED,
    criado_em       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
    FOREIGN KEY (fk_empresa) REFERENCES empresa(id) ON DELETE SET NULL

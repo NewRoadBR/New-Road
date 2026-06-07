@@ -32,14 +32,6 @@ async function executarSeguro(nome, fn) {
 
 }
  
-function obterContextoPorPercentual(valor) {
- 
-    if (valor >= 70) return { classe: "ruim", label: "Ruim" };
-    if (valor >= 40) return { classe: "medio", label: "Médio" };
-    return { classe: "bom", label: "Bom" };
- 
-}
- 
 function aplicarContextoCard(cardId, contexto) {
  
     var card = document.getElementById(cardId);
@@ -532,21 +524,18 @@ function renderizarTabelaObras(obras) {
     tbody.innerHTML = "";
 
     if (!obras.length) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px;">Nenhuma obra cadastrada.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">Nenhuma obra cadastrada.</td></tr>';
         return;
     }
 
     obras.forEach(obra => {
- 
-        var impacto = Number(obra.impacto_previsto || 0);
-        var contexto = obterContextoPorPercentual(impacto);
- 
+
         var statusContexto = "medio";
         var status = (obra.status || "").toLowerCase();
         if (status.includes("final")) statusContexto = "bom";
         if (status.includes("andamento")) statusContexto = "medio";
         if (status.includes("planejada")) statusContexto = "ruim";
- 
+
         tbody.innerHTML += `
             <tr data-obra-id="${obra.id}">
                 <td>${obra.rodovia}</td>
@@ -554,15 +543,7 @@ function renderizarTabelaObras(obras) {
                 <td><span class="badge ${statusContexto === "bom" ? "green" : statusContexto === "medio" ? "yellow" : "red"}">${obra.status}</span></td>
                 <td>${obra.data_inicio}</td>
                 <td>${obra.data_fim || "-"}</td>
-                <td class="impacto-cell">
-                    <div class="impacto-wrap">
-                        <div class="impacto-barra">
-                            <span class="impacto-fill ${contexto.classe}" style="width:${Math.min(impacto, 100)}%"></span>
-                        </div>
-                        <strong>${impacto}%</strong>
-                    </div>
-                </td>
-                <td><span class="indicador-pill ${contexto.classe}">${contexto.label}</span></td>
+                <td class="impacto-cell">${pillImpactoHtml(obra.impacto_previsto)}</td>
             </tr>
         `;
  
@@ -595,20 +576,22 @@ var RODOVIA_COORDS = {
     "Sistema Anchieta-Imigrantes": [-23.782, -46.365]
 };
 
-function normalizarImpactoObra(valor) {
-    var n = Number(valor || 0);
-    if (n <= 10) return n * 10;
-    return Math.min(n, 100);
-}
+function montarTooltipObra(obra) {
+    var nivelImpacto = obterNivelImpacto(obra.impacto_previsto);
+    var cor = obterCorMarcadorObra(obra);
 
-function obterCorMarcadorObra(obra) {
-    var status = (obra.status || "").toLowerCase();
-
-    if (status.includes("final")) return "green";
-    if (status.includes("andamento")) return "yellow";
-    if (status.includes("planejada")) return "red";
-
-    return "red";
+    return (
+        '<div class="obra-tooltip">' +
+            '<table class="obra-tooltip-table">' +
+                "<tr><th>Rodovia</th><td>" + escaparHtml(obra.rodovia || "—") + "</td></tr>" +
+                "<tr><th>Descrição</th><td>" + escaparHtml(obra.descricao || "—") + "</td></tr>" +
+                "<tr><th>Status</th><td><span class=\"obra-tooltip-badge badge-" + cor + "\">" + escaparHtml(obra.status || "—") + "</span></td></tr>" +
+                "<tr><th>Início</th><td>" + escaparHtml(formatarDataObra(obra.data_inicio)) + "</td></tr>" +
+                "<tr><th>Fim</th><td>" + escaparHtml(formatarDataObra(obra.data_fim)) + "</td></tr>" +
+                "<tr><th>Impacto</th><td>" + pillImpactoHtml(obra.impacto_previsto) + "</td></tr>" +
+            "</table>" +
+        "</div>"
+    );
 }
 
 function obterCoordenadasObra(obra) {
@@ -642,22 +625,14 @@ function escaparHtml(texto) {
         .replace(/"/g, "&quot;");
 }
 
-function montarTooltipObra(obra) {
-    var impacto = normalizarImpactoObra(obra.impacto_previsto);
-    var cor = obterCorMarcadorObra(obra);
+function obterCorMarcadorObra(obra) {
+    var status = (obra.status || "").toLowerCase();
 
-    return (
-        '<div class="obra-tooltip">' +
-            '<table class="obra-tooltip-table">' +
-                "<tr><th>Rodovia</th><td>" + escaparHtml(obra.rodovia || "—") + "</td></tr>" +
-                "<tr><th>Descrição</th><td>" + escaparHtml(obra.descricao || "—") + "</td></tr>" +
-                "<tr><th>Status</th><td><span class=\"obra-tooltip-badge badge-" + cor + "\">" + escaparHtml(obra.status || "—") + "</span></td></tr>" +
-                "<tr><th>Início</th><td>" + escaparHtml(formatarDataObra(obra.data_inicio)) + "</td></tr>" +
-                "<tr><th>Fim</th><td>" + escaparHtml(formatarDataObra(obra.data_fim)) + "</td></tr>" +
-                "<tr><th>Impacto</th><td><strong>" + impacto + "%</strong></td></tr>" +
-            "</table>" +
-        "</div>"
-    );
+    if (status.includes("final")) return "green";
+    if (status.includes("andamento")) return "yellow";
+    if (status.includes("planejada")) return "red";
+
+    return "red";
 }
 
 function montarPopupObra(obra) {

@@ -139,7 +139,14 @@
       <div class="campo"><label>Status</label><select id="inputStatus"><option>Planejada</option><option>Em andamento</option><option>Finalizada</option></select></div>
       <div class="campo"><label>Data Início</label><input type="date" id="inputDataInicio" /></div>
       <div class="campo"><label>Data Fim</label><input type="date" id="inputDataFim" /></div>
-      <div class="campo"><label>Impacto Previsto</label><input type="number" step="0.01" id="inputImpacto" /></div>
+      <div class="campo"><label>Impacto Previsto</label>
+        <select id="inputImpacto">
+          <option value="" selected disabled>Selecione</option>
+          <option value="baixo">Baixo</option>
+          <option value="medio">Médio</option>
+          <option value="alto">Alto</option>
+        </select>
+      </div>
     </div>
     <div class="campo descricao"><label>Descrição</label><textarea id="inputDescricao"></textarea></div>
     <button type="button" class="btn-salvar" id="btnSalvarObra" onclick="cadastrar()">Salvar Obra</button>
@@ -153,6 +160,7 @@
 <div class="overlay" id="overlay"></div>
 
 <script src="../js/app-shell.js"></script>
+<script src="../js/metricas-impacto.js"></script>
 <script src="./obras.js"></script>
 </body>
 </html>

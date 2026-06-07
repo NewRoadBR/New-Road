@@ -54,12 +54,6 @@ function aplicarUsuarioLogadoNaTopbar() {
   seloSessaoAtiva.hidden = false;
 }
 
-function obterContextoPorPercentual(valor) {
-  if (valor >= 70) return { classe: "ruim", label: "Alto impacto" };
-  if (valor >= 40) return { classe: "medio", label: "Impacto moderado" };
-  return { classe: "bom", label: "Baixo impacto" };
-}
-
 function aplicarContextoCard(cardId, contexto) {
   var card = document.getElementById(cardId);
   if (!card) return;
@@ -159,10 +153,12 @@ function calcularCenarios(dadosHorarios, multiplicador) {
     var media = mediaHoras(volumesPorHora, periodo.horas);
     var impactoBase = Math.round((media / maxVol) * 100);
     var impacto = Math.min(Math.round(impactoBase * multiplicador), 100);
+    var nivel = obterNivelImpacto(impacto);
     return {
       id: periodo.id,
       cenario: periodo.label,
       impacto: impacto,
+      nivel: nivel,
       volumeMedio: Math.round(media),
       cor: corPorImpacto(impacto),
       recomendado: false
@@ -208,15 +204,13 @@ function renderizarTabelaPeriodos(cenarios) {
   if (!tbody) return;
 
   tbody.innerHTML = cenarios.map(function (item) {
-    var ctx = obterContextoPorPercentual(item.impacto);
-    var badge = item.recomendado
-      ? badgeHtml("Recomendado", "green")
-      : badgeHtml(ctx.label, ctx.classe === "ruim" ? "red" : ctx.classe === "medio" ? "yellow" : "green");
+    var nivel = item.nivel || obterNivelImpacto(item.impacto);
+    var badge = badgeHtml(nivel.label, nivel.badge);
 
     return (
       "<tr>" +
         "<td>" + (item.recomendado ? "★ " : "") + item.cenario + "</td>" +
-        "<td><strong>" + item.impacto + "%</strong></td>" +
+        "<td>" + pillImpactoHtml(item.impacto) + "</td>" +
         "<td>" + item.volumeMedio.toLocaleString("pt-BR") + " veíc/h</td>" +
         "<td>" + badge + "</td>" +
       "</tr>"
@@ -278,8 +272,8 @@ function atualizarGraficoSim(cenarios) {
     data: {
       labels: cenarios.map(function (i) { return i.cenario; }),
       datasets: [{
-        label: "Impacto (%)",
-        data: cenarios.map(function (i) { return i.impacto; }),
+        label: "Nível de impacto",
+        data: cenarios.map(function (i) { return (i.nivel || obterNivelImpacto(i.impacto)).valorGrafico; }),
         backgroundColor: cenarios.map(function (i) {
           return i.recomendado ? "#10b981" : i.cor + "CC";
         }),
@@ -299,17 +293,29 @@ function atualizarGraficoSim(cenarios) {
           backgroundColor: "#0f172a",
           callbacks: {
             label: function (ctx) {
-              return " " + ctx.parsed.x + "% de impacto ao tráfego";
+              var item = cenarios[ctx.dataIndex];
+              var nivel = item.nivel || obterNivelImpacto(item.impacto);
+              return " Impacto " + nivel.label.toLowerCase();
             }
           }
         }
       },
       scales: {
         x: {
-          max: 100,
+          min: 0,
+          max: 3,
           grid: { color: estilo.grid },
           border: { display: false },
-          ticks: { color: estilo.text, callback: function (v) { return v + "%"; } }
+          ticks: {
+            color: estilo.text,
+            stepSize: 1,
+            callback: function (v) {
+              if (v === 1) return "Baixo";
+              if (v === 2) return "Médio";
+              if (v === 3) return "Alto";
+              return "";
+            }
+          }
         },
         y: {
           grid: { display: false },
@@ -358,9 +364,11 @@ async function executarSimulacao() {
     var cenarios = calcularCenarios(dadosHorarios, multiplicador);
     var melhor = marcarRecomendado(cenarios);
     var selecionado = cenarios.find(function (c) { return c.id === periodoId; }) || melhor;
+    var nivelSelecionado = selecionado.nivel || obterNivelImpacto(selecionado.impacto);
+    var nivelMelhor = melhor.nivel || obterNivelImpacto(melhor.impacto);
 
-    document.getElementById("simImpactoValor").textContent = selecionado.impacto + "%";
-    aplicarContextoCard("cardSimImpacto", obterContextoPorPercentual(selecionado.impacto));
+    document.getElementById("simImpactoValor").textContent = nivelSelecionado.label;
+    aplicarContextoCard("cardSimImpacto", { classe: nivelSelecionado.classe, label: nivelSelecionado.label });
 
     var janelaTexto = janela.length ? janela[0].periodo : melhor.cenario.replace(/\(.+\)/, "").trim();
     document.getElementById("simJanelaValor").textContent = janelaTexto;
@@ -378,15 +386,15 @@ async function executarSimulacao() {
       aplicarContextoCard("cardSimRecomendacao", { classe: "bom", label: "Aprovado" });
     } else {
       recomendacaoEl.textContent = "Trocar para " + melhor.cenario.split(" (")[0];
-      detalheEl.textContent = "Impacto cai de " + selecionado.impacto + "% para " + melhor.impacto + "% · " + diaTexto;
-      aplicarContextoCard("cardSimRecomendacao", obterContextoPorPercentual(selecionado.impacto));
+      detalheEl.textContent = "Sugestão: " + melhor.cenario.split(" (")[0] + " (" + nivelMelhor.label.toLowerCase() + ") · " + diaTexto;
+      aplicarContextoCard("cardSimRecomendacao", { classe: nivelSelecionado.classe, label: nivelSelecionado.label });
     }
 
     renderizarTabelaPeriodos(cenarios);
     atualizarGraficoSim(cenarios);
 
     definirStatusSim(
-      "Simulação concluída · <strong>" + rodovia + "</strong> · impacto simulado <strong>" + selecionado.impacto + "%</strong> no período selecionado.",
+      "Simulação concluída · <strong>" + rodovia + "</strong> · impacto simulado <strong>" + nivelSelecionado.label.toLowerCase() + "</strong> no período selecionado.",
       "ok"
     );
   } catch (erro) {
