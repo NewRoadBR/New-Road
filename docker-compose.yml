@@ -74,6 +74,8 @@ services:
       ETL_FONTE: ${ETL_FONTE:-s3}
       ETL_MIN_MEDICOES: ${ETL_MIN_MEDICOES:-5}
 
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
+
     volumes:
       - ./etl-v3/csv:/app/temp_csv
       - ./etl-v3/xlsx_input:/app/xlsx_input
