@@ -88,6 +88,15 @@ CREATE TABLE IF NOT EXISTS trafego_rodovia_historico (
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS notificacoes (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    titulo VARCHAR(255) NOT NULL,
+    mensagem TEXT NOT NULL,
+    tipo VARCHAR(50) NOT NULL,
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    visualizada BOOLEAN DEFAULT FALSE
+);
+
 CREATE OR REPLACE VIEW vw_fluxo_medio AS
 SELECT
     rodovia,
