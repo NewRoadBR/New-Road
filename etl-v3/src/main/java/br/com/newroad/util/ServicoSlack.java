@@ -51,10 +51,14 @@ public class ServicoSlack {
 
         try {
 
-            String json =
-                    "{\"text\": \"" +
-                    texto.replace("\"", "\\\"") +
-                    "\"}";
+            String json = String.format(
+            "{\"text\":\"%s\"}",
+              texto
+              .replace("\\", "\\\\")
+              .replace("\"", "\\\"")
+             .replace("\n", "\\n")
+              .replace("\r", "")
+);
 
             HttpClient client = HttpClient.newHttpClient();
 
@@ -71,29 +75,24 @@ public class ServicoSlack {
                             )
                             .build();
 
-            client.sendAsync(
-                    request,
-                    HttpResponse.BodyHandlers.ofString()
-            )
-                    .thenAccept(response -> {
+            HttpResponse<String> response =
+        client.send(
+                request,
+                HttpResponse.BodyHandlers.ofString()
+        );
 
-                        if (response.statusCode() != 200) {
+           if (response.statusCode() != 200) {
 
-                            System.err.println(
-                                    "Erro ao postar no Slack. Status HTTP: "
-                                            + response.statusCode()
-                            );
-                        }
-                    })
-                    .exceptionally(e -> {
+           System.err.println(
+             "Erro ao postar no Slack. Status HTTP: "
+             + response.statusCode()
+    );
 
-                        System.err.println(
-                                "Falha de rede ao conectar com o Slack: "
-                                        + e.getMessage()
-                        );
-
-                        return null;
-                    });
+    System.err.println(
+            "Resposta do Slack: "
+                    + response.body()
+    );
+}
 
         } catch (Exception e) {
 
