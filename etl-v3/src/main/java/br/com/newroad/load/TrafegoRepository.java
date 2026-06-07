@@ -20,7 +20,7 @@ public class TrafegoRepository implements AutoCloseable {
                     "FIELDS TERMINATED BY ',' " +
                     "ENCLOSED BY '\"' " +
                     "ESCAPED BY '\\\\' " +
-                    "LINES TERMINATED BY '\n' " +
+                    "LINES TERMINATED BY '\r\n' " +
                     "(data, hora, praca, sentido, " +
                     "leve_eixos_2, moto_eixos_2, pesado_eixos_2, " +
                     "leve_eixos_3, pesado_eixos_3, " +
