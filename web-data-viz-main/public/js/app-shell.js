@@ -106,6 +106,7 @@
   document.addEventListener("DOMContentLoaded", function () {
     initNotifications();
     initInteractions();
+    if (window.NewRoadAuth) NewRoadAuth.aplicarMenuPermissoes();
     if (window.NewRoadTheme) NewRoadTheme.syncFromApi();
   });
 })();

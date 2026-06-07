@@ -147,6 +147,7 @@
     initTimestamp();
     initNotifications();
     initInteractions();
+    if (window.NewRoadAuth) NewRoadAuth.aplicarMenuPermissoes();
     if (window.NewRoadTheme) NewRoadTheme.syncFromApi();
   });
 })();
