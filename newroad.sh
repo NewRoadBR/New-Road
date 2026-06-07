@@ -83,7 +83,7 @@ echo ""
 echo -e "${YELLOW}[2/4] Buildando e subindo containers...${NC}"
 
 echo -e "${YELLOW}→ Derrubando containers antigos...${NC}"
-docker compose down -v --remove-orphans
+docker compose down --remove-orphans
 
 echo -e "${YELLOW}→ Limpando container ETL antigo...${NC}"
 docker rm -f etl-newroad >/dev/null 2>&1 || true
