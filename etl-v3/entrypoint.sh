@@ -12,6 +12,7 @@ etl.fonte=${ETL_FONTE:-S3}
 etl.s3.bucket=${S3_BUCKET}
 etl.s3.prefixo=${S3_PREFIXO:-}
 etl.s3.regiao=${S3_REGIAO:-us-east-1}
+slack.webhook.url=${SLACK_WEBHOOK_URL}
 PROPS
 
 # Dizendo para o Java rodar procurando as configurações no diretório atual primeiro
