@@ -473,8 +473,9 @@ async function carregarObras() {
     try {
 
         var queryEmpresa = obterQueryEmpresa();
+        var rodoviaParam = encodeURIComponent(rodoviaSelecionada);
 
-        const resposta = await fetch(`/obras?${queryEmpresa}`);
+        const resposta = await fetch(`/obras/rodovia/${rodoviaParam}?${queryEmpresa}`);
 
         if (!resposta.ok) {
             throw new Error(`Erro ${resposta.status}`);
@@ -514,7 +515,7 @@ function atualizarContadorObras(total, mensagem) {
         return;
     }
 
-    el.textContent = total + " obra" + (total !== 1 ? "s" : "") + " cadastrada" + (total !== 1 ? "s" : "") + " · todas exibidas abaixo";
+    el.textContent = total + " obra" + (total !== 1 ? "s" : "") + " em " + rodoviaSelecionada;
 
 }
  
@@ -527,7 +528,7 @@ function renderizarTabelaObras(obras) {
     tbody.innerHTML = "";
 
     if (!obras.length) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">Nenhuma obra cadastrada.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">Nenhuma obra cadastrada em ' + escaparHtml(rodoviaSelecionada) + ".</td></tr>";
         return;
     }
 
@@ -747,15 +748,21 @@ function renderizarMapaObras(obras) {
     var contador = document.getElementById("mapObrasCount");
     if (contador) {
         contador.textContent = obras.length
-            ? obras.length + " obra" + (obras.length !== 1 ? "s" : "") + " no mapa · clique no marcador para detalhes"
-            : "Nenhuma obra cadastrada para exibir no mapa";
+            ? obras.length + " obra" + (obras.length !== 1 ? "s" : "") + " em " + rodoviaSelecionada + " · clique no marcador para detalhes"
+            : "Nenhuma obra cadastrada em " + rodoviaSelecionada;
     }
 
     if (!camadaMarcadoresObras) return;
 
     camadaMarcadoresObras.clearLayers();
 
-    if (!obras.length) return;
+    if (!obras.length) {
+        var coordsRodovia = RODOVIA_COORDS[rodoviaSelecionada];
+        if (mapaObras && coordsRodovia) {
+            mapaObras.setView(coordsRodovia, 11);
+        }
+        return;
+    }
 
     var bounds = [];
 
