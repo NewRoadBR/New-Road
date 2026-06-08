@@ -149,12 +149,10 @@ Senha padrão para todos: **`123456`**
 
 | E-mail | Perfil | Empresa |
 |--------|--------|---------|
-| leandro@ccr.com | Gestor | CCR AutoBAn |
-| camila@ccr.com | Analista | CCR AutoBAn |
-| rafael@ccr.com | Operador | CCR AutoBAn |
-| juliana@eco.com | Gestor | EcoRodovias |
-| patricia@eco.com | Operador | EcoRodovias |
-| carlos@arteris.com | Gestor | Arteris |
+| samara@ccr.com | Gestor | CCR AutoBAn |
+| gustavo@ccr.com | Analista | CCR AutoBAn |
+| giovanna@ccr.com | Analista | CCR AutoBAn |
+| marcos@ccr.com | Operador | CCR AutoBAn |
 
 ---
 
