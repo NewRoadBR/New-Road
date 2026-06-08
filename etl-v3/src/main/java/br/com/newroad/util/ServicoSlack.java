@@ -6,6 +6,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Properties;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 public class ServicoSlack {
 
@@ -30,6 +33,41 @@ public class ServicoSlack {
             );
         }
     }
+    private static boolean deveEnviarSlack() {
+
+    String sql =  """
+        SELECT EXISTS(
+            SELECT 1
+            FROM preferencia
+            WHERE notif_relatorio = 1
+        )
+        """;
+
+    try (
+            Connection conn =
+                    ConexaoBancoDados.obterConexao();
+
+            PreparedStatement ps =
+                    conn.prepareStatement(sql);
+
+            ResultSet rs =
+                    ps.executeQuery()
+    ) {
+
+        if (rs.next()) {
+            return rs.getInt(1) > 0;
+        }
+
+    } catch (Exception e) {
+
+        System.err.println(
+                "Erro ao verificar preferência Slack: "
+                        + e.getMessage()
+        );
+    }
+
+    return false;
+}
 
     public static void enviarAlerta(String texto) {
 
@@ -37,6 +75,15 @@ public class ServicoSlack {
 
         // salva sempre no banco
         ServicoNotificacao.salvar(texto, tipo);
+
+        if (!deveEnviarSlack()) {
+
+     System.out.println(
+            "Slack desabilitado pelos usuários."
+      );
+
+    return;
+}
 
         // se não houver webhook configurado,
         // continua funcionando pelo banco
