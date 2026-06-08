@@ -8,6 +8,13 @@ var PERIODOS_SIM = [
   { id: "noite", label: "Noite (19h–23h)", horas: [19, 20, 21, 22, 23] }
 ];
 
+var SIMULACAO_PADRAO = {
+  rodovia: "Rodovia Anhanguera",
+  tipo: "1.1",
+  periodo: "madrugada",
+  duracao: 4
+};
+
 var userBoxTopo = document.getElementById("userBoxTopo");
 var avatarTopo = document.getElementById("avatarTopo");
 var nomeUsuarioTopo = document.getElementById("nomeUsuarioTopo");
@@ -257,6 +264,14 @@ function limparFormulario() {
   atualizarEstadoBotao();
 }
 
+function aplicarSimulacaoPadrao() {
+  document.getElementById("simRodovia").value = SIMULACAO_PADRAO.rodovia;
+  document.getElementById("simTipo").value = SIMULACAO_PADRAO.tipo;
+  document.getElementById("simPeriodo").value = SIMULACAO_PADRAO.periodo;
+  document.getElementById("simDuracao").value = SIMULACAO_PADRAO.duracao;
+  atualizarEstadoBotao();
+}
+
 function atualizarGraficoSim(cenarios) {
   var canvas = document.getElementById("graficoSimImpacto");
   if (!canvas || typeof Chart === "undefined") return;
@@ -425,6 +440,6 @@ document.addEventListener("DOMContentLoaded", function () {
     if (graficoSimImpacto) graficoSimImpacto.update();
   });
 
-  limparResultados();
-  atualizarEstadoBotao();
+  aplicarSimulacaoPadrao();
+  executarSimulacao();
 });
