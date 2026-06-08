@@ -399,9 +399,24 @@ async function carregarVolumeDiaSemana() {
     const volumes = dados.map(item => item.volume_total);
  
     atualizarGraficoDiaSemana(labels, volumes);
- 
+
 }
- 
+
+function corBarraVolumeDiaSemana(volume, volumes) {
+    var max = Math.max.apply(null, volumes);
+    var min = Math.min.apply(null, volumes);
+
+    if (max === min) return "#10b981";
+
+    // Menor volume = melhor para obras (verde); maior volume = pior (vermelho)
+    var pressao = ((volume - min) / (max - min)) * 100;
+    var nivel = obterContextoPorPercentual(pressao).classe;
+
+    if (nivel === "ruim") return "#ef4444";
+    if (nivel === "medio") return "#f59e0b";
+    return "#10b981";
+}
+
 function atualizarGraficoDiaSemana(labels, volumes) {
  
     const ctx = document
@@ -429,13 +444,7 @@ function atualizarGraficoDiaSemana(labels, volumes) {
                 data: volumes,
  
                 backgroundColor: volumes.map(function (volume) {
-                    var percentual = Math.max.apply(null, volumes) > 0
-                        ? (volume / Math.max.apply(null, volumes)) * 100
-                        : 0;
-                    var nivel = obterContextoPorPercentual(percentual).classe;
-                    if (nivel === "ruim") return "#ef4444";
-                    if (nivel === "medio") return "#f59e0b";
-                    return "#10b981";
+                    return corBarraVolumeDiaSemana(volume, volumes);
                 }),
  
                 borderWidth: 1
