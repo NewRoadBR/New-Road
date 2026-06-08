@@ -143,19 +143,6 @@ var ambiente_processo = 'desenvolvimento'; // usa .env.dev
 
 ---
 
-## Usuários de teste (seed)
-
-Senha padrão para todos: **`123456`**
-
-| E-mail | Perfil | Empresa |
-|--------|--------|---------|
-| samara@ccr.com | Gestor | CCR AutoBAn |
-| gustavo@ccr.com | Analista | CCR AutoBAn |
-| giovanna@ccr.com | Analista | CCR AutoBAn |
-| marcos@ccr.com | Operador | CCR AutoBAn |
-
----
-
 ## API — principais rotas
 
 | Método | Rota | Descrição |
