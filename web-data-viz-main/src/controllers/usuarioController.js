@@ -101,6 +101,7 @@ function buscarPorId(req, res) {
                 email: u.email,
                 telefone: u.telefone || "",
                 perfil: u.perfil,
+                regiao: u.regiao || "",
                 avatar: u.avatar || "",
                 cor: u.cor,
                 role: u.role,
@@ -181,10 +182,22 @@ function deletar(req, res) {
         });
 }
 
+function listarRegioes(req, res) {
+    usuarioModel.listarRegioes()
+        .then(function (rows) {
+            res.status(200).json(rows.map(function (item) { return item.nome; }));
+        })
+        .catch(function (erro) {
+            console.log("Erro ao listar regiões:", erro);
+            res.status(500).json(erro.sqlMessage || erro.message);
+        });
+}
+
 module.exports = {
     autenticar,
     cadastrar,
     listar,
+    listarRegioes,
     buscarPorId,
     criar,
     atualizar,

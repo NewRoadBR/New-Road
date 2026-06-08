@@ -46,7 +46,7 @@
       <div class="search-box"><i class="fa-solid fa-magnifying-glass"></i><input type="text" placeholder="Buscar configurações…" id="searchInput" /></div>
     </div>
     <div class="header-right">
-      <button type="button" class="icon-btn notif-btn" id="notifBtn"><i class="fa-solid fa-bell"></i><span class="badge">3</span></button>
+      <button type="button" class="icon-btn notif-btn" id="notifBtn"><i class="fa-solid fa-bell"></i><span class="badge" style="display:none">0</span></button>
       <div class="user-menu" id="userBoxTopo">
         <div class="user-avatar" id="avatarTopo">NR</div>
         <div class="user-info">
@@ -98,6 +98,12 @@
             <label for="cfgPerfil">Perfil</label>
             <input type="text" class="form-input" id="cfgPerfil" readonly />
           </div>
+          <div class="form-group">
+            <label for="cfgRegiao">Região padrão</label>
+            <select class="form-input" id="cfgRegiao">
+              <option value="">Carregando regiões…</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -106,31 +112,11 @@
         <div class="settings-lean-toggles">
           <div class="toggle-row">
             <div>
-              <p class="toggle-label">Alertas críticos</p>
-              <p class="toggle-desc">Obras e eventos em tempo real</p>
+              <p class="toggle-label">Notificações ETL</p>
+              <p class="toggle-desc">Alertas de carga de dados no painel e no sino</p>
             </div>
             <label class="toggle-switch">
-              <input type="checkbox" id="toggleNotifCritica" checked />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <div class="toggle-row">
-            <div>
-              <p class="toggle-label">Picos de tráfego</p>
-              <p class="toggle-desc">Volume acima da média histórica</p>
-            </div>
-            <label class="toggle-switch">
-              <input type="checkbox" id="toggleNotifPico" checked />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <div class="toggle-row">
-            <div>
-              <p class="toggle-label">Resumo diário</p>
-              <p class="toggle-desc">Relatório consolidado da operação</p>
-            </div>
-            <label class="toggle-switch">
-              <input type="checkbox" id="toggleNotifRelatorio" checked />
+              <input type="checkbox" id="toggleNotifEtl" checked />
               <span class="toggle-slider"></span>
             </label>
           </div>
@@ -151,7 +137,7 @@
         <p class="settings-lean-section-title"><i class="fa-solid fa-shield-halved"></i> Sistema &amp; Segurança</p>
         <div class="settings-lean-info">
           <div class="settings-info-row"><span>Versão</span><strong style="font-family:'DM Mono',monospace;">v2.4.1</strong></div>
-          <div class="settings-info-row"><span>Região operacional</span><strong>SP Region</strong></div>
+          <div class="settings-info-row"><span>Região operacional</span><strong id="cfgRegiaoOperacional">—</strong></div>
           <div class="settings-info-row"><span>Sessões ativas</span><strong>1 dispositivo</strong></div>
           <div class="settings-info-row"><span>Suporte</span><strong>suporte@newroad.sp.gov.br</strong></div>
         </div>
@@ -175,6 +161,7 @@
 </div>
 <div class="overlay" id="overlay"></div>
 
+<script src="../js/notificacoes-ui.js"></script>
 <script src="../js/app-shell.js"></script>
 <script src="./configuracoes.js"></script>
 </body>

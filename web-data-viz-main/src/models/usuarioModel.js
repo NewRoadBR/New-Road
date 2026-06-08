@@ -31,13 +31,30 @@ function listar(empresaId) {
 function buscarPorId(id, empresaId) {
     var sql = `
         SELECT
-            id, nome, email, telefone, perfil, avatar, cor, role,
+            id, nome, email, telefone, perfil, regiao, avatar, cor, role,
             ultimo_acesso AS ultimo
         FROM usuario
         WHERE id = ?
           AND fk_empresa = ?;
     `;
     return database.executar(sql, [id, empresaId]);
+}
+
+function listarRegioes() {
+    var sql = `
+        SELECT DISTINCT nome
+        FROM (
+            SELECT regiao AS nome
+            FROM usuario
+            WHERE regiao IS NOT NULL AND TRIM(regiao) <> ''
+            UNION
+            SELECT regiao_padrao AS nome
+            FROM preferencia
+            WHERE regiao_padrao IS NOT NULL AND TRIM(regiao_padrao) <> ''
+        ) AS regioes
+        ORDER BY nome;
+    `;
+    return database.executar(sql);
 }
 
 function gerarAvatar(nome) {
@@ -98,5 +115,6 @@ module.exports = {
     criar,
     atualizar,
     deletar,
-    gerarAvatar
+    gerarAvatar,
+    listarRegioes
 };

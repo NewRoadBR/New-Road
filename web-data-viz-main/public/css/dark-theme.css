@@ -344,6 +344,10 @@ html[data-theme="dark"] .config-item {
 html[data-theme="dark"] .notif-title { color: var(--text-primary); }
 html[data-theme="dark"] .notif-desc { color: var(--text-secondary); }
 
+html[data-theme="dark"] .notif-item-empty .notif-title {
+  color: var(--text-muted);
+}
+
 /* ── Mural ── */
 html[data-theme="dark"] .mural-chat-messages {
   background: var(--surface-sunken);

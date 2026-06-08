@@ -1,28 +1,4 @@
 (function () {
-  var NOTIFICATIONS = [
-    {
-      color: "#ef4444",
-      icon: "fa-triangle-exclamation",
-      title: "Horário de pico detectado",
-      desc: "Volume acima da média histórica na rodovia selecionada.",
-      time: "Agora"
-    },
-    {
-      color: "#f59e0b",
-      icon: "fa-chart-bar",
-      title: "Pressão operacional elevada",
-      desc: "Revise o planejamento de obras para a região SP.",
-      time: "Há 20 min"
-    },
-    {
-      color: "#3b82f6",
-      icon: "fa-file-chart-column",
-      title: "Dashboard atualizado",
-      desc: "KPIs e gráficos sincronizados com o banco de dados.",
-      time: "Há 1 hora"
-    }
-  ];
-
   function initTimestamp() {
     var el = document.getElementById("lastUpdate");
     if (!el) return;
@@ -49,21 +25,9 @@
   }
 
   function initNotifications() {
-    var list = document.getElementById("notifList");
-    if (!list) return;
-
-    list.innerHTML = NOTIFICATIONS.map(function (n) {
-      return (
-        '<div class="notif-item">' +
-          '<span class="notif-dot" style="background:' + n.color + ';"></span>' +
-          '<div class="notif-text">' +
-            '<p class="notif-title"><i class="fa-solid ' + n.icon + '" style="color:' + n.color + ';margin-right:5px;"></i>' + n.title + '</p>' +
-            '<p class="notif-desc">' + n.desc + '</p>' +
-            '<p class="notif-time">' + n.time + '</p>' +
-          '</div>' +
-        '</div>'
-      );
-    }).join("");
+    if (window.NewRoadNotificacoes) {
+      NewRoadNotificacoes.carregar();
+    }
   }
 
   function initInteractions() {
@@ -82,6 +46,9 @@
 
     if (notifBtn && notifPanel && overlay) {
       notifBtn.addEventListener("click", function () {
+        if (window.NewRoadNotificacoes) {
+          NewRoadNotificacoes.carregar();
+        }
         notifPanel.classList.add("open");
         overlay.classList.add("visible");
       });

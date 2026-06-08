@@ -11,25 +11,24 @@ const cfgNome = document.getElementById("cfgNome");
 const cfgEmail = document.getElementById("cfgEmail");
 const cfgSessaoPill = document.getElementById("cfgSessaoPill");
 const cfgPerfil = document.getElementById("cfgPerfil");
+const cfgRegiao = document.getElementById("cfgRegiao");
+const cfgRegiaoOperacional = document.getElementById("cfgRegiaoOperacional");
 
-const toggleNotifCritica = document.getElementById("toggleNotifCritica");
-const toggleNotifPico = document.getElementById("toggleNotifPico");
-const toggleNotifRelatorio = document.getElementById("toggleNotifRelatorio");
+const toggleNotifEtl = document.getElementById("toggleNotifEtl");
 const toggleDarkMode = document.getElementById("toggleDarkMode");
 const btnSalvarPreferencias = document.getElementById("btnSalvarPreferencias");
 const btnEncerrarSessao = document.getElementById("btnEncerrarSessao");
 const statusConfiguracoes = document.getElementById("statusConfiguracoes");
 
 const toggles = [
-  toggleNotifCritica,
-  toggleNotifPico,
-  toggleNotifRelatorio,
+  toggleNotifEtl,
   toggleDarkMode
 ];
 
 let idUsuarioSessao = Number(sessionStorage.ID_USUARIO || 1);
 let usuarioAtual = null;
 let intervaloPreferido = "1 minuto";
+let regioesDisponiveis = [];
 
 function criarIniciais(nome) {
   if (!nome) return "??";
@@ -92,6 +91,9 @@ function aplicarPerfilNaPagina(dados) {
       : "Faça login para personalizar o perfil";
   }
   if (cfgPerfil) cfgPerfil.value = perfil || "—";
+  if (cfgRegiaoOperacional) {
+    cfgRegiaoOperacional.textContent = (dados?.regiao || "—").trim() || "—";
+  }
   if (cfgSessaoPill) cfgSessaoPill.hidden = !temSessao;
 }
 
@@ -162,7 +164,7 @@ async function salvarPerfilUsuario() {
   );
 
   sincronizarSessaoUsuario(Object.assign({}, usuarioAtual, atualizado, payload));
-  aplicarPerfilNaPagina(atualizado);
+  aplicarPerfilNaPagina(Object.assign({}, usuarioAtual, atualizado, payload));
   aplicarUsuarioLogadoNaTopbar();
 }
 
@@ -179,11 +181,75 @@ function setToggleState(input, ligado) {
   if (input) input.checked = Boolean(ligado);
 }
 
+function garantirOpcaoRegiao(regiao) {
+  if (!cfgRegiao || !regiao) return;
+
+  const valor = regiao.trim();
+  const existe = Array.from(cfgRegiao.options).some(function (item) {
+    return item.value === valor;
+  });
+
+  if (!existe) {
+    const opcao = document.createElement("option");
+    opcao.value = valor;
+    opcao.textContent = valor;
+    cfgRegiao.appendChild(opcao);
+  }
+}
+
+function preencherSelectRegioes(regioes) {
+  if (!cfgRegiao) return;
+
+  cfgRegiao.innerHTML = "";
+
+  if (!regioes.length) {
+    const opcao = document.createElement("option");
+    opcao.value = "";
+    opcao.textContent = "Nenhuma região cadastrada";
+    cfgRegiao.appendChild(opcao);
+    cfgRegiao.disabled = true;
+    return;
+  }
+
+  regioes.forEach(function (regiao) {
+    const opcao = document.createElement("option");
+    opcao.value = regiao;
+    opcao.textContent = regiao;
+    cfgRegiao.appendChild(opcao);
+  });
+
+  cfgRegiao.disabled = false;
+}
+
+async function carregarRegioes() {
+  try {
+    const regioes = await requestJson("/usuarios/regioes/lista");
+    regioesDisponiveis = Array.isArray(regioes) ? regioes : [];
+    preencherSelectRegioes(regioesDisponiveis);
+  } catch (erro) {
+    regioesDisponiveis = [];
+    if (cfgRegiao) {
+      cfgRegiao.innerHTML = '<option value="">Falha ao carregar regiões</option>';
+      cfgRegiao.disabled = true;
+    }
+    setStatus(`Regiões não carregadas: ${erro.message}`, "erro");
+  }
+}
+
+function definirRegiaoPadrao(valor) {
+  if (!cfgRegiao) return;
+
+  const regiao = (valor || "").trim();
+  if (!regiao) return;
+
+  garantirOpcaoRegiao(regiao);
+  cfgRegiao.value = regiao;
+}
+
 function preencherFormulario(preferencias) {
   intervaloPreferido = preferencias.intervalo || "1 minuto";
-  setToggleState(toggleNotifCritica, Boolean(preferencias.notifCritica));
-  setToggleState(toggleNotifPico, Boolean(preferencias.notifPico));
-  setToggleState(toggleNotifRelatorio, Boolean(preferencias.notifRelatorio));
+  definirRegiaoPadrao(preferencias.regiaoPadrao);
+  setToggleState(toggleNotifEtl, preferencias.notifEtl !== false);
   setToggleState(toggleDarkMode, Boolean(preferencias.darkMode));
   if (window.NewRoadTheme) {
     NewRoadTheme.apply(Boolean(preferencias.darkMode));
@@ -213,7 +279,13 @@ async function requestJson(url, options) {
 async function carregarPreferencias() {
   try {
     const preferencias = await requestJson(`/preferencias/${idUsuarioSessao}`);
-    preencherFormulario(preferencias);
+    const regiaoPadrao =
+      preferencias.regiaoPadrao ||
+      usuarioAtual?.regiao ||
+      regioesDisponiveis[0] ||
+      "";
+
+    preencherFormulario(Object.assign({}, preferencias, { regiaoPadrao: regiaoPadrao }));
 
     if (!sessionStorage.ID_USUARIO) {
       setStatus("Sessão não encontrada. Editando preferências do usuário padrão (ID 1).", "");
@@ -228,9 +300,8 @@ async function carregarPreferencias() {
 function coletarPayload() {
   return {
     intervalo: intervaloPreferido,
-    notifCritica: isOn(toggleNotifCritica),
-    notifPico: isOn(toggleNotifPico),
-    notifRelatorio: isOn(toggleNotifRelatorio),
+    regiaoPadrao: cfgRegiao ? cfgRegiao.value : "",
+    notifEtl: isOn(toggleNotifEtl),
     darkMode: isOn(toggleDarkMode)
   };
 }
@@ -256,6 +327,10 @@ async function salvarPreferencias() {
     btnSalvarPreferencias.innerHTML = '<i class="fa-solid fa-check"></i> Salvo!';
     btnSalvarPreferencias.style.background = "#10b981";
 
+    if (window.NewRoadNotificacoes) {
+      NewRoadNotificacoes.carregar();
+    }
+
     setTimeout(function () {
       btnSalvarPreferencias.innerHTML = btnOriginal;
       btnSalvarPreferencias.style.background = "";
@@ -273,6 +348,13 @@ function encerrarSessao() {
   window.location.href = "../index.html";
 }
 
+async function iniciarConfiguracoes() {
+  aplicarUsuarioLogadoNaTopbar();
+  await carregarRegioes();
+  await carregarPerfilUsuario();
+  await carregarPreferencias();
+}
+
 btnSalvarPreferencias.addEventListener("click", salvarPreferencias);
 btnEncerrarSessao.addEventListener("click", encerrarSessao);
 
@@ -280,6 +362,4 @@ if (window.NewRoadTheme) {
   NewRoadTheme.bindToggle(toggleDarkMode);
 }
 
-aplicarUsuarioLogadoNaTopbar();
-carregarPerfilUsuario();
-carregarPreferencias();
+iniciarConfiguracoes();

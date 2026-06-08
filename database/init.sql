@@ -88,7 +88,7 @@ CREATE TABLE IF NOT EXISTS trafego_rodovia_historico (
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE notificacoes (
+CREATE TABLE IF NOT EXISTS notificacoes (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     titulo VARCHAR(255) NOT NULL,
     mensagem TEXT NOT NULL,

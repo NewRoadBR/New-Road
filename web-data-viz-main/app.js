@@ -49,6 +49,9 @@ const preferenciasRouter =
 const empresasRouter =
     require("./src/routes/empresas");
 
+const notificacoesRouter =
+    require("./src/routes/notificacoes");
+
 /*
 =========================================================
 MIDDLEWARES
@@ -86,6 +89,8 @@ app.use("/mural", muralRouter);
 app.use("/preferencias", preferenciasRouter);
 
 app.use("/empresas", empresasRouter);
+
+app.use("/notificacoes", notificacoesRouter);
 
 /*
 =========================================================
