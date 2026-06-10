@@ -1,0 +1,195 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model aviso_comentario {
+  id          Int         @id @default(autoincrement()) @db.UnsignedInt
+  fk_aviso    Int         @db.UnsignedInt
+  fk_usuario  Int         @db.UnsignedInt
+  texto       String      @db.Text
+  criado_em   DateTime?   @default(now()) @db.Timestamp(0)
+  aviso_mural aviso_mural @relation(fields: [fk_aviso], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "aviso_comentario_ibfk_1")
+  usuario     usuario     @relation(fields: [fk_usuario], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "aviso_comentario_ibfk_2")
+
+  @@index([fk_aviso], map: "fk_aviso")
+  @@index([fk_usuario], map: "fk_usuario")
+}
+
+model aviso_curtida {
+  fk_aviso    Int         @db.UnsignedInt
+  fk_usuario  Int         @db.UnsignedInt
+  aviso_mural aviso_mural @relation(fields: [fk_aviso], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "aviso_curtida_ibfk_1")
+  usuario     usuario     @relation(fields: [fk_usuario], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "aviso_curtida_ibfk_2")
+
+  @@id([fk_aviso, fk_usuario])
+  @@index([fk_usuario], map: "fk_usuario")
+}
+
+model aviso_mural {
+  id               Int                @id @default(autoincrement()) @db.UnsignedInt
+  fk_usuario       Int                @db.UnsignedInt
+  tipo             aviso_mural_tipo
+  rodovia          String             @db.VarChar(200)
+  titulo           String             @db.VarChar(200)
+  descricao        String?            @db.Text
+  pinned           Boolean?           @default(false)
+  has_img          Boolean?           @default(false)
+  likes            Int?               @default(0)
+  criado_em        DateTime?          @default(now()) @db.Timestamp(0)
+  aviso_comentario aviso_comentario[]
+  aviso_curtida    aviso_curtida[]
+  usuario          usuario            @relation(fields: [fk_usuario], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "aviso_mural_ibfk_1")
+
+  @@index([fk_usuario], map: "fk_usuario")
+}
+
+model empresa {
+  id        Int       @id @default(autoincrement()) @db.UnsignedInt
+  nome      String    @db.VarChar(120)
+  cnpj      String?   @db.VarChar(20)
+  criado_em DateTime? @default(now()) @db.Timestamp(0)
+  obra      obra[]
+  usuario   usuario[]
+}
+
+model log_etl {
+  id                   BigInt   @id @default(autoincrement())
+  timestamp            DateTime @default(now())
+  nivel_log            String   @db.VarChar(10)
+  classe_origem        String   @db.VarChar(255)
+  mensagem             String   @db.Text
+  exception_stacktrace String?  @db.MediumText
+
+  @@index([nivel_log], map: "idx_nivel_log")
+  @@index([timestamp], map: "idx_timestamp")
+}
+
+model mapa_praca_rodovia {
+  praca   String @id @db.VarChar(120)
+  rodovia String @db.VarChar(120)
+}
+
+model mural_chat {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  fk_usuario Int       @db.UnsignedInt
+  texto      String    @db.Text
+  criado_em  DateTime? @default(now()) @db.Timestamp(0)
+  usuario    usuario   @relation(fields: [fk_usuario], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "mural_chat_ibfk_1")
+
+  @@index([fk_usuario], map: "fk_usuario")
+}
+
+model obra {
+  id               Int          @id @default(autoincrement()) @db.UnsignedInt
+  rodovia          String       @db.VarChar(200)
+  descricao        String?      @db.Text
+  status           obra_status? @default(Planejada)
+  data_inicio      DateTime     @db.Date
+  data_fim         DateTime?    @db.Date
+  impacto_previsto Int?         @default(0) @db.UnsignedTinyInt
+  fk_empresa       Int?         @db.UnsignedInt
+  criado_em        DateTime?    @default(now()) @db.Timestamp(0)
+  empresa          empresa?     @relation(fields: [fk_empresa], references: [id], onUpdate: NoAction, map: "obra_ibfk_1")
+
+  @@index([fk_empresa], map: "fk_empresa")
+}
+
+model preferencia {
+  fk_usuario      Int      @id @db.UnsignedInt
+  intervalo       String?  @default("1 minuto") @db.VarChar(20)
+  regiao_padrao   String?  @default("SP Region (todas)") @db.VarChar(50)
+  notif_critica   Boolean? @default(true)
+  notif_pico      Boolean? @default(true)
+  notif_relatorio Boolean? @default(true)
+  dark_mode       Boolean? @default(false)
+  usuario         usuario  @relation(fields: [fk_usuario], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "preferencia_ibfk_1")
+}
+
+model registro_trafego {
+  id             BigInt   @id @default(autoincrement())
+  data           DateTime @db.Date
+  hora           Int      @db.TinyInt
+  praca          String   @db.VarChar(100)
+  sentido        String   @db.VarChar(50)
+  leve_eixos_2   Int      @default(0)
+  moto_eixos_2   Int      @default(0)
+  pesado_eixos_2 Int      @default(0)
+  leve_eixos_3   Int      @default(0)
+  pesado_eixos_3 Int      @default(0)
+  leve_eixos_4   Int      @default(0)
+  pesado_eixos_4 Int      @default(0)
+  pesado_eixos_5 Int      @default(0)
+  pesado_eixos_6 Int      @default(0)
+  especial       Int      @default(0)
+  volume_total   Int?
+  arquivo_origem String   @db.VarChar(255)
+
+  @@index([arquivo_origem], map: "idx_arquivo")
+  @@index([data, hora], map: "idx_data_hora")
+  @@index([praca, hora], map: "idx_praca_hora")
+}
+
+model trafego_rodovia_historico {
+  rodovia         String   @db.VarChar(120)
+  dia_semana      Int      @db.TinyInt
+  hora            Int      @db.TinyInt
+  volume_total    Decimal? @db.Decimal(12, 2)
+  volume_leve     Decimal? @db.Decimal(12, 2)
+  volume_pesado   Decimal? @db.Decimal(12, 2)
+  volume_moto     Decimal? @db.Decimal(12, 2)
+  volume_especial Decimal? @db.Decimal(12, 2)
+
+  @@id([rodovia, dia_semana, hora])
+}
+
+model usuario {
+  id               Int                @id @default(autoincrement()) @db.UnsignedInt
+  nome             String             @db.VarChar(120)
+  email            String             @unique(map: "email") @db.VarChar(160)
+  senha            String             @db.VarChar(255)
+  telefone         String?            @db.VarChar(30)
+  perfil           usuario_perfil?    @default(Analista)
+  regiao           String?            @default("SP Region") @db.VarChar(50)
+  avatar           String?            @db.Char(2)
+  cor              String?            @db.Char(7)
+  ultimo_acesso    String?            @db.VarChar(40)
+  role             String?            @db.VarChar(60)
+  is_me            Boolean?           @default(false)
+  fk_empresa       Int?               @db.UnsignedInt
+  criado_em        DateTime?          @default(now()) @db.Timestamp(0)
+  aviso_comentario aviso_comentario[]
+  aviso_curtida    aviso_curtida[]
+  aviso_mural      aviso_mural[]
+  mural_chat       mural_chat[]
+  preferencia      preferencia?
+  empresa          empresa?           @relation(fields: [fk_empresa], references: [id], onUpdate: NoAction, map: "usuario_ibfk_1")
+
+  @@index([fk_empresa], map: "fk_empresa")
+}
+
+enum aviso_mural_tipo {
+  urgente
+  atencao
+  info
+  concluido
+  planejado
+}
+
+enum obra_status {
+  Planejada
+  Em_andamento @map("Em andamento")
+  Finalizada
+  Critica
+}
+
+enum usuario_perfil {
+  Gestor
+  Analista
+  Operador
+  Suporte
+}

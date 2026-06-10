@@ -22,3 +22,6 @@ xlsx_input/
 .env
 .env.dev
 *.env*
+/generated/prisma
+
+node_modules/
